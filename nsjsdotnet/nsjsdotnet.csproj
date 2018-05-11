@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{75447F79-CBB6-4F37-B6FE-8286B6AF1460}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>nsjsdotnet</RootNamespace>
+    <AssemblyName>nsjsdotnet</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Core\Collection\LinkedListIterator.cs" />
+    <Compile Include="Core\Data\Converter\DataModelConverter.cs" />
+    <Compile Include="Core\Data\Converter\DataModelProxyConverter.cs" />
+    <Compile Include="Core\Data\Database\DatabaseAccessAdapter.cs" />
+    <Compile Include="Core\Data\Database\DatabaseAccessAuxiliary.cs" />
+    <Compile Include="Core\Data\Database\DatabaseConnectionPoll.cs" />
+    <Compile Include="Core\Data\Database\DataTableGateway.cs" />
+    <Compile Include="Core\Data\Database\ExpressionSpecification.cs" />
+    <Compile Include="Core\Data\Database\MSSQLDatabaseAccessAdapter.cs" />
+    <Compile Include="Core\Data\Dynamic\ExpandoObject.cs" />
+    <Compile Include="Core\Diagnostics\Contract.cs" />
+    <Compile Include="Core\Hooking\MethodSource.cs" />
+    <Compile Include="Core\Hooking\NetHook.cs" />
+    <Compile Include="Core\Hooking\PropertyEventArgs.cs" />
+    <Compile Include="Core\Hooking\PropertyHooker.cs" />
+    <Compile Include="Core\Hooking\VirtualProxyHooker.cs" />
+    <Compile Include="Core\Hooking\VirtualProxyInvoker.cs" />
+    <Compile Include="Core\Net\MailClient.cs" />
+    <Compile Include="Core\Net\WebSocket\CloseEventArgs.cs" />
+    <Compile Include="Core\Net\WebSocket\CloseEventHandler.cs" />
+    <Compile Include="Core\Net\WebSocket\ErrorEventArgs.cs" />
+    <Compile Include="Core\Net\WebSocket\ErrorEventHandler.cs" />
+    <Compile Include="Core\Net\WebSocket\MessageEventArgs.cs" />
+    <Compile Include="Core\Net\WebSocket\MessageEventHandler.cs" />
+    <Compile Include="Core\Net\WebSocket\OpCode.cs" />
+    <Compile Include="Core\Net\WebSocket\OpenEventHandler.cs" />
+    <Compile Include="Core\Net\WebSocket\WebSocket.cs" />
+    <Compile Include="Core\Net\WebSocket\WebSocketFrame.cs" />
+    <Compile Include="Core\Net\WebSocket\WebSocketServer.cs" />
+    <Compile Include="Core\Net\WebSocket\WebSocketServerHandshake.cs" />
+    <Compile Include="Core\Net\WebSocket\WebSocketSessionHandshake.cs" />
+    <Compile Include="Core\Net\Web\HttpApplication.cs" />
+    <Compile Include="Core\Net\Web\HttpCommunication.cs" />
+    <Compile Include="Core\Net\Web\HttpContentTypes.cs" />
+    <Compile Include="Core\Net\Web\HttpContext.cs" />
+    <Compile Include="Core\Net\Web\HttpFileCollection.cs" />
+    <Compile Include="Core\Net\Web\HttpFileModule.cs" />
+    <Compile Include="Core\Net\Web\HttpForm.cs" />
+    <Compile Include="Core\Net\Web\HttpPostedFile.cs" />
+    <Compile Include="Core\Net\Web\HttpPretreatmentContext.cs" />
+    <Compile Include="Core\Net\Web\HttpRequest.cs" />
+    <Compile Include="Core\Net\Web\HttpResponse.cs" />
+    <Compile Include="Core\Net\Web\IHttpHandler.cs" />
+    <Compile Include="Core\Sorting\Sortable.cs" />
+    <Compile Include="Core\Text\RegularExpressions\Match.cs" />
+    <Compile Include="Core\Text\RegularExpressions\MatchCollection.cs" />
+    <Compile Include="Core\Text\RegularExpressions\RegExp.cs" />
+    <Compile Include="Core\Text\SafeTextSymbols.cs" />
+    <Compile Include="Core\Threading\Coroutines\AbortCurrentCoroutine.cs" />
+    <Compile Include="Core\Threading\Coroutines\CoroutineAbortException.cs" />
+    <Compile Include="Core\Threading\Coroutines\Parallel.cs" />
+    <Compile Include="Core\Threading\Coroutines\Task.cs" />
+    <Compile Include="Core\Threading\Coroutines\TaskFactory.cs" />
+    <Compile Include="Core\Threading\Coroutines\TaskScheduler.cs" />
+    <Compile Include="Core\Threading\Coroutines\TaskState.cs" />
+    <Compile Include="Core\Threading\Coroutines\WaitForCoroutine.cs" />
+    <Compile Include="Core\Threading\Coroutines\WaitForMillisecounds.cs" />
+    <Compile Include="Core\Threading\EventLooper.cs" />
+    <Compile Include="Core\Threading\Locker.cs" />
+    <Compile Include="Core\Threading\SpinLock.cs" />
+    <Compile Include="Core\Threading\Timer.cs" />
+    <Compile Include="Core\Threading\TimerScheduler.cs" />
+    <Compile Include="Core\Threading\Waitable.cs" />
+    <Compile Include="Core\Throwable.cs" />
+    <Compile Include="Core\Utilits\Attributes.cs" />
+    <Compile Include="Core\Utilits\ModelConverter.cs" />
+    <Compile Include="Core\Utilits\ModelConverterAttribute.cs" />
+    <Compile Include="Core\Utilits\Hash32.cs" />
+    <Compile Include="Core\Utilits\Hash64.cs" />
+    <Compile Include="Core\Utilits\Ipep.cs" />
+    <Compile Include="Core\Utilits\Hardware.cs" />
+    <Compile Include="Core\ObjectAuxiliary.cs" />
+    <Compile Include="Core\Utilits\Random.cs" />
+    <Compile Include="Core\Net\Url.cs" />
+    <Compile Include="Core\Net\SocketExtension.cs" />
+    <Compile Include="Core\ValueAuxiliary.cs" />
+    <Compile Include="Core\Utilits\TypeTool.cs" />
+    <Compile Include="Core\Utilits\ValuetypeFormatter.cs" />
+    <Compile Include="NSJSException.cs" />
+    <Compile Include="NSJSMarshalAsUtility.cs" />
+    <Compile Include="NSJSMessage.cs" />
+    <Compile Include="NSJSInt64.cs" />
+    <Compile Include="NSJSJson.cs" />
+    <Compile Include="NSJSKeyValueCollection.cs" />
+    <Compile Include="Core\ArrayAuxiliary.cs" />
+    <Compile Include="Core\IO\DirectoryAuxiliary.cs" />
+    <Compile Include="Core\Linq\Enumerable.cs" />
+    <Compile Include="Core\IO\FileAuxiliary.cs" />
+    <Compile Include="Core\IO\LZ77Auxiliary.cs" />
+    <Compile Include="NSJSStackFrame.cs" />
+    <Compile Include="NSJSStackTrace.cs" />
+    <Compile Include="NSJSStructural.cs" />
+    <Compile Include="Runtime\Global.cs" />
+    <Compile Include="Runtime\Systematic\BitConverter.cs" />
+    <Compile Include="Runtime\Systematic\Configuration\Global.cs" />
+    <Compile Include="Runtime\Systematic\Configuration\Ini.cs" />
+    <Compile Include="Runtime\Console.cs" />
+    <Compile Include="Runtime\Systematic\Cryptography\AES.cs" />
+    <Compile Include="Core\BufferExtension.cs" />
+    <Compile Include="Runtime\Systematic\Cryptography\RC4.cs" />
+    <Compile Include="Core\Cryptography\RC4.cs" />
+    <Compile Include="Runtime\Systematic\Cryptography\RijndaelAlgorithm.cs" />
+    <Compile Include="Runtime\Systematic\Cryptography\Global.cs" />
+    <Compile Include="Runtime\Systematic\Cryptography\HashAlgorithm.cs" />
+    <Compile Include="Runtime\Systematic\Cryptography\MD5.cs" />
+    <Compile Include="Runtime\Systematic\Cryptography\RijndaelCryptoServiceProvider.cs" />
+    <Compile Include="Runtime\Systematic\Cryptography\SHA1.cs" />
+    <Compile Include="Runtime\Systematic\Cryptography\SHA256.cs" />
+    <Compile Include="Runtime\Systematic\Cryptography\SHA384.cs" />
+    <Compile Include="Runtime\Systematic\Cryptography\SHA512.cs" />
+    <Compile Include="Runtime\Systematic\Data\DataTableGateway.cs" />
+    <Compile Include="Runtime\Systematic\Data\SqlClient\DatabaseAccessAdapter.cs" />
+    <Compile Include="Runtime\Systematic\Data\SqlClient\Global.cs" />
+    <Compile Include="Runtime\Systematic\Data\Global.cs" />
+    <Compile Include="Runtime\Systematic\Global.cs" />
+    <Compile Include="Runtime\Systematic\IO\Compression\Global.cs" />
+    <Compile Include="Runtime\Systematic\IO\Compression\LZ77\Global.cs" />
+    <Compile Include="Runtime\Systematic\IO\Compression\LZ77\LZ77Algorithm.cs" />
+    <Compile Include="Runtime\Systematic\IO\Directory.cs" />
+    <Compile Include="Runtime\Systematic\IO\File.cs" />
+    <Compile Include="Runtime\Systematic\IO\FileStream.cs" />
+    <Compile Include="Runtime\Systematic\IO\Global.cs" />
+    <Compile Include="Runtime\Systematic\IO\Compression\LZ77\Deflate.cs" />
+    <Compile Include="Runtime\Systematic\IO\Compression\LZ77\GZip.cs" />
+    <Compile Include="Runtime\Systematic\IO\MemoryStream.cs" />
+    <Compile Include="Runtime\Systematic\IO\Stream.cs" />
+    <Compile Include="Runtime\Systematic\IO\Text.cs" />
+    <Compile Include="Runtime\Systematic\Net\Dns.cs" />
+    <Compile Include="Runtime\Systematic\Net\Global.cs" />
+    <Compile Include="Runtime\Systematic\Net\HttpClient.cs" />
+    <Compile Include="Runtime\Systematic\Net\HttpProxy.cs" />
+    <Compile Include="Core\Net\HttpClient.cs" />
+    <Compile Include="Core\Net\HttpAuxiliary.cs" />
+    <Compile Include="NSJSArray.cs" />
+    <Compile Include="NSJSBoolean.cs" />
+    <Compile Include="NSJSDouble.cs" />
+    <Compile Include="NSJSFloat32Array.cs" />
+    <Compile Include="NSJSFloat64Array.cs" />
+    <Compile Include="NSJSFunction.cs" />
+    <Compile Include="NSJSFunctionCallback.cs" />
+    <Compile Include="NSJSFunctionCallbackInfo.cs" />
+    <Compile Include="NSJSDateTime.cs" />
+    <Compile Include="NSJSPinnedCollection.cs" />
+    <Compile Include="NSJSInt16Array.cs" />
+    <Compile Include="NSJSInt32.cs" />
+    <Compile Include="NSJSInt32Array.cs" />
+    <Compile Include="NSJSInt8Array.cs" />
+    <Compile Include="NSJSJoinCallback.cs" />
+    <Compile Include="NSJSObject.cs" />
+    <Compile Include="NSJSUInt16Array.cs" />
+    <Compile Include="NSJSUInt32.cs" />
+    <Compile Include="NSJSUInt32Array.cs" />
+    <Compile Include="NSJSUInt8Array.cs" />
+    <Compile Include="NSJSValue.cs" />
+    <Compile Include="NSJSMemoryManagement.cs" />
+    <Compile Include="NSJSString.cs" />
+    <Compile Include="NSJSValueBuilder.cs" />
+    <Compile Include="NSJSValueType.cs" />
+    <Compile Include="NSJSVirtualMachine.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Runtime\Systematic\Net\Mail.cs" />
+    <Compile Include="Runtime\Systematic\Net\Sockets\Global.cs" />
+    <Compile Include="Runtime\Systematic\Net\Sockets\Socket.cs" />
+    <Compile Include="Runtime\Systematic\Net\Web\Global.cs" />
+    <Compile Include="Runtime\Systematic\Net\Web\HttpApplication.cs" />
+    <Compile Include="Runtime\Systematic\Net\Web\HttpRequest.cs" />
+    <Compile Include="Runtime\Systematic\Net\Web\HttpResponse.cs" />
+    <Compile Include="Runtime\Systematic\Sorting\Global.cs" />
+    <Compile Include="Runtime\Systematic\Sorting\Sortable.cs" />
+    <Compile Include="Runtime\Systematic\Text\Encoding.cs" />
+    <Compile Include="Runtime\Systematic\Text\Global.cs" />
+    <Compile Include="Runtime\Timer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="nsjs.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="natives_blob.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="snapshot_blob.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Runtime\Systematic\Globalization\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
