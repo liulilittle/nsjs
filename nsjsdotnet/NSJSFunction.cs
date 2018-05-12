@@ -252,8 +252,8 @@
                         owner.Handle,
                         this.Handle,
                         argc.Count, argv,
-                        ref machine.exception);
-                    exception_info = NSJSException.From(machine, ref machine.exception);
+                        ref *machine.exception);
+                    exception_info = NSJSException.From(machine, machine.exception);
                     if (handle == NULL)
                     {
                         return null;

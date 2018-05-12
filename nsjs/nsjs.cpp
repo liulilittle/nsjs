@@ -516,7 +516,7 @@ DLLEXPORT int DLLEXPORTNSAPI nsjs_stacktrace_getcurrent(v8::Isolate* isolate, NS
 		return 0;
 	}
 	v8::Local<v8::StackTrace> src = v8::StackTrace::CurrentStackTrace(isolate, MAXSTACKFRAMECOUNT);
-	return DumpWriteStackTrace(src, stacktrace);
+	return DumpWriteStackTrace(&src, stacktrace);
 }
 
 DLLEXPORT NSJSValueType DLLEXPORTNSAPI nsjs_localvalue_get_typeid(NSJSLocalValue* localValue)
@@ -928,9 +928,7 @@ DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_object_property_call(v8
 		throw new ArgumentOutOfRangeException("Parameter argc is greater than 0 o'clock, argv not null is not allowed");
 	}
 	v8::TryCatch try_catch(isolate);
-	try_catch.Reset();
-	try_catch.SetVerbose(true);
-	try_catch.SetCaptureMessage(true);
+
 	v8::Local<v8::Value>* args = (v8::Local<v8::Value>*)Memory::Alloc(sizeof(v8::Local<v8::Value>) * argc);
 	for (int i = 0; i < argc; i++)
 	{
@@ -957,7 +955,7 @@ DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_object_property_call(v8
 	}
 	if (!caller->Call(context, self, argc, args).ToLocal(&out))
 	{
-		DumpWriteExceptionInfo(try_catch, isolate, exception);
+		DumpWriteExceptionInfo(&try_catch, isolate, exception);
 		return NULL;
 	}
 	NSJSLocalValue* result;

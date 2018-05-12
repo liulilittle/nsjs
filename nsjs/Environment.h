@@ -81,8 +81,8 @@ uint64_t GetSystemTickCount64();
 void FreeStringMemory(const void* s);
 int GetTextFileBufferCharacterSet(const char* s);
 uint32_t VMID(v8::Isolate* isolate);
-int DumpWriteStackTrace(v8::Local<v8::StackTrace>& src, NSJSStackTrace* destination);
-bool DumpWriteExceptionInfo(v8::TryCatch& try_catch, v8::Isolate* isolate, NSJSException* exception);
+int DumpWriteStackTrace(v8::Local<v8::StackTrace>* src, NSJSStackTrace* destination);
+bool DumpWriteExceptionInfo(v8::TryCatch* try_catch, v8::Isolate* isolate, NSJSException* exception);
 
 namespace Environment
 {

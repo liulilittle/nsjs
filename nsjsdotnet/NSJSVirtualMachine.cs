@@ -212,6 +212,10 @@
                     this.disposed = true;
                     this.nullable = null;
                     this.undefined = null;
+                    NSJSStructural.NSJSExceptionInfo.Free(this.exception);
+                    NSJSStructural.NSJSStackTrace.Free(this.stacktrace);
+                    this.stacktrace = null;
+                    this.exception = null;
                     runings.Clear();
                     NSJSVirtualMachine machine;
                     machines.TryRemove(this.Handle, out machine);
@@ -241,7 +245,9 @@
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private NSJSValue undefined = null;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        internal NSJSStructural.NSJSExceptionInfo exception = new NSJSStructural.NSJSExceptionInfo();
+        internal NSJSStructural.NSJSExceptionInfo* exception = null;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        internal NSJSStructural.NSJSStackTrace* stacktrace = null;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private IDictionary<string, RunContext> runings = new Dictionary<string, RunContext>();
 
@@ -315,6 +321,8 @@
             }
             machines.TryAdd(this.Handle, this);
             this.cookie = GCHandle.Alloc(this);
+            this.exception = NSJSStructural.NSJSExceptionInfo.New();
+            this.stacktrace = NSJSStructural.NSJSStackTrace.New();
         }
 
         ~NSJSVirtualMachine()
@@ -527,10 +535,10 @@
                         fixed (byte* pstr_alias = alias_buffer)
                         {
                             sbyte* pstr_result = nsjs_virtualmachine_run(this.Handle,
-                                pstr_source, pstr_alias, ref this.exception);
+                                pstr_source, pstr_alias, ref *this.exception);
                             string result_str = pstr_result != null ? new string(pstr_result) : null;
                             NSJSMemoryManagement.Free(pstr_result);
-                            exception_info = NSJSException.From(this, ref this.exception);
+                            exception_info = NSJSException.From(this, this.exception);
                             return result_str;
                         }
                     }
@@ -653,8 +661,8 @@
                 byte[] ch = Encoding.UTF8.GetBytes(expression);
                 fixed (byte* s = ch)
                 {
-                    sbyte* p = nsjs_virtualmachine_eval(this.Handle, s, ref this.exception);
-                    exception_info = NSJSException.From(this, ref this.exception);
+                    sbyte* p = nsjs_virtualmachine_eval(this.Handle, s, ref *this.exception);
+                    exception_info = NSJSException.From(this, this.exception);
                     result = p != null ? new string(p) : null;
                     NSJSMemoryManagement.Free(p);
                     return result;
@@ -728,8 +736,8 @@
                     }
                     argv = ppv;
                 }
-                IntPtr chunk = nsjs_virtualmachine_call2(this.Handle, cookies[0].Value.AddrOfPinnedObject().ToPointer(), argc, argv, ref this.exception);
-                exception_info = NSJSException.From(this, ref this.exception);
+                IntPtr chunk = nsjs_virtualmachine_call2(this.Handle, cookies[0].Value.AddrOfPinnedObject().ToPointer(), argc, argv, ref *this.exception);
+                exception_info = NSJSException.From(this, this.exception);
                 result = chunk != NULL ? new string((sbyte*)chunk.ToPointer()) : null;
                 foreach (GCHandle? cookie in cookies)
                 {
@@ -802,8 +810,8 @@
                 {
                     fixed (IntPtr* argv = argc.ToArray())
                     {
-                        sbyte* chunk = nsjs_virtualmachine_call(this.Handle, key, argc.Count, argv, ref this.exception);
-                        exception_info = NSJSException.From(this, ref this.exception);
+                        sbyte* chunk = nsjs_virtualmachine_call(this.Handle, key, argc.Count, argv, ref *this.exception);
+                        exception_info = NSJSException.From(this, this.exception);
                         result = chunk != null ? new string(chunk) : null;
                         NSJSMemoryManagement.Free(chunk);
                         return result;
@@ -830,8 +838,8 @@
                 {
                     fixed (IntPtr* argv = argc.ToArray())
                     {
-                        IntPtr handle = nsjs_virtualmachine_callvir(this.Handle, key, argc.Count, argv, ref this.exception);
-                        exception_info = NSJSException.From(this, ref this.exception);
+                        IntPtr handle = nsjs_virtualmachine_callvir(this.Handle, key, argc.Count, argv, ref *this.exception);
+                        exception_info = NSJSException.From(this, this.exception);
                         if (handle == NULL)
                         {
                             return null;

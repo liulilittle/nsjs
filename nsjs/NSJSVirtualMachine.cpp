@@ -98,17 +98,13 @@ const char* NSJSVirtualMachine::Run(const char* expression, const char* alias, N
 	Local<String> source = String::NewFromUtf8(isolate, expression, NewStringType::kNormal).ToLocalChecked();
 	// Try to compile the source code or execute the error that occurred.
 	v8::TryCatch try_catch(isolate);
-	try_catch.Reset();
-	try_catch.SetVerbose(true);
-	try_catch.SetCaptureMessage(true);
-
 	// Compile the source code.
 	Local<Script> script;
 	if (alias == NULL)
 	{
 		if (!Script::Compile(context.Get(isolate), source).ToLocal(&script))
 		{
-			DumpWriteExceptionInfo(try_catch, isolate, exception);
+			DumpWriteExceptionInfo(&try_catch, isolate, exception);
 			return NULL;
 		}
 	}
@@ -117,7 +113,7 @@ const char* NSJSVirtualMachine::Run(const char* expression, const char* alias, N
 		script = Script::Compile(source, v8::String::NewFromUtf8(isolate, alias, NewStringType::kNormal).ToLocalChecked());
 		if (*script == NULL)
 		{
-			DumpWriteExceptionInfo(try_catch, isolate, exception);
+			DumpWriteExceptionInfo(&try_catch, isolate, exception);
 			return NULL;
 		}
 	}
@@ -125,7 +121,7 @@ const char* NSJSVirtualMachine::Run(const char* expression, const char* alias, N
 	Local<Value> result;
 	if (!script->Run(context.Get(isolate)).ToLocal(&result))
 	{
-		DumpWriteExceptionInfo(try_catch, isolate, exception);
+		DumpWriteExceptionInfo(&try_catch, isolate, exception);
 		return NULL;
 	}
 	// Convert the result to an UTF8 string and print it.
@@ -148,10 +144,6 @@ const char* NSJSVirtualMachine::Call(const char* name, int argc, const char** ar
 		throw new ArgumentOutOfRangeException("Argc no exists less than 0");
 	}
 	v8::TryCatch try_catch(isolate);
-	try_catch.Reset();
-	try_catch.SetVerbose(true);
-	try_catch.SetCaptureMessage(true);
-
 	Local<Context> context = this->GetContext();
 	Handle<Object> global = context->Global();
 	Handle<Value> obj = global->Get(String::NewFromUtf8(isolate, name, NewStringType::kNormal).ToLocalChecked());
@@ -169,7 +161,7 @@ const char* NSJSVirtualMachine::Call(const char* name, int argc, const char** ar
 	Local<Value> result;
 	if (!function->Call(context, global, argc, args).ToLocal(&result))
 	{
-		DumpWriteExceptionInfo(try_catch, isolate, exception);
+		DumpWriteExceptionInfo(&try_catch, isolate, exception);
 		return NULL;
 	}
 	return Utf8ToASCII(*String::Utf8Value(isolate, result));
@@ -186,9 +178,6 @@ const char* NSJSVirtualMachine::Call(const char* name, int argc, v8::Local<v8::V
 		throw new ArgumentOutOfRangeException("Argc no exists less than 0");
 	}
 	v8::TryCatch try_catch(isolate);
-	try_catch.Reset();
-	try_catch.SetVerbose(true);
-	try_catch.SetCaptureMessage(true);
 
 	Local<Context> context = this->GetContext();
 	Handle<Object> global = context->Global();
@@ -198,7 +187,7 @@ const char* NSJSVirtualMachine::Call(const char* name, int argc, v8::Local<v8::V
 	Local<Value> result;
 	if (!function->Call(context, global, argc, argv).ToLocal(&result))
 	{
-		DumpWriteExceptionInfo(try_catch, isolate, exception);
+		DumpWriteExceptionInfo(&try_catch, isolate, exception);
 		return NULL;
 	}
 	return Utf8ToASCII(*String::Utf8Value(isolate, result));
@@ -215,9 +204,6 @@ v8::Local<v8::Value> NSJSVirtualMachine::Callvir(const char* name, int argc, v8:
 		throw new ArgumentOutOfRangeException("Argc no exists less than 0");
 	}
 	v8::TryCatch try_catch(isolate);
-	try_catch.Reset();
-	try_catch.SetVerbose(true);
-	try_catch.SetCaptureMessage(true);
 
 	Local<Context> context = this->GetContext();
 	Handle<Object> global = context->Global();
@@ -227,7 +213,7 @@ v8::Local<v8::Value> NSJSVirtualMachine::Callvir(const char* name, int argc, v8:
 	Local<Value> result;
 	if (!function->Call(context, global, argc, argv).ToLocal(&result))
 	{
-		DumpWriteExceptionInfo(try_catch, isolate, exception);
+		DumpWriteExceptionInfo(&try_catch, isolate, exception);
 		result = v8::Undefined(isolate);
 	}
 	return result;

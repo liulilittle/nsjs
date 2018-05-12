@@ -4,6 +4,7 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
+    using System.Diagnostics;
 
     public unsafe class NSJSStackTrace : IEnumerable<NSJSStackFrame>
     {
@@ -11,6 +12,7 @@
 
         private static readonly IntPtr NULL = IntPtr.Zero;
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly NSJSStackFrame[] frames = null;
 
         [DllImport("nsjs.dll", SetLastError = false)]
@@ -36,6 +38,7 @@
         public IEnumerator<NSJSStackFrame> GetEnumerator()
         {
             NSJSStackFrame[] s = this.frames;
+            int count = s == null ? 0 : s.Length;
             for (int i = 0; i < s.Length; i++)
             {
                 yield return s[i];
@@ -47,9 +50,31 @@
             return this.GetEnumerator();
         }
 
-        internal NSJSStackTrace(ref NSJSStructural.NSJSStackTrace stackTrace)
+        public override string ToString()
         {
-            int count = stackTrace.Count;
+            string s = null;
+            foreach (NSJSStackFrame frame in this)
+            {
+                if (frame == null)
+                {
+                    continue;
+                }
+                s += frame.ToString() + "\r\n";
+            }
+            if (s != null && s.Length >= 2)
+            {
+                s = s.Remove(s.Length - 2);
+            }
+            return s;
+        }
+
+        internal NSJSStackTrace(NSJSStructural.NSJSStackTrace* stacktrace)
+        {
+            if (stacktrace == null)
+            {
+                throw new ArgumentNullException("stacktrace");
+            }
+            int count = stacktrace->Count;
             if (count > MaxFrameCount)
             {
                 count = MaxFrameCount;
@@ -57,9 +82,9 @@
             this.frames = new NSJSStackFrame[count];
             for (int i = 0; i < count; i++)
             {
-                frames[i] = new NSJSStackFrame(ref stackTrace.Frame[i]);
+                frames[i] = new NSJSStackFrame(&stacktrace->Frame[i]);
             }
-            stackTrace.Count = 0;
+            stacktrace->Count = 0;
             this.FrameCount = count;
         }
 
@@ -74,12 +99,12 @@
             {
                 throw new InvalidOperationException("isolate");
             }
-            int count = nsjs_stacktrace_getcurrent(isolate, ref machine.exception.StackTrace);
+            int count = nsjs_stacktrace_getcurrent(isolate, ref *machine.stacktrace);
             if (count <= 0)
             {
-                machine.exception.StackTrace.Count = 0;
+                machine.stacktrace->Count = 0;
             }
-            return new NSJSStackTrace(ref machine.exception.StackTrace);
+            return new NSJSStackTrace(machine.stacktrace);
         }
     }
 }

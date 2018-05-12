@@ -12,9 +12,6 @@
         [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_memory_free(void* memory);
 
-        [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall)]
-        private extern static bool IsBadReadPtr(void* lp, uint ucb);
-
         [DllImport("kernel32.dll", SetLastError = false)]
         private static extern bool SetProcessWorkingSetSize(IntPtr hProcess, int dwMinimumWorkingSetSize, int dwMaximumWorkingSetSize);
 
@@ -81,6 +78,11 @@
             GC.WaitForPendingFinalizers();
         }
 
+        public static byte* Alloc(int size)
+        {
+            return Alloc(unchecked((uint)size));
+        }
+
         public static byte* Alloc(uint size)
         {
             if (size <= 0)
@@ -97,7 +99,7 @@
 
         public static void Free(void* memory)
         {
-            if (memory != null && !IsBadReadPtr(memory, 0x01))
+            if (memory != null)
             {
                 nsjs_memory_free(memory);
             }

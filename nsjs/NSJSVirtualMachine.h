@@ -59,7 +59,7 @@ public:
 typedef struct {
 public:
 	int Count;
-	NSJSStackFrame Frame[MAXSTACKFRAMECOUNT];
+	NSJSStackFrame* Frame;
 } NSJSStackTrace;
 
 typedef struct {
@@ -80,7 +80,7 @@ public:
 	int StartPosition;
 	bool IsSharedCrossOrigin;
 	const char* ExceptionMessage;
-	NSJSStackTrace StackTrace;
+	const char* StackTrace;
 } NSJSException;
 
 typedef struct {

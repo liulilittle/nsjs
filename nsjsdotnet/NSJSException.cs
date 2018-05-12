@@ -69,7 +69,7 @@
 
         public bool IsSharedCrossOrigin { get; private set; }
 
-        public NSJSStackTrace JavaScriptStackTrace { get; private set; }
+        public string JavaScriptStackTrace { get; private set; }
 
         public override string Message
         {
@@ -85,17 +85,21 @@
          
         public NSJSVirtualMachine VirtualMachine { get; private set; }
 
-        internal static NSJSException From(NSJSVirtualMachine machine, ref NSJSStructural.NSJSExceptionInfo exception)
+        internal static NSJSException From(NSJSVirtualMachine machine, NSJSStructural.NSJSExceptionInfo* exception)
         {
-            if (!exception.NowIsWrong)
+            if (exception == null || machine == null)
             {
                 return null;
             }
-            exception.NowIsWrong = false;
-            return new NSJSException(machine, ref exception);
+            if (!exception->NowIsWrong)
+            {
+                return null;
+            }
+            exception->NowIsWrong = false;
+            return new NSJSException(machine, exception);
         }
 
-        public NSJSException(NSJSVirtualMachine machine) : this(machine, null)
+        public NSJSException(NSJSVirtualMachine machine) : this(machine, (string)null)
         {
 
         }
@@ -114,51 +118,47 @@
             this.exception_message = message;
         }
 
-        private NSJSException(NSJSVirtualMachine machine, ref NSJSStructural.NSJSExceptionInfo exception) 
+        private NSJSException(NSJSVirtualMachine machine, NSJSStructural.NSJSExceptionInfo* exception) 
         {
-            if (machine == null)
+            if (exception == null)
             {
-                throw new ArgumentNullException("machine");
+                throw new ArgumentNullException("exception");
             }
-            this.VirtualMachine = machine;
-            this.EndColumn = exception.EndColumn;
-            this.EndPosition = exception.EndPosition;
-            this.ErrorLevel = exception.ErrorLevel;
-            this.exception_message = new string((sbyte*)exception.ExceptionMessage);
-            NSJSMemoryManagement.Free(exception.ExceptionMessage);
-            this.IsSharedCrossOrigin = exception.IsSharedCrossOrigin;
-            this.LineNumber = exception.LineNumber;
-            this.ResourceColumnOffset = exception.ResourceColumnOffset;
-            this.ResourceLineOffset = exception.ResourceLineOffset;
-            this.ResourceName = new string((sbyte*)exception.ResourceName);
-            NSJSMemoryManagement.Free(exception.ResourceName);
-            this.ScriptId = exception.ScriptId;
-            this.ScriptResourceName = new string((sbyte*)exception.ScriptResourceName);
-            NSJSMemoryManagement.Free(exception.ScriptResourceName);
-            this.SourceLine = new string((sbyte*)exception.SourceLine);
-            NSJSMemoryManagement.Free(exception.SourceLine);
-            this.SourceMapUrl = new string((sbyte*)exception.SourceMapUrl);
-            NSJSMemoryManagement.Free(exception.SourceMapUrl);
-            this.StartColumn = exception.StartColumn;
-            this.StartPosition = exception.StartPosition;
-            this.JavaScriptStackTrace = new NSJSStackTrace(ref exception.StackTrace);
-            // memset
-            exception.EndColumn = 0;
-            exception.EndPosition = 0;
-            exception.ErrorLevel = 0;
-            exception.ExceptionMessage = NULL;
-            exception.IsSharedCrossOrigin = false;
-            exception.LineNumber = 0;
-            exception.ResourceColumnOffset = 0;
-            exception.ResourceLineOffset = 0;
-            exception.ResourceName = NULL;
-            exception.ScriptId = 0;
-            exception.ScriptResourceName = NULL;
-            exception.SourceLine = NULL;
-            exception.SourceMapUrl = NULL;
-            exception.StartColumn = 0;
-            exception.StartPosition = 0;
-            exception.StackTrace.Count = 0;
+            this.VirtualMachine = machine ?? throw new ArgumentNullException("machine");
+            this.EndColumn = exception->EndColumn;
+            this.EndPosition = exception->EndPosition;
+            this.ErrorLevel = exception->ErrorLevel;
+            this.exception_message = new string((sbyte*)exception->ExceptionMessage);
+            NSJSMemoryManagement.Free(exception->ExceptionMessage);
+            this.IsSharedCrossOrigin = exception->IsSharedCrossOrigin;
+            this.LineNumber = exception->LineNumber;
+            this.ResourceColumnOffset = exception->ResourceColumnOffset;
+            this.ResourceLineOffset = exception->ResourceLineOffset;
+            this.ResourceName = new string((sbyte*)exception->ResourceName);
+            NSJSMemoryManagement.Free(exception->ResourceName);
+            this.ScriptId = exception->ScriptId;
+            this.ScriptResourceName = new string((sbyte*)exception->ScriptResourceName);
+            NSJSMemoryManagement.Free(exception->ScriptResourceName);
+            this.SourceLine = new string((sbyte*)exception->SourceLine);
+            NSJSMemoryManagement.Free(exception->SourceLine);
+            this.SourceMapUrl = new string((sbyte*)exception->SourceMapUrl);
+            NSJSMemoryManagement.Free(exception->SourceMapUrl);
+            this.StartColumn = exception->StartColumn;
+            this.StartPosition = exception->StartPosition;
+            string s = new string((sbyte*)exception->StackTrace);
+            if (s != null)
+            {
+                int index = s.IndexOf('\n');
+                if (index > -1)
+                {
+                    s = s.Substring(index + 1);
+                }
+                s = s.Replace("\n", "\r\n");
+            }
+            this.JavaScriptStackTrace = s;
+            NSJSMemoryManagement.Free(exception->StackTrace);
+            // memeset
+            exception->Reset();
         }
 
         protected internal void Raise()
@@ -252,25 +252,7 @@
             contents.AppendFormat("    SourceLine: {0}\r\n", exception.SourceLine);
             contents.AppendFormat("    SourceMapUrl: {0}\r\n", exception.SourceMapUrl);
             contents.AppendLine("-----------------------------------------------------");
-            contents.AppendFormat("JavaScript StackTrace\r\n");
-            NSJSStackFrame[] frames = exception.JavaScriptStackTrace.GetFrames();
-            for (int i = 0; i < frames.Length; i++)
-            {
-                NSJSStackFrame frame = frames[i];
-                contents.AppendFormat("    Column: {0}\r\n", frame.Column);
-                contents.AppendFormat("    FunctionName: {0}\r\n", frame.FunctionName);
-                contents.AppendFormat("    IsConstructor: {0}\r\n", frame.IsConstructor);
-                contents.AppendFormat("    IsEval: {0}\r\n", frame.IsEval);
-                contents.AppendFormat("    IsWasm: {0}\r\n", frame.IsWasm);
-                contents.AppendFormat("    LineNumber: {0}\r\n", frame.LineNumber);
-                contents.AppendFormat("    ScriptId: {0}\r\n", frame.ScriptId);
-                contents.AppendFormat("    ScriptName: {0}\r\n", frame.ScriptName);
-                contents.AppendFormat("    ScriptNameOrSourceURL: {0}\r\n", frame.ScriptNameOrSourceURL);
-                if ((i + 1) < frames.Length)
-                {
-                    contents.AppendLine("----------------------------------");
-                }
-            }
+            contents.AppendFormat("JavaScript StackTrace\r\n{0}\r\n", exception.JavaScriptStackTrace);
             contents.AppendLine("-----------------------------------------------------");
             contents.AppendLine(".NET StackTrace\r\n" + (exception.StackTrace ?? new StackTrace(1).ToString()));
             return contents.ToString();

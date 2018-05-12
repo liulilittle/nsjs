@@ -12,6 +12,9 @@
 
         public static readonly byte[] EmptryBuffer = new byte[0];
 
+        [DllImport("msvcrt.dll", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void* memset(void* s, int ch, int n);
+
         public static bool IsZeroMemory(byte[] buffer)
         {
             int len = buffer.Length;

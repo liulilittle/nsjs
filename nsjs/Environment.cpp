@@ -137,22 +137,25 @@ int GetTextFileBufferCharacterSet(const char* s)
 {
 	if (s == NULL)
 	{
-		return CP_ACP;
+		return GetACP();
 	}
 	const uint8_t* p = (uint8_t*)s;
-	if (p[0] == 0xEF && p[1] == 0xBB && p[2] == 0xBF)
+	if (!IsBadReadPtr(p, 3))
 	{
-		return CP_UTF8; // Utf8
+		if (p[0] == 0xEF && p[1] == 0xBB && p[2] == 0xBF)
+		{
+			return CP_UTF8; // Utf8
+		}
+		else if (p[0] == 0xFE && p[1] == 0xFF && p[2] == 0x00)
+		{
+			return 1201; // BigEndianUnicode
+		}
+		else if (p[0] == 0xFF && p[1] == 0xFE && p[2] == 0x41)
+		{
+			return CP_WINUNICODE; // Unicode
+		}
 	}
-	else if (p[0] == 0xFE && p[1] == 0xFF && p[2] == 0x00)
-	{
-		return 1201; // BigEndianUnicode
-	}
-	else if(p[0] == 0xFF && p[1] == 0xFE && p[2] == 0x41)
-	{
-		return CP_WINUNICODE; // Unicode
-	}
-	return CP_ACP; // ASCII--GetACP()
+	return GetACP();
 }
 
 uint32_t VMID(v8::Isolate* isolate)
@@ -172,18 +175,19 @@ uint32_t VMID(v8::Isolate* isolate)
 	return (hash & 0x7FFFFFFF);
 }
 
-int DumpWriteStackTrace(v8::Local<v8::StackTrace>& src, NSJSStackTrace* destination)
+int DumpWriteStackTrace(v8::Local<v8::StackTrace>* src, NSJSStackTrace* destination)
 {
 	if (destination == NULL)
 	{
 		return 0;
 	}
-	if (*src == NULL)
+	v8::Local<v8::StackTrace> st;
+	if (src == NULL || *(st = *src) == NULL)
 	{
 		destination->Count = 0;
 		return 0;
 	}
-	destination->Count = src->GetFrameCount();
+	destination->Count = st->GetFrameCount();
 	int count = destination->Count;
 	if (count > MAXSTACKFRAMECOUNT)
 	{
@@ -192,14 +196,13 @@ int DumpWriteStackTrace(v8::Local<v8::StackTrace>& src, NSJSStackTrace* destinat
 	for (int i = 0; i < count; i++)
 	{
 		NSJSStackFrame* f = &destination->Frame[i];
-		v8::Local<v8::StackFrame> frame = src->GetFrame((uint32_t)i);
+		v8::Local<v8::StackFrame> frame = st->GetFrame((uint32_t)i);
 		f->Column = frame->GetColumn();
 		f->FunctionName = Utf8ToASCII(*v8::String::Utf8Value(frame->GetFunctionName()));
 		f->LineNumber = frame->GetLineNumber();
 		f->ScriptId = frame->GetScriptId();
 		f->ScriptName = Utf8ToASCII(*v8::String::Utf8Value(frame->GetScriptName()));
-		f->ScriptNameOrSourceURL = Utf8ToASCII(*v8::String::Utf8Value(frame->
-			GetScriptNameOrSourceURL()));
+		f->ScriptNameOrSourceURL = Utf8ToASCII(*v8::String::Utf8Value(frame->GetScriptNameOrSourceURL()));
 		f->IsConstructor = frame->IsConstructor();
 		f->IsEval = frame->IsEval();
 		f->IsWasm = frame->IsWasm();
@@ -207,16 +210,16 @@ int DumpWriteStackTrace(v8::Local<v8::StackTrace>& src, NSJSStackTrace* destinat
 	return count;
 }
 
-bool DumpWriteExceptionInfo(v8::TryCatch& try_catch, v8::Isolate* isolate, NSJSException* exception)
+bool DumpWriteExceptionInfo(v8::TryCatch* try_catch, v8::Isolate* isolate, NSJSException* exception)
 {
-	if (isolate == NULL || exception == NULL)
+	if (isolate == NULL || exception == NULL || try_catch == NULL)
 	{
 		return false;
 	}
-	v8::Local<v8::Message> message = try_catch.Message(); // v8::Exception::GetStackTrace(try_catch.Exception());
-	DumpWriteStackTrace(message->GetStackTrace(), &exception->StackTrace);
+	v8::Local<v8::Message> message = try_catch->Message();
 	exception->NowIsWrong = true;
-	exception->ExceptionMessage = Utf8ToASCII(*v8::String::Utf8Value(try_catch.Exception()));
+	exception->StackTrace = Utf8ToASCII(*v8::String::Utf8Value(try_catch->StackTrace()));
+	exception->ExceptionMessage = Utf8ToASCII(*v8::String::Utf8Value(try_catch->Exception()));
 	exception->ErrorLevel = message->ErrorLevel();
 	exception->EndColumn = message->GetEndColumn();
 	exception->EndPosition = message->GetEndPosition();

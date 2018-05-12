@@ -24,30 +24,47 @@
 
         public bool IsWasm { get; private set; }
 
-        internal NSJSStackFrame(ref NSJSStructural.NSJSStackFrame stackFrame)
+        public override string ToString()
         {
-            this.Column = stackFrame.Column;
-            this.FunctionName = new string((sbyte*)stackFrame.FunctionName);
-            NSJSMemoryManagement.Free(stackFrame.FunctionName);
-            this.IsConstructor = stackFrame.IsConstructor;
-            this.IsEval = stackFrame.IsEval;
-            this.IsWasm = stackFrame.IsWasm;
-            this.LineNumber = stackFrame.LineNumber;
-            this.ScriptId = stackFrame.ScriptId;
-            this.ScriptName = new string((sbyte*)stackFrame.ScriptName);
-            NSJSMemoryManagement.Free(stackFrame.ScriptName);
-            this.ScriptName = new string((sbyte*)stackFrame.ScriptNameOrSourceURL);
-            NSJSMemoryManagement.Free(stackFrame.ScriptNameOrSourceURL);
+            string s = string.Format("    at {0}", this.FunctionName);
+            bool parentheses = !string.IsNullOrEmpty(this.FunctionName);
+            if (parentheses)
+            {
+                s += " (";
+            }
+            string scriptname = this.ScriptName;
+            if (string.IsNullOrEmpty(scriptname))
+            {
+                scriptname = "anonymous";
+            }
+            s += string.Format("<{0}>:{1}:{2}", scriptname, this.LineNumber, this.Column);
+            if (parentheses)
+            {
+                s += ')';
+            }
+            return s;
+        }
+
+        internal NSJSStackFrame(NSJSStructural.NSJSStackFrame* stackframe)
+        {
+            if (stackframe == null)
+            {
+                throw new ArgumentNullException("stackframe");
+            }
+            this.Column = stackframe->Column;
+            this.FunctionName = new string((sbyte*)stackframe->FunctionName);
+            NSJSMemoryManagement.Free(stackframe->FunctionName);
+            this.IsConstructor = stackframe->IsConstructor;
+            this.IsEval = stackframe->IsEval;
+            this.IsWasm = stackframe->IsWasm;
+            this.LineNumber = stackframe->LineNumber;
+            this.ScriptId = stackframe->ScriptId;
+            this.ScriptName = new string((sbyte*)stackframe->ScriptName);
+            NSJSMemoryManagement.Free(stackframe->ScriptName);
+            this.ScriptNameOrSourceURL = new string((sbyte*)stackframe->ScriptNameOrSourceURL);
+            NSJSMemoryManagement.Free(stackframe->ScriptNameOrSourceURL);
             // memset
-            stackFrame.Column = 0;
-            stackFrame.FunctionName = NULL;
-            stackFrame.IsConstructor = false;
-            stackFrame.IsEval = false;
-            stackFrame.IsWasm = false;
-            stackFrame.LineNumber = 0;
-            stackFrame.ScriptId = 0;
-            stackFrame.ScriptName = NULL;
-            stackFrame.ScriptNameOrSourceURL = NULL;
+            stackframe->Reset();
         }
     }
 }
