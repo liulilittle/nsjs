@@ -6,7 +6,7 @@
 
     public class NSJSKeyValueCollection
     {
-        private static readonly ConcurrentDictionary<NSJSVirtualMachine, ConcurrentDictionary<int, object>> tables =
+        private static readonly ConcurrentDictionary<NSJSVirtualMachine, ConcurrentDictionary<int, object>> kvtables =
             new ConcurrentDictionary<NSJSVirtualMachine, ConcurrentDictionary<int, object>>();
         private const int NULL = 0;
 
@@ -25,32 +25,37 @@
             {
                 return false;
             }
-            return GetBundles(machine).AddOrUpdate(key, value, (i, oldValue) => value) == value;
+            return GetTable(machine).AddOrUpdate(key, value, (i, oldValue) => value) == value;
         }
 
         public static IEnumerable<NSJSVirtualMachine> GetAllVirtualMachine()
         {
-            return tables.Keys;
+            return kvtables.Keys;
         }
 
         public static int GetCount()
         {
-            return tables.Count;
+            return kvtables.Count;
         }
 
-        private static ConcurrentDictionary<int, object> GetBundles(NSJSVirtualMachine machine)
+        private static ConcurrentDictionary<int, object> GetTable(NSJSVirtualMachine machine)
         {
             if (machine == null)
             {
                 throw new ArgumentNullException("machine");
             }
-            ConcurrentDictionary<int, object> dictionary;
-            lock (tables)
+            if (machine.IsDisposed)
             {
-                if (!tables.TryGetValue(machine, out dictionary))
+                throw new ObjectDisposedException("machine");
+            }
+            ConcurrentDictionary<int, object> dictionary;
+            lock (kvtables)
+            {
+                if (!kvtables.TryGetValue(machine, out dictionary))
                 {
                     dictionary = new ConcurrentDictionary<int, object>();
-                    tables.TryAdd(machine, dictionary);
+                    machine.Disposed += (sender, e) => ReleaseAll(machine);
+                    kvtables.TryAdd(machine, dictionary);
                 }
             }
             return dictionary;
@@ -71,9 +76,9 @@
             {
                 return null;
             }
-            ConcurrentDictionary<int, object> bundles = GetBundles(machine);
+            ConcurrentDictionary<int, object> table = GetTable(machine);
             object value;
-            bundles.TryGetValue(key, out value);
+            table.TryGetValue(key, out value);
             return value;
         }
 
@@ -165,43 +170,43 @@
                 value = null;
                 return false;
             }
-            ConcurrentDictionary<int, object> bundles = GetBundles(machine);
-            return bundles.TryRemove(key, out value);
+            ConcurrentDictionary<int, object> table = GetTable(machine);
+            return table.TryRemove(key, out value);
         }
 
         public static IEnumerable<int> GetAllKey(NSJSVirtualMachine machine)
         {
-            ConcurrentDictionary<int, object> bundles = GetBundles(machine);
-            return bundles.Keys;
+            ConcurrentDictionary<int, object> table = GetTable(machine);
+            return table.Keys;
         }
 
         public static IEnumerable<object> GetAllValue(NSJSVirtualMachine machine)
         {
-            ConcurrentDictionary<int, object> bundles = GetBundles(machine);
-            return bundles.Values;
+            ConcurrentDictionary<int, object> table = GetTable(machine);
+            return table.Values;
         }
 
         public static int GetCount(NSJSVirtualMachine machine)
         {
-            return GetBundles(machine).Count;
+            return GetTable(machine).Count;
         }
 
         public static void ReleaseAll(NSJSVirtualMachine machine)
         {
-            lock (tables)
+            lock (kvtables)
             {
                 ConcurrentDictionary<int, object> dictionary;
-                if (tables.TryGetValue(machine, out dictionary))
+                if (kvtables.TryGetValue(machine, out dictionary))
                 {
                     dictionary.Clear();
-                    tables.TryRemove(machine, out dictionary);
+                    kvtables.TryRemove(machine, out dictionary);
                 }
             }
         }
 
         public static void ReleaseAll()
         {
-            tables.Clear();
+            kvtables.Clear();
         }
     }
 }

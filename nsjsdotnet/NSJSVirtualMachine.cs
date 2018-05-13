@@ -219,12 +219,21 @@
                     runings.Clear();
                     NSJSVirtualMachine machine;
                     machines.TryRemove(this.Handle, out machine);
-                    NSJSKeyValueCollection.ReleaseAll(this);
+                    this.OnDisposed(EventArgs.Empty);
                     cookie.Free();
                     nsjs_virtualmachine_free(this.Handle);
                 }
             }
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual void OnDisposed(EventArgs e)
+        {
+            EventHandler evt = this.Disposed;
+            if (evt != null)
+            {
+                evt(this, EventArgs.Empty);
+            }
         }
 
         private static readonly IntPtr NULL = IntPtr.Zero;
@@ -261,6 +270,15 @@
 
         public virtual event EventHandler<NSJSUnhandledExceptionEventArgs> UnhandledException = null;
         public virtual event EventHandler<NSJSMessage> Message = null;
+        public virtual event EventHandler Disposed = null;
+
+        public bool IsDisposed
+        {
+            get
+            {
+                return this.disposed;
+            }
+        }
 
         public IntPtr Handle
         {

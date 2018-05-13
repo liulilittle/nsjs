@@ -161,9 +161,17 @@
             }
         }
 
-        public void Abort()
+        public bool Abort()
         {
-            response.Abort();
+            try
+            {
+                response.Abort();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public bool AddHeader(string name, string value)

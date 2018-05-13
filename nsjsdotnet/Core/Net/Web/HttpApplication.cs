@@ -65,25 +65,26 @@
             {
                 throw new ArgumentNullException("e");
             }
+            HttpListenerResponse response = e.Response;
             try
             {
-                e.Response.Headers.Add(HttpResponseHeader.Server, string.Empty);
+                response.AppendHeader("Server", string.Empty);
                 if (!string.IsNullOrEmpty(Name))
                 {
-                    e.Response.AppendHeader("Server-Name", Name);
+                    response.AppendHeader("Server-Name", Name);
                 }
-                e.Response.StatusCode = 404;
+                response.StatusCode = 404;
                 HttpFileModule module = new HttpFileModule(this, e);
                 if (!module.Handle())
                 {
                     IHttpHandler currentHandler = this.Handler;
                     if (currentHandler == null)
                     {
-                        e.Response.Close();
+                        response.Close();
                     }
                     else
                     {
-                        HttpContext context = new HttpContext(new HttpRequest(e.Request), new HttpResponse(e.Response)
+                        HttpContext context = new HttpContext(new HttpRequest(e.Request), new HttpResponse(response)
                         {
                             ContentType = "text/html",
                             StatusCode = 200,
@@ -93,50 +94,49 @@
                             Handler = currentHandler
                         };
                         currentHandler.ProcessRequest(context);
-                        context.Response.End();
                     }
                 }
             }
-            catch (Exception) { /**/ }
+            catch (Exception) { /*------------------------------------------A------------------------------------------*/ }
+            try
+            {
+                response.Close();
+            }
+            catch (Exception) { /*------------------------------------------W------------------------------------------*/ }
         }
 
         public void Start(params string[] prefixes)
         {
-            Start(prefixes as IList<string>);
+            this.Start(prefixes as IList<string>);
         }
 
         public void Start(IList<string> prefixes)
         {
             lock (this)
             {
-                if (communication != null)
+                if (this.communication != null)
                 {
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException("this");
                 }
-                communication = new HttpCommunication();
-                communication.Received = Received;
-                communication.Start(prefixes);
+                this.communication = new HttpCommunication();
+                this.communication.Received = (sender, e) => this.OnReceived(e);
+                this.communication.Start(prefixes);
             }
-        }
-
-        private void Received(object sender, HttpListenerContext context)
-        {
-            this.OnReceived(context);
         }
 
         protected virtual void OnReceived(HttpListenerContext context)
         {
-            OnPretreatmentContext(context);
+            this.OnPretreatmentContext(context);
         }
 
         public void Stop()
         {
             lock (this)
             {
-                if (communication != null)
+                if (this.communication != null)
                 {
-                    communication.Stop();
-                    communication = null;
+                    this.communication.Stop();
+                    this.communication = null;
                 }
             }
         }

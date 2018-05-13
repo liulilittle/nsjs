@@ -70,7 +70,7 @@
                 {
                     NSJSVirtualMachine machine = arguments.VirtualMachine;
                     callback.CrossThreading = true;
-                    TIMER timer = new TIMER();
+                    TIMER timer = NSJSTimerScheduler.New(arguments.VirtualMachine);
                     IList<NSJSValue> argv = new List<NSJSValue>();
                     for (int i = 2; i < arguments.Length; i++)
                     {

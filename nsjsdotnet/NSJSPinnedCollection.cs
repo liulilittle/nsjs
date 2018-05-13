@@ -4,14 +4,13 @@
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
-    using System.Threading;
+    using Timer = nsjsdotnet.Core.Threading.Timer;
 
     public static class NSJSPinnedCollection
     {
         private static readonly IntPtr NULL = IntPtr.Zero;
         private static IDictionary<IntPtr, PinnedContext> contexts = new ConcurrentDictionary<IntPtr, PinnedContext>();
-        private static readonly Thread maintenanceThread;
-        private static int maintenanceInterval;
+        private static readonly Timer maintenanceTimer; 
 
         private class PinnedContext
         {
@@ -24,28 +23,23 @@
 
         static NSJSPinnedCollection()
         {
-            NSJSPinnedCollection.maintenanceInterval = 100;
-            NSJSPinnedCollection.maintenanceThread = new Thread(() =>
+            maintenanceTimer = NSJSTimerScheduler.New();
+            maintenanceTimer.Tick += (sender, e) =>
             {
-                while (true)
+                foreach (PinnedContext context in contexts.Values)
                 {
-                    foreach (PinnedContext context in contexts.Values)
+                    if (context == null || context.LifeCycle == Infinite)
                     {
-                        if (context == null || context.LifeCycle == Infinite)
-                        {
-                            continue;
-                        }
-                        if (((DateTime.Now - context.PinnedTime).TotalMilliseconds) > context.LifeCycle)
-                        {
-                            Release(context.Address);
-                        }
+                        continue;
                     }
-                    Thread.Sleep(NSJSPinnedCollection.maintenanceInterval);
+                    if (((DateTime.Now - context.PinnedTime).TotalMilliseconds) > context.LifeCycle)
+                    {
+                        Release(context.Address);
+                    }
                 }
-            });
-            NSJSPinnedCollection.maintenanceThread.IsBackground = true;
-            NSJSPinnedCollection.maintenanceThread.Priority = ThreadPriority.Lowest;
-            NSJSPinnedCollection.maintenanceThread.Start();
+            };
+            maintenanceTimer.Interval = 100;
+            maintenanceTimer.Enabled = true;
         }
 
         public const int Infinite = -1;
@@ -54,7 +48,7 @@
         {
             get
             {
-                return NSJSPinnedCollection.maintenanceInterval;
+                return maintenanceTimer.Interval;
             }
             set
             {
@@ -62,7 +56,7 @@
                 {
                     throw new ArgumentOutOfRangeException("value");
                 }
-                NSJSPinnedCollection.maintenanceInterval = value;
+                maintenanceTimer.Interval = value;
             }
         }
 

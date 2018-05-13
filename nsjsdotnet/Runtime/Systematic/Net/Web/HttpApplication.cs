@@ -4,7 +4,6 @@
     using nsjsdotnet.Core.Linq;
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using HTTPApplication = nsjsdotnet.Core.Net.Web.HttpApplication;
     using HTTPContext = nsjsdotnet.Core.Net.Web.HttpContext;
     using IHTTPHandler = nsjsdotnet.Core.Net.Web.IHttpHandler;
@@ -105,7 +104,24 @@
 
             public void ProcessRequest(HTTPContext context)
             {
-                this.OnProcessRequest(context);
+                NSJSVirtualMachine machine = this.GetVirtualMachine();
+                machine.Join((sender, state) =>
+                {
+                    NSJSFunction function = this.GetProcessRequestCallback();
+                    if (function != null)
+                    {
+                        NSJSObject context_object = null;
+                        try
+                        {
+                            context_object = this.NewContextObject(context);
+                        }
+                        catch (Exception) { /*-----*/ }
+                        if (context_object != null)
+                        {
+                            function.Call(context_object);
+                        }
+                    }
+                });
             }
 
             public NSJSObject NewContextObject(HTTPContext context)
@@ -122,27 +138,6 @@
                 objective.Set("Request", HttpRequest.New(machine, objective, context.Request));
                 objective.Set("Response", HttpResponse.New(machine, objective, context.Response));
                 return objective;
-            }
-
-            protected virtual void OnProcessRequest(HTTPContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException("context");
-                }
-                NSJSVirtualMachine machine = this.GetVirtualMachine();
-                Stopwatch stopwatch = new Stopwatch();
-                stopwatch.Start();
-                machine.Join((sender, state) =>
-                {
-                    NSJSFunction function = this.GetProcessRequestCallback();
-                    if (function != null)
-                    {
-                        NSJSObject context_object = this.NewContextObject(context);
-                        function.Call(context_object);
-                    }
-                });
-                stopwatch.Stop();
             }
         }
 
@@ -163,7 +158,7 @@
                     application.Stop();
                     success = true;
                 }
-                catch (Exception) { }
+                catch (Exception) { /*---------------------------------------------------------*/ }
                 arguments.SetReturnValue(success);
             }
         }
@@ -183,7 +178,7 @@
             }
             else
             {
-                arguments.SetReturnValue(application.Name ?? string.Empty);
+                arguments.SetReturnValue(application.Name);
             }
         }
 
@@ -217,7 +212,7 @@
             }
             else
             {
-                arguments.SetReturnValue(application.Root ?? string.Empty);
+                arguments.SetReturnValue(application.Root);
             }
         }
 
@@ -243,7 +238,7 @@
         private static void New(IntPtr info)
         {
             NSJSFunctionCallbackInfo arguments = NSJSFunctionCallbackInfo.From(info);
-            arguments.SetReturnValue(HttpApplication.New(arguments.VirtualMachine, new HTTPApplication()));
+            arguments.SetReturnValue(New(arguments.VirtualMachine, new HTTPApplication()));
         }
 
         private static void Start(IntPtr info)

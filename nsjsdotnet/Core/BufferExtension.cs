@@ -89,19 +89,18 @@
             {
                 return;
             }
-            src += ofs;
-            int num = len / sizeof(long);
-            int size = 0;
+            src = &src[ofs];
+            int count = (len / sizeof(long));
+            byte* end = &src[len];
             long* x = (long*)src;
             long* y = (long*)dest;
-            for (int i = 0; i < num; i++)
+            for (int i = 0; i < count; i++)
             {
                 *y++ = *x++;
-                size += sizeof(long);
             }
-            dest += size;
-            src += size;
-            for (int i = size; i < len; i++)
+            src = (byte*)x;
+            dest = (byte*)y;
+            for (; src != end;)
             {
                 *dest++ = *src++;
             }

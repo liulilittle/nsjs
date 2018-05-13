@@ -1,14 +1,11 @@
 ﻿namespace nsjsdotnet.Core.Net.Web
 {
-    using nsjsdotnet.Core.Threading;
     using System;
     using System.Collections.Generic;
     using System.Net;
-    using System.Threading;
 
     class HttpCommunication
     {
-        private GetContextThreadRunnable runnable = null;
         private HttpListener server = null;
         private readonly object locker = new object();
 
@@ -18,67 +15,41 @@
             set;
         }
 
-        private class GetContextThreadRunnable : IDisposable
+        private void InternalGetContextAsyncCycleLooper(IAsyncResult result)
         {
-            private bool disposed = false;
-            private HttpCommunication communication = null;
-            private Thread runnable = null;
-
-            public GetContextThreadRunnable(HttpCommunication communication)
+            do
             {
-                this.communication = communication;
-            }
-
-            ~GetContextThreadRunnable()
-            {
-                this.Dispose();
-            }
-
-            public void Dispose()
-            {
-                lock (this)
+                if (server == null)
                 {
-                    this.disposed = false;
+                    break;
                 }
-                GC.SuppressFinalize(this);
-            }
-
-            public void Run()
-            {
-                lock (this)
+                else if (result == null)
                 {
-                    if (this.disposed)
-                    {
-                        throw new ObjectDisposedException(typeof(GetContextThreadRunnable).Name);
-                    }
-                    if (this.runnable == null)
-                    {
-                        this.runnable = new Thread(this.Handle);
-                        this.runnable.Start();
-                    }
-                }
-            }
-
-            private void Handle()
-            {
-                while (!this.disposed)
-                {
-                    HttpListenerContext context = null;
                     try
                     {
-                        context = this.communication.server.GetContext();
+                        server.BeginGetContext(InternalGetContextAsyncCycleLooper, null);
                     }
-                    catch (Exception)
-                    {
-                        Waitable.usleep(25);
-                    }
-                    Action<object, HttpListenerContext> received = this.communication.Received;
-                    if (context != null && received != null)
-                    {
-                        received(this, context);
-                    }
+                    catch (Exception) { break; }
                 }
-            }
+                else
+                {
+                    try
+                    {
+                        HttpListenerContext context = server.EndGetContext(result);
+                        if (context == null)
+                        {
+                            break;
+                        }
+                        Action<object, HttpListenerContext> received = this.Received;
+                        if (received != null)
+                        {
+                            received(this, context);
+                        }
+                    }
+                    catch (Exception) { break; }
+                    this.InternalGetContextAsyncCycleLooper(null);
+                }
+            } while (false);
         }
 
         public void Start(IList<string> prefixes)
@@ -96,11 +67,7 @@
                     s.Add(prefixe);
                 }
                 this.server.Start();
-                if (this.runnable == null)
-                {
-                    this.runnable = new GetContextThreadRunnable(this);
-                    this.runnable.Run();
-                }
+                this.InternalGetContextAsyncCycleLooper(null);
             }
         }
 
@@ -108,11 +75,6 @@
         {
             lock (this.locker)
             {
-                if (this.runnable != null)
-                {
-                    this.runnable.Dispose();
-                    this.runnable = null;
-                }
                 if (this.server != null)
                 {
                     try

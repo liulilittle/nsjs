@@ -186,8 +186,15 @@
                 }
                 else
                 {
-                    set(response, arguments, arguments[0]);
-                    arguments.SetReturnValue(true);
+                    try
+                    {
+                        set(response, arguments, arguments[0]);
+                        arguments.SetReturnValue(true);
+                    }
+                    catch (Exception exception)
+                    {
+                        Throwable.Exception(arguments.VirtualMachine, exception);
+                    }
                 }
             }
         }
@@ -439,7 +446,14 @@
             }
             else
             {
-                doo(self, arguments);
+                try
+                {
+                    doo(self, arguments);
+                }
+                catch (Exception exception)
+                {
+                    Throwable.Exception(arguments.VirtualMachine, exception);
+                }
             }
         }
 
@@ -457,8 +471,15 @@
             }
             else
             {
-                NSJSValue solt0 = arguments.Length > 0 ? arguments[0] : null;
-                doo(self, arguments, solt0);
+                try
+                {
+                    NSJSValue solt0 = arguments.Length > 0 ? arguments[0] : null;
+                    doo(self, arguments, solt0);
+                }
+                catch (Exception exception)
+                {
+                    Throwable.Exception(arguments.VirtualMachine, exception);
+                }
             }
         }
 

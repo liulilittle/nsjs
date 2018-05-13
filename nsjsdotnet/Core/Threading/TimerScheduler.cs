@@ -5,11 +5,11 @@
     using System.Collections.Generic;
     using System.Threading;
 
-    public sealed class TimerScheduler : IDisposable
+    public class TimerScheduler : IDisposable
     {
         private static readonly TimerScheduler _default = new TimerScheduler();
 
-        private readonly Thread _mta;
+        private Thread _mta;
         private bool _disposed;
         private readonly LinkedList<Timer> _s;
         private LinkedListIterator<Timer> _i;
@@ -41,44 +41,78 @@
             _m = new Dictionary<Timer, LinkedListNode<Timer>>();
             _s = new LinkedList<Timer>();
             _i = new LinkedListIterator<Timer>(this, _s);
-            _mta = new Thread(() =>
+        }
+
+        private bool Run()
+        {
+            lock (this)
             {
-                while (!_disposed)
+                if (_disposed)
                 {
-                    LinkedListNode<Timer> n = _i++.Node;
-                    do
-                    {
-                        if (n == null)
-                            break;
-                        Timer t = n.Value;
-                        if (t == null || !t.Enabled)
-                            break;
-                        DateTime? lt = t._lasttime;
-                        if (lt == null)
-                            break;
-                        TimeSpan ts = (DateTime.Now - lt.Value);
-                        if (ts.TotalMilliseconds < t.Interval)
-                            break;
-                        t._lasttime = DateTime.Now;
-                        t.DoTickEvent();
-                    } while (false);
-                    Waitable.usleep(25);
+                    return false;
                 }
-            });
-            _mta.IsBackground = true;
-            _mta.Start();
+                if (_mta != null)
+                {
+                    return false;
+                }
+                _mta = new Thread(() =>
+                {
+                    while (!_disposed)
+                    {
+                        LinkedListNode<Timer> n = _i++.Node;
+                        do
+                        {
+                            if (n == null)
+                            {
+                                break;
+                            }
+                            Timer t = n.Value;
+                            if (t == null || !t.Enabled)
+                            {
+                                break;
+                            }
+                            DateTime? lt = t._lasttime;
+                            if (lt == null)
+                            {
+                                break;
+                            }
+                            TimeSpan ts = (DateTime.Now - lt.Value);
+                            if (ts.TotalMilliseconds < t.Interval)
+                            {
+                                break;
+                            }
+                            t._lasttime = DateTime.Now;
+                            t.DoTickEvent();
+                        } while (false);
+                        Waitable.usleep(25);
+                    }
+                });
+                _mta.IsBackground = true;
+                _mta.Priority = ThreadPriority.Lowest;
+                _mta.Start();
+                return true;
+            }
         }
 
         internal bool Start(Timer timer)
         {
             lock (this)
             {
+                if (_disposed)
+                {
+                    return false;
+                }
                 if (timer == null)
+                {
                     return false;
+                }
                 if (_m.ContainsKey(timer))
+                {
                     return false;
+                }
                 LinkedListNode<Timer> n = _s.AddLast(timer);
                 _m.Add(timer, n);
+                this.Run();
                 return true;
             }
         }
@@ -87,11 +121,19 @@
         {
             lock (this)
             {
-                if (timer == null)
+                if (_disposed)
+                {
                     return false;
+                }
+                if (timer == null)
+                {
+                    return false;
+                }
                 LinkedListNode<Timer> n;
                 if (!_m.TryGetValue(timer, out n))
+                {
                     return false;
+                }
                 _s.Remove(n);
                 _m.Remove(timer);
                 _i.Remove(n);
@@ -115,5 +157,4 @@
             GC.SuppressFinalize(this);
         }
     }
-
 }

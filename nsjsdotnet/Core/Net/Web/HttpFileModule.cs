@@ -7,7 +7,7 @@
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
 
-    class HttpFileModule
+    sealed class HttpFileModule
     {
         private HttpListenerContext context = null;
         private HttpListenerRequest request = null;
@@ -24,7 +24,7 @@
             this.response = context.Response;
         }
 
-        static class NativeMethods
+        private static class NativeMethods
         {
             [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
             public static extern IntPtr _lopen(string lpPathName, int iReadWrite);
@@ -56,21 +56,14 @@
             public static readonly IntPtr INVALID_HANDLE_VALUE = unchecked((IntPtr)(-1));
             public static readonly IntPtr NULL = IntPtr.Zero;
             public const int OF_SHARE_COMPAT = 0;
-            // public const int PAGE_READONLY = 2;
+            public const int PAGE_READONLY = 2;
             public const int PAGE_READWRITE = 4;
             public const int FILE_MAP_READ = 4;
             public const int FILE_MAP_WRITE = 2;
             public const int OF_READWRITE = 2;
-
-            public static bool FileExits(string path)
-            {
-                IntPtr hFile = NativeMethods._lopen(path, NativeMethods.OF_SHARE_COMPAT | NativeMethods.OF_READWRITE);
-                CloseHandle(hFile);
-                return hFile == NativeMethods.INVALID_HANDLE_VALUE;
-            }
         }
 
-        private int GetMethod()
+        private int GetMethodId()
         {
             if (methodid == -1)
             {
@@ -109,210 +102,240 @@
 
         public bool Handle()
         {
-            int method = GetMethod();
-            if (method != 1 && method != 3)
+            int methodid = this.GetMethodId();
+            if (methodid != 1 && methodid != 3)
             {
                 return false;
             }
             string path = (application.Root + request.Url.LocalPath);
-            IntPtr hFile = NativeMethods._lopen(path, NativeMethods.OF_SHARE_COMPAT | NativeMethods.OF_READWRITE);
-            if (hFile == NativeMethods.INVALID_HANDLE_VALUE)
+            if (string.IsNullOrEmpty(path))
             {
                 return false;
             }
-            NativeMethods._lclose(hFile);
+            path = Path.GetFullPath(path);
+            if (!File.Exists(path))
+            {
+                return false;
+            }
             string ext = Path.GetExtension(path);
             if (string.IsNullOrEmpty(ext))
             {
                 return false;
             }
-            response.ContentType = HttpContentTypes.Get(ext = ext.ToLower());
-            if (string.IsNullOrEmpty(response.ContentType))
+            try
             {
-                response.ContentType = "application/octet-stream";
+                response.ContentType = HttpContentTypes.Get(ext = ext.ToLower());
+                if (string.IsNullOrEmpty(response.ContentType))
+                {
+                    response.ContentType = "application/octet-stream";
+                }
+                this.ProcessReponse(methodid, path);
             }
-            ProcessReponse(method, path);
+            catch (Exception)
+            {
+                return false;
+            }
             return true;
         }
 
         private bool TryGetRange(out int? from, out int? to)
         {
-            string range = request.Headers["Range"];
-            from = null;
-            to = null;
-            if (!string.IsNullOrEmpty(range))
+            try
             {
-                range = range.ToLower();
-                Match match = Regex.Match(range, "bytes[=|\\s](\\d+)-(\\d+)*");
-                if (match.Success)
+                string range = request.Headers["Range"];
+                from = null;
+                to = null;
+                if (!string.IsNullOrEmpty(range))
                 {
-                    int start;
-                    if (int.TryParse(match.Groups[1].Value, out start))
+                    range = range.ToLower();
+                    Match match = Regex.Match(range, "bytes[=|\\s](\\d+)-(\\d+)*");
+                    if (match.Success)
                     {
-                        from = start;
-                    }
-                    int end;
-                    if (int.TryParse(match.Groups[2].Value, out end))
-                    {
-                        to = end;
+                        int start;
+                        if (int.TryParse(match.Groups[1].Value, out start))
+                        {
+                            from = start;
+                        }
+                        int end;
+                        if (int.TryParse(match.Groups[2].Value, out end))
+                        {
+                            to = end;
+                        }
                     }
                 }
+                return from != null;
             }
-            return from != null;
+            catch (Exception)
+            {
+                from = null;
+                to = null;
+                return false;
+            }
         }
 
-        private void ProcessReponse(int method, string path)
+        private void ProcessReponse(int methodid, string path)
         {
-            if (method == 1)
+            try
             {
-                int? from;
-                int? to;
-                TryGetRange(out from, out to);
-                ProcessStream(path, from, to);
+                if (methodid == 1)
+                {
+                    int? from;
+                    int? to;
+                    this.TryGetRange(out from, out to);
+                    this.ProcessStream(path, from, to);
+                }
+                else if (methodid == 3)
+                {
+                    this.ProcessStreamSize(path);
+                }
+                else
+                {
+                    response.StatusCode = 405;
+                }
             }
-            else if (method == 3)
-            {
-                ProcessStreamSize(path);
-            }
-            else
-            {
-                response.StatusCode = 405;
-            }
+            catch (Exception) { /*--A--*/ }
         }
 
         private void ProcessStreamSize(string path)
         {
-            IntPtr hFile = NativeMethods._lopen(path, NativeMethods.OF_SHARE_COMPAT | NativeMethods.OF_READWRITE);
+            IntPtr hf = NativeMethods._lopen(path, NativeMethods.OF_SHARE_COMPAT | NativeMethods.OF_READWRITE);
             do
             {
-                response.StatusCode = 500;
-                if (hFile == NativeMethods.INVALID_HANDLE_VALUE)
+                try
                 {
-                    break;
-                }
-                else
-                {
-                    long size = 0;
-                    if (!NativeMethods.GetFileSizeEx(hFile, ref size))
+                    response.StatusCode = 500;
+                    if (hf == NativeMethods.INVALID_HANDLE_VALUE)
                     {
                         break;
                     }
-                    response.StatusCode = 200;
-                    response.ContentLength64 = size;
+                    else
+                    {
+                        long size = 0;
+                        if (!NativeMethods.GetFileSizeEx(hf, ref size))
+                        {
+                            break;
+                        }
+                        response.StatusCode = 200;
+                        response.ContentLength64 = size;
+                    }
                 }
+                catch (Exception) { /*--A--*/ }
             } while (false);
-            if (hFile != NativeMethods.INVALID_HANDLE_VALUE)
+            if (hf != NativeMethods.INVALID_HANDLE_VALUE)
             {
-                NativeMethods._lclose(hFile);
+                NativeMethods._lclose(hf);
             }
-            response.Close();
         }
 
         private unsafe void ProcessStream(string path, Action<IntPtr, long> callback)
         {
-            IntPtr hFile = NativeMethods.INVALID_HANDLE_VALUE;
-            IntPtr hMap = NativeMethods.NULL;
-            IntPtr pLow = NativeMethods.NULL;
+            IntPtr hf = NativeMethods.INVALID_HANDLE_VALUE;
+            IntPtr hm = NativeMethods.NULL;
+            IntPtr pl = NativeMethods.NULL;
             do
             {
-                hFile = NativeMethods._lopen(path, NativeMethods.OF_SHARE_COMPAT | NativeMethods.OF_READWRITE);
-                if (hFile == NativeMethods.INVALID_HANDLE_VALUE)
+                hf = NativeMethods._lopen(path, NativeMethods.OF_SHARE_COMPAT | NativeMethods.OF_READWRITE);
+                if (hf == NativeMethods.INVALID_HANDLE_VALUE)
                 {
                     break;
                 }
                 long size = 0;
-                if (!NativeMethods.GetFileSizeEx(hFile, ref size) || size <= 0)
+                if (!NativeMethods.GetFileSizeEx(hf, ref size) || size <= 0)
                 {
                     break;
                 }
-                hMap = NativeMethods.CreateFileMapping(hFile, NativeMethods.NULL, NativeMethods.PAGE_READWRITE, (uint)(size >> 32), (uint)size, null);
-                if (hMap == NativeMethods.NULL)
+                hm = NativeMethods.CreateFileMapping(hf, NativeMethods.NULL, NativeMethods.PAGE_READWRITE, unchecked((uint)(size >> 32)), unchecked((uint)size), null);
+                if (hm == NativeMethods.NULL)
                 {
                     break;
                 }
-                pLow = NativeMethods.MapViewOfFile(hMap, NativeMethods.FILE_MAP_READ | NativeMethods.FILE_MAP_WRITE, 0, 0, NativeMethods.NULL);
-                if (pLow == NativeMethods.NULL)
+                pl = NativeMethods.MapViewOfFile(hm, NativeMethods.FILE_MAP_READ | NativeMethods.FILE_MAP_WRITE, 0, 0, NativeMethods.NULL);
+                if (pl == NativeMethods.NULL)
                 {
                     break;
                 }
                 if (callback != null)
                 {
-                    callback(pLow, size);
+                    callback(pl, size);
                 }
             } while (false);
-            if (pLow != NativeMethods.NULL)
+            if (pl != NativeMethods.NULL)
             {
-                NativeMethods.UnmapViewOfFile(pLow);
+                NativeMethods.UnmapViewOfFile(pl);
             }
-            if (hMap != NativeMethods.NULL)
+            if (hm != NativeMethods.NULL)
             {
-                NativeMethods._lclose(hMap);
+                NativeMethods._lclose(hm);
             }
-            if (hFile != NativeMethods.INVALID_HANDLE_VALUE)
+            if (hf != NativeMethods.INVALID_HANDLE_VALUE)
             {
-                NativeMethods.CloseHandle(hFile);
+                NativeMethods.CloseHandle(hf);
             }
         }
 
         private unsafe void ProcessStream(string path, int? from, int? to)
         {
-            response.Headers.Add(HttpResponseHeader.AcceptRanges, "bytes");
-            ProcessStream(path, (pfile, size) =>
+            try
             {
-                try
+                response.Headers.Add(HttpResponseHeader.AcceptRanges, "bytes");
+                this.ProcessStream(path, (pfile, size) =>
                 {
-                    response.StatusCode = 200;
-                    byte* buffer = (byte*)pfile;
-                    if (!from.HasValue) // range
+                    try
                     {
-                        response.ContentLength64 = size;
-                    }
-                    else if (!from.HasValue && to.HasValue)
-                    {
-                        buffer += (size - to.Value);
-                        size = to.Value;
-                        response.StatusCode = 206;
-                    }
-                    else
-                    {
-                        buffer += from.Value;
-                        long len = (size - from.Value);
-                        if (len < size)
+                        response.StatusCode = 200;
+                        byte* buffer = (byte*)pfile;
+                        if (!from.HasValue) // range
                         {
-                            size = len;
+                            response.ContentLength64 = size;
+                        }
+                        else if (!from.HasValue && to.HasValue)
+                        {
+                            buffer += (size - to.Value);
+                            size = to.Value;
                             response.StatusCode = 206;
                         }
-                        if (to.HasValue)
+                        else
                         {
-                            len = (to.Value - from.Value);
-                            size = len;
-                            response.StatusCode = 206;
-                        }
-                        response.ContentLength64 = size;
-                    }
-                    if (size > 0)
-                    {
-                        Stream s = response.OutputStream;
-                        byte[] chunk = new byte[570];
-                        long ofs = 0;
-                        while (ofs < size)
-                        {
-                            long chunksize = (size - ofs);
-                            if (chunksize > chunk.Length)
+                            buffer += from.Value;
+                            long len = (size - from.Value);
+                            if (len < size)
                             {
-                                chunksize = chunk.Length;
+                                size = len;
+                                response.StatusCode = 206;
                             }
-                            BufferExtension.memcpy(&buffer[ofs], chunk, 0, (int)chunksize);
-                            s.Write(chunk, 0, (int)chunksize);
-                            ofs += chunksize;
+                            if (to.HasValue)
+                            {
+                                len = (to.Value - from.Value);
+                                size = len;
+                                response.StatusCode = 206;
+                            }
+                            response.ContentLength64 = size;
+                        }
+                        if (size > 0)
+                        {
+                            Stream s = response.OutputStream;
+                            byte[] chunk = new byte[570];
+                            int ofs = 0;
+                            while (ofs < size)
+                            {
+                                int chunksize = unchecked((int)(size - ofs));
+                                if (chunksize > chunk.Length)
+                                {
+                                    chunksize = chunk.Length;
+                                }
+                                BufferExtension.memcpy(&buffer[ofs], chunk, 0, chunksize);
+                                s.Write(chunk, 0, chunksize);
+                                ofs += chunksize;
+                            }
                         }
                     }
-                }
-                catch (Exception)
-                {
-                    response.StatusCode = 500;
-                }
-            });
+                    catch (Exception)
+                    {
+                        response.StatusCode = 500;
+                    }
+                });
+            }
+            catch (Exception) { /*--A--*/ }
             response.Close();
         }
     }

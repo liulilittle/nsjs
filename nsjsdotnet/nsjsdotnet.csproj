@@ -157,6 +157,7 @@
     <Compile Include="Core\Linq\Enumerable.cs" />
     <Compile Include="Core\IO\FileAuxiliary.cs" />
     <Compile Include="Core\IO\LZ77Auxiliary.cs" />
+    <Compile Include="NSJSTimerScheduler.cs" />
     <Compile Include="NSJSStackFrame.cs" />
     <Compile Include="NSJSStackTrace.cs" />
     <Compile Include="NSJSStructural.cs" />
