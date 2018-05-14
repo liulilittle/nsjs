@@ -210,7 +210,11 @@
                 throw new ArgumentNullException("executing");
             }
             DATATableGateway gateway = GetGateway(arguments.This);
-            if (arguments.Length <= 0)
+            if (gateway == null)
+            {
+                Throwable.ObjectDisposedException(arguments.VirtualMachine);
+            }
+            else if (arguments.Length <= 0)
             {
                 Throwable.ObjectDisposedException(arguments.VirtualMachine);
             }
