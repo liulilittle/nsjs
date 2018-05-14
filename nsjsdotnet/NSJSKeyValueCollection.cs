@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Diagnostics;
 
     public class NSJSKeyValueCollection
     {
@@ -48,17 +49,16 @@
             {
                 throw new ObjectDisposedException("machine");
             }
-            ConcurrentDictionary<int, object> dictionary;
             lock (kvtables)
             {
-                if (!kvtables.TryGetValue(machine, out dictionary))
+                return kvtables.GetOrAdd(machine, (key) =>
                 {
-                    dictionary = new ConcurrentDictionary<int, object>();
+                    var dictionary = new ConcurrentDictionary<int, object>();
                     machine.Disposed += (sender, e) => ReleaseAll(machine);
                     kvtables.TryAdd(machine, dictionary);
-                }
+                    return dictionary;
+                });
             }
-            return dictionary;
         }
 
         public static object Get(NSJSValue key)
@@ -171,7 +171,8 @@
                 return false;
             }
             ConcurrentDictionary<int, object> table = GetTable(machine);
-            return table.TryRemove(key, out value);
+            bool success = table.TryRemove(key, out value);
+            return success;
         }
 
         public static IEnumerable<int> GetAllKey(NSJSVirtualMachine machine)
@@ -196,10 +197,9 @@
             lock (kvtables)
             {
                 ConcurrentDictionary<int, object> dictionary;
-                if (kvtables.TryGetValue(machine, out dictionary))
+                if (kvtables.TryRemove(machine, out dictionary))
                 {
-                    dictionary.Clear();
-                    kvtables.TryRemove(machine, out dictionary);
+                    dictionary.Clear(); ;
                 }
             }
         }

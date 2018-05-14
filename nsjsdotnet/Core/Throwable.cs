@@ -118,7 +118,7 @@
                 {
                     break;
                 }
-                NSJSException.Throw(machine, FormatMessage(exception));
+                NSJSException.Throw(machine, exception);
             } while (false);
         }
 

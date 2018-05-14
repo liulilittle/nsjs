@@ -4,6 +4,7 @@
     using nsjsdotnet.Core.Linq;
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using HTTPApplication = nsjsdotnet.Core.Net.Web.HttpApplication;
     using HTTPContext = nsjsdotnet.Core.Net.Web.HttpContext;
     using IHTTPHandler = nsjsdotnet.Core.Net.Web.IHttpHandler;
@@ -104,6 +105,10 @@
 
             public void ProcessRequest(HTTPContext context)
             {
+                if (string.IsNullOrEmpty(Thread.CurrentThread.Name))
+                {
+                    Thread.CurrentThread.Name = "http-handler";
+                }
                 NSJSVirtualMachine machine = this.GetVirtualMachine();
                 machine.Join((sender, state) =>
                 {

@@ -55,6 +55,7 @@ Platform* NSJSVirtualMachine::platform = NULL;
 	v8::Isolate::Scope		isolate_scope(this->isolate); \
 	/* Create a stack-allocated handle scope. */ \
 	v8::HandleScope			handle_scope(this->isolate); \
+	/*Enter the context for compiling and running the hello world script. */ \
 	v8::Local<v8::Context>  context = this->context.Get(this->isolate); \
 	v8::Context::Scope		context_scope(context); \
 
@@ -84,16 +85,7 @@ const char* NSJSVirtualMachine::Run(const char* expression, const char* alias, N
 	{
 		throw new ArgumentNullException("expression cannot be empty.");
 	}
-	v8::Locker isolate_locker(isolate);
-
-	Isolate::Scope isolate_scope(isolate);
-
-	// Create a stack-allocated handle scope.
-	HandleScope handle_scope(isolate);
-
-	// Enter the context for compiling and running the hello world script.
-	Context::Scope context_scope(context.Get(isolate));
-
+	V8BEGIN_DOXFUNCTION();
 	// Create a string containing the JavaScript source code.
 	Local<String> source = String::NewFromUtf8(isolate, expression, NewStringType::kNormal).ToLocalChecked();
 	// Try to compile the source code or execute the error that occurred.
@@ -102,7 +94,7 @@ const char* NSJSVirtualMachine::Run(const char* expression, const char* alias, N
 	Local<Script> script;
 	if (alias == NULL)
 	{
-		if (!Script::Compile(context.Get(isolate), source).ToLocal(&script))
+		if (!Script::Compile(context, source).ToLocal(&script))
 		{
 			DumpWriteExceptionInfo(&try_catch, isolate, exception);
 			return NULL;
@@ -119,7 +111,7 @@ const char* NSJSVirtualMachine::Run(const char* expression, const char* alias, N
 	}
 	// Run the script to get the result.
 	Local<Value> result;
-	if (!script->Run(context.Get(isolate)).ToLocal(&result))
+	if (!script->Run(context).ToLocal(&result))
 	{
 		DumpWriteExceptionInfo(&try_catch, isolate, exception);
 		return NULL;
@@ -221,8 +213,11 @@ v8::Local<v8::Value> NSJSVirtualMachine::Callvir(const char* name, int argc, v8:
 
 void NSJSVirtualMachine::Join(NSJSJoinCallback callback, void* state)
 {
+	if (callback == NULL)
+	{
+		throw new ArgumentNullException("callback is null");
+	}
 	V8BEGIN_DOXFUNCTION();
-
 	callback(this, state);
 }
 

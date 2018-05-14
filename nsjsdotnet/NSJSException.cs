@@ -1,5 +1,6 @@
 ﻿namespace nsjsdotnet
 {
+    using nsjsdotnet.Core;
     using System;
     using System.Diagnostics;
     using System.Runtime.InteropServices;
@@ -173,6 +174,19 @@
             {
                 throw this;
             }
+        }
+
+        public static void Throw(NSJSVirtualMachine machine, Exception exception)
+        {
+            if (machine == null)
+            {
+                throw new ArgumentNullException("machine");
+            }
+            if (exception == null)
+            {
+                throw new ArgumentNullException("exception");
+            }
+            NSJSException.Throw(machine, Throwable.FormatMessage(exception));
         }
 
         public static void Throw(NSJSException exception)
