@@ -79,7 +79,11 @@
                 {
                     relational.Disposed -= this.m_closeRelationalEvt;
                     m_connections.Remove(relational);
-                    connection.Close();
+                    try
+                    {
+                        connection.Close();
+                    }
+                    catch (Exception) { /*-------------------------*/ }
                 }
                 return connection;
             }
