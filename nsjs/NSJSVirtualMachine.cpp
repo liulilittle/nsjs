@@ -608,6 +608,7 @@ void NSJSLocalValueAllocator::SetIdleValueCapacity(int capacity)
 			{
 				node = (LinkedListNode<NSJSLocalValue*>*)Memory::Alloc(sizeof(LinkedListNode<NSJSLocalValue*>));
 				NSJSLocalValue* chunk = new NSJSLocalValue;
+				NSJSLocalValueAllocator::Clear(chunk);
 				node->Value = chunk;
 				chunk->LinkedListNode = node;
 				this->frees.AddLast(node);
