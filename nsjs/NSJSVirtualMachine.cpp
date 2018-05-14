@@ -537,20 +537,21 @@ NSJSLocalValue* NSJSLocalValueAllocator::Alloc(void)
 	NSJSLocalValue* chunk = NULL;
 	this->locker.Enter();
 	{
-		LinkedListNode<NSJSLocalValue*>* i = this->frees.First();
-		if (i != NULL)
+		LinkedListNode<NSJSLocalValue*>* node = this->frees.First();
+		if (node != NULL)
 		{
-			chunk = i->Value;
-			this->frees.Remove(i);
+			chunk = node->Value;
+			this->frees.Remove(node);
 		}
 		else
 		{
 			chunk = new NSJSLocalValue;
 			NSJSLocalValueAllocator::Clear(chunk);
-			i = (LinkedListNode<NSJSLocalValue*>*)Memory::Alloc(sizeof(LinkedListNode<NSJSLocalValue*>));
-			i->Value = chunk;
+			node = (LinkedListNode<NSJSLocalValue*>*)Memory::Alloc(sizeof(LinkedListNode<NSJSLocalValue*>));
+			node->Value = chunk;
+			chunk->LinkedListNode = node;
 		}
-		this->actives.AddLast(i);
+		this->actives.AddLast(node);
 	}
 	this->locker.Exit();
 	return chunk;
@@ -568,13 +569,16 @@ bool NSJSLocalValueAllocator::Free(NSJSLocalValue* value)
 	{
 		do
 		{
-			LinkedListNode<NSJSLocalValue*>* i = this->actives.Find(value);
-			if (i == NULL)
+			LinkedListNode<NSJSLocalValue*>* node = (LinkedListNode<NSJSLocalValue*>*)value->LinkedListNode;
+			if (node == NULL) // this->actives.Find(value);
 			{
 				break;
 			}
-			this->actives.Remove(i);
-			this->frees.AddLast(i);
+			if (node->LinkedList == &this->actives)
+			{
+				this->actives.Remove(node);
+				this->frees.AddLast(node);
+			}
 		} while (false);
 	}
 	this->locker.Exit();
@@ -598,12 +602,14 @@ void NSJSLocalValueAllocator::SetIdleValueCapacity(int capacity)
 		int count = this->frees.Count();
 		if (count < capacity)
 		{
+			LinkedListNode<NSJSLocalValue*>* node = NULL;
 			int surplus = (capacity - count);
 			for (int i = 0; i < surplus; i++)
 			{
-				LinkedListNode<NSJSLocalValue*>* node = (LinkedListNode<NSJSLocalValue*>*)Memory::
-					Alloc(sizeof(LinkedListNode<NSJSLocalValue*>));
-				node->Value = new NSJSLocalValue;
+				node = (LinkedListNode<NSJSLocalValue*>*)Memory::Alloc(sizeof(LinkedListNode<NSJSLocalValue*>));
+				NSJSLocalValue* chunk = new NSJSLocalValue;
+				node->Value = chunk;
+				chunk->LinkedListNode = node;
 				this->frees.AddLast(node);
 			}
 		}

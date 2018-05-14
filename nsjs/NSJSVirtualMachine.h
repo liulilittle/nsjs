@@ -87,9 +87,9 @@ typedef struct {
 public:
 	v8::Local<v8::Value> LocalValue;
 	v8::Persistent<v8::Value> PersistentValue;
-	uint8_t Reserved[8] = { 0 };
 	v8::Isolate* Isolate = NULL;
 	bool CrossThreading = false;
+	void* LinkedListNode = NULL;
 } NSJSLocalValue;
 
 class NSJSLocalValueAllocator
