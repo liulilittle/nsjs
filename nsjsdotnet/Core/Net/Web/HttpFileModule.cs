@@ -148,7 +148,7 @@
                 if (!string.IsNullOrEmpty(range))
                 {
                     range = range.ToLower();
-                    Match match = Regex.Match(range, "bytes[=|\\s](\\d+)-(\\d+)*");
+                    Match match = Regex.Match(range, @"bytes=(\d+)-*(\d+)*");
                     if (match.Success)
                     {
                         int start;
@@ -278,54 +278,56 @@
             try
             {
                 response.Headers.Add(HttpResponseHeader.AcceptRanges, "bytes");
-                this.ProcessStream(path, (pfile, size) =>
+                this.ProcessStream(path, (pfile, count) =>
                 {
                     try
                     {
+                        byte* stream = (byte*)pfile;
+                        if (from.HasValue && to.HasValue) // range
+                        {
+                            int ofs = from.Value < 0 ? 0 : from.Value; // 206
+                            count = to.Value < 0 ? 0 : to.Value;
+                            stream = count > ofs ? &stream[ofs] : null;
+                        }
+                        else if (from.HasValue || to.HasValue) // 206
+                        {
+                            int ofs = 0;
+                            if (from.HasValue)
+                            {
+                                ofs = from.Value;
+                            }
+                            else if (to.HasValue)
+                            {
+                                ofs = to.Value;
+                            }
+                            if (ofs < 0)
+                            {
+                                ofs = 0;
+                            }
+                            count = count - ofs;
+                            if (count < 0)
+                            {
+                                count = 0;
+                            }
+                            stream = count > ofs ? &stream[ofs] : null;
+                        }
                         response.StatusCode = 200;
-                        byte* buffer = (byte*)pfile;
-                        if (!from.HasValue) // range
+                        response.ContentLength64 = count;
+                        if (count > 0)
                         {
-                            response.ContentLength64 = size;
-                        }
-                        else if (!from.HasValue && to.HasValue)
-                        {
-                            buffer += (size - to.Value);
-                            size = to.Value;
-                            response.StatusCode = 206;
-                        }
-                        else
-                        {
-                            buffer += from.Value;
-                            long len = (size - from.Value);
-                            if (len < size)
-                            {
-                                size = len;
-                                response.StatusCode = 206;
-                            }
-                            if (to.HasValue)
-                            {
-                                len = (to.Value - from.Value);
-                                size = len;
-                                response.StatusCode = 206;
-                            }
-                            response.ContentLength64 = size;
-                        }
-                        if (size > 0)
-                        {
-                            Stream s = response.OutputStream;
+                            Stream output = response.OutputStream;
                             byte[] chunk = new byte[570];
                             int ofs = 0;
-                            while (ofs < size)
+                            while (ofs < count)
                             {
-                                int chunksize = unchecked((int)(size - ofs));
-                                if (chunksize > chunk.Length)
+                                int len = unchecked((int)(count - ofs));
+                                if (len > chunk.Length)
                                 {
-                                    chunksize = chunk.Length;
+                                    len = chunk.Length;
                                 }
-                                BufferExtension.memcpy(&buffer[ofs], chunk, 0, chunksize);
-                                s.Write(chunk, 0, chunksize);
-                                ofs += chunksize;
+                                BufferExtension.memcpy(&stream[ofs], chunk, 0, len);
+                                output.Write(chunk, 0, len);
+                                ofs += len;
                             }
                         }
                     }
