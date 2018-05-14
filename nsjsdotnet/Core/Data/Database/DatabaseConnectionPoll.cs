@@ -79,6 +79,7 @@
                 {
                     relational.Disposed -= this.m_closeRelationalEvt;
                     m_connections.Remove(relational);
+                    connection.Close();
                 }
                 return connection;
             }
