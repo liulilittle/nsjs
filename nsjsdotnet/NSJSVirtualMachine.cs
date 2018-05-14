@@ -1,5 +1,6 @@
 ﻿namespace nsjsdotnet
 {
+    using nsjsdotnet.Core;
     using nsjsdotnet.Core.IO;
     using System;
     using System.Collections.Concurrent;
@@ -12,7 +13,7 @@
     using RuntimeLibrary = nsjsdotnet.Runtime.Global;
     using SystemLibrary = nsjsdotnet.Runtime.Systematic.Global;
 
-    public unsafe class NSJSVirtualMachine : EventArgs, IDisposable
+    public unsafe class NSJSVirtualMachine : EventArgs, IRelational
     {
         [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.SysInt)]
@@ -90,7 +91,7 @@
         [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_virtualmachine_abort(IntPtr machine);
 
-        public sealed class ExtensionObjectTemplate : IDisposable
+        public sealed class ExtensionObjectTemplate : System.IDisposable
         {
             [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
             private extern static void nsjs_virtualmachine_object_free([In]IntPtr object_template);

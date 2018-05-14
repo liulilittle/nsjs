@@ -85,6 +85,8 @@
     <Compile Include="Core\Hooking\PropertyHooker.cs" />
     <Compile Include="Core\Hooking\VirtualProxyHooker.cs" />
     <Compile Include="Core\Hooking\VirtualProxyInvoker.cs" />
+    <Compile Include="Core\IDisposable.cs" />
+    <Compile Include="Core\IRelational.cs" />
     <Compile Include="Core\Net\MailClient.cs" />
     <Compile Include="Core\Net\WebSocket\CloseEventArgs.cs" />
     <Compile Include="Core\Net\WebSocket\CloseEventHandler.cs" />

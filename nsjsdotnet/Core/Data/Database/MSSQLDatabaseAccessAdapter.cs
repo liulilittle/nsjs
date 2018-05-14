@@ -1,13 +1,17 @@
 ﻿namespace nsjsdotnet.Core.Data.Database
 {
+    using System;
     using System.Data;
     using System.Data.SqlClient;
 
     public class MSSQLDatabaseAccessAdapter : DatabaseAccessAdapter
     {
-        public MSSQLDatabaseAccessAdapter(string server, string database, string loginId, string password) : 
+        private readonly IRelational relational = null;
+
+        public MSSQLDatabaseAccessAdapter(IRelational relational, string server, string database, string loginId, string password) :
             base(server, database, loginId, password)
         {
+            this.relational = relational ?? throw new ArgumentNullException("relational");
         }
 
         public override string ToString()
@@ -17,7 +21,7 @@
 
         public override IDbConnection GetConnection()
         {
-            return Poll.Get(() =>
+            return base.Poll.Get(this.relational, () =>
             {
                 SqlConnection connection = new SqlConnection();
                 connection.ConnectionString = this.ToString();

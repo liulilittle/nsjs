@@ -12,7 +12,7 @@
         {
             if (connection == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("connection");
             }
             if (connection.State == ConnectionState.Closed)
             {

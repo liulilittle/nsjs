@@ -63,7 +63,8 @@
                 string database = (arguments.Length > 1 ? arguments[1] as NSJSString : null)?.Value;
                 string loginId = (arguments.Length > 2 ? arguments[2] as NSJSString : null)?.Value;
                 string password = (arguments.Length > 3 ? arguments[3] as NSJSString : null)?.Value;
-                arguments.SetReturnValue(New(arguments.VirtualMachine, new MSSQLDatabaseAccessAdapter(server, database, loginId, password)));
+                arguments.SetReturnValue(New(arguments.VirtualMachine, new MSSQLDatabaseAccessAdapter(arguments.VirtualMachine,
+                    server, database, loginId, password)));
             }
             catch (Exception exception)
             {
