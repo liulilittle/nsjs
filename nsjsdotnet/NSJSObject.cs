@@ -109,6 +109,92 @@
         [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_localvalue_object_internalfield_set([In]IntPtr obj, int solt, IntPtr value);
 
+        private const string RUNTIME_DEFINEPROPERTY_PROPERTYKEY = @"____nsjsdotnet_framework_object_defineproperty";
+
+        private void InternalDefineProperty(string key, Action<NSJSVirtualMachine, NSJSFunction> executing)
+        {
+            if (executing == null)
+            {
+                throw new ArgumentNullException("executing");
+            }
+            if (key == null)
+            {
+                throw new ArgumentNullException("Key is not allowed to be null");
+            }
+            if (key.Length <= 0)
+            {
+                throw new ArgumentNullException("Key is not allowed to be empty");
+            }
+            NSJSVirtualMachine machine = this.VirtualMachine;
+            NSJSObject o = machine.Global;
+            NSJSFunction function = o.Get(RUNTIME_DEFINEPROPERTY_PROPERTYKEY) as NSJSFunction;
+            if (function == null)
+            {
+                throw new InvalidProgramException("Framework system internal function appears to be deleted");
+            }
+            executing(machine, function);
+        }
+
+        public virtual void DefineProperty(string key, NSJSFunctionCallback2 get, NSJSFunctionCallback2 set)
+        {
+            this.InternalDefineProperty(key, (machine, function) =>
+            {
+                NSJSValue[] s = new NSJSValue[]
+                {
+                    this,
+                    NSJSString.New(machine, key),
+                    get == null ? NSJSValue.Undefined(machine) : NSJSFunction.New(machine, get),
+                    set == null ? NSJSValue.Undefined(machine) : NSJSFunction.New(machine, set),
+                };
+                function.Call(s);
+            });
+        }
+
+        public virtual void DefineProperty(string key, NSJSFunctionCallback2 get, NSJSFunctionCallback set)
+        {
+            this.InternalDefineProperty(key, (machine, function) =>
+            {
+                NSJSValue[] s = new NSJSValue[]
+                {
+                    this,
+                    NSJSString.New(machine, key),
+                    get == null ? NSJSValue.Undefined(machine) : NSJSFunction.New(machine, get),
+                    set == null ? NSJSValue.Undefined(machine) : NSJSFunction.New(machine, set),
+                };
+                function.Call(s);
+            });
+        }
+
+        public virtual void DefineProperty(string key, NSJSFunctionCallback get, NSJSFunctionCallback2 set)
+        {
+            this.InternalDefineProperty(key, (machine, function) =>
+            {
+                NSJSValue[] s = new NSJSValue[]
+                {
+                    this,
+                    NSJSString.New(machine, key),
+                    get == null ? NSJSValue.Undefined(machine) : NSJSFunction.New(machine, get),
+                    set == null ? NSJSValue.Undefined(machine) : NSJSFunction.New(machine, set),
+                };
+                function.Call(s);
+            });
+        }
+
+        public virtual void DefineProperty(string key, NSJSFunctionCallback get, NSJSFunctionCallback set)
+        {
+            this.InternalDefineProperty(key, (machine, function) =>
+            {
+                NSJSValue[] s = new NSJSValue[]
+                {
+                    this,
+                    NSJSString.New(machine, key),
+                    get == null ? NSJSValue.Undefined(machine) : NSJSFunction.New(machine, get),
+                    set == null ? NSJSValue.Undefined(machine) : NSJSFunction.New(machine, set),
+                };
+                function.Call(s);
+            });
+        }
+
         public virtual object UserToken
         {
             get

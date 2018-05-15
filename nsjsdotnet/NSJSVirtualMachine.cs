@@ -12,6 +12,7 @@
     using System.Windows.Forms;
     using RuntimeLibrary = nsjsdotnet.Runtime.Global;
     using SystemLibrary = nsjsdotnet.Runtime.Systematic.Global;
+    using FrameworkScript = nsjsdotnet.Runtime.FrameworkScript;
 
     public unsafe class NSJSVirtualMachine : EventArgs, IRelational
     {
@@ -895,22 +896,28 @@
                 if (!this.initialize)
                 {
                     this.initialize = true;
-                    this.Initialization();
+                    this.InitializationLibrary();
                     nsjs_virtualmachine_initialize(this.Handle);
                     nsjs_virtualmachine_set_data(this.Handle, 0, (IntPtr)this.cookie);
                     this.undefined = new NSJSValue(nsjs_localvalue_null(this.Isolate), NSJSValueType.kUndefined, this);
                     this.nullable = new NSJSValue(nsjs_localvalue_null(this.Isolate), NSJSValueType.kNull, this);
                     this.nullable.CrossThreading = true;
                     this.undefined.CrossThreading = true;
+                    this.InitializationFramework();
                 }
             }
             return d();
         }
 
-        protected virtual void Initialization()
+        protected virtual void InitializationLibrary()
         {
             RuntimeLibrary.Initialization(this);
             nsjs_virtualmachine_add_c_extension(this.Handle);
+        }
+
+        protected virtual void InitializationFramework()
+        {
+            FrameworkScript.Initialization(this);
         }
 
         public static ExtensionObjectTemplate GetSystemTemplate()

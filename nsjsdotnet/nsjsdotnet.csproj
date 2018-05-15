@@ -164,6 +164,7 @@
     <Compile Include="NSJSStackFrame.cs" />
     <Compile Include="NSJSStackTrace.cs" />
     <Compile Include="NSJSStructural.cs" />
+    <Compile Include="Runtime\FrameworkScript.cs" />
     <Compile Include="Runtime\Global.cs" />
     <Compile Include="Runtime\Systematic\BitConverter.cs" />
     <Compile Include="Runtime\Systematic\Configuration\Global.cs" />
