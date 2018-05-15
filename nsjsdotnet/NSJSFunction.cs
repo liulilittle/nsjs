@@ -1,5 +1,6 @@
 ﻿namespace nsjsdotnet
 {
+    using nsjsdotnet.Core.Utilits;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -112,12 +113,12 @@
 
         public static IntPtr DelegateToFunctionPtr(Delegate d)
         {
-            return NSJSMarshalAsUtility.DelegateToFunctionPtr(d);
+            return MarshalAs.DelegateToFunctionPtr(d);
         }
 
         public static T FunctionPtrToDelegate<T>(IntPtr ptr)
         {
-            return NSJSMarshalAsUtility.FunctionPtrToDelegate<T>(ptr);
+            return MarshalAs.FunctionPtrToDelegate<T>(ptr);
         }
 
         public static IntPtr Infer()

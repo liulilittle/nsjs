@@ -228,9 +228,8 @@
                 return null;
             }
             NSJSObject o = NSJSObject.New(machine);
-            o.Set("Name", g_NameProc);
-            o.Set("Handler", NSJSValue.Null(machine));
-            o.Set("Root", g_RootProc);
+            o.DefineProperty("Name", g_NameProc, g_NameProc);
+            o.DefineProperty("Root", g_RootProc, g_RootProc);
             o.Set("Start", g_StartProc);
             o.Set("Stop", g_StopProc);
             o.Set("Close", g_CloseProc);

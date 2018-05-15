@@ -119,18 +119,27 @@
             }
             if (key == null)
             {
-                throw new ArgumentNullException("Key is not allowed to be null");
+                throw new ArgumentNullException("key is not allowed to be null");
             }
             if (key.Length <= 0)
             {
-                throw new ArgumentNullException("Key is not allowed to be empty");
+                throw new ArgumentNullException("key is not allowed to be empty");
             }
             NSJSVirtualMachine machine = this.VirtualMachine;
-            NSJSObject o = machine.Global;
-            NSJSFunction function = o.Get(RUNTIME_DEFINEPROPERTY_PROPERTYKEY) as NSJSFunction;
-            if (function == null)
+            NSJSFunction function = machine.GetData<NSJSFunction>(RUNTIME_DEFINEPROPERTY_PROPERTYKEY);
+            lock (machine)
             {
-                throw new InvalidProgramException("Framework system internal function appears to be deleted");
+                if (function == null)
+                {
+                    NSJSObject o = machine.Global;
+                    function = o.Get(RUNTIME_DEFINEPROPERTY_PROPERTYKEY) as NSJSFunction;
+                    if (function == null)
+                    {
+                        throw new InvalidProgramException("Framework system internal function appears to be deleted");
+                    }
+                    function.CrossThreading = true;
+                    machine.SetData(RUNTIME_DEFINEPROPERTY_PROPERTYKEY, function);
+                }
             }
             executing(machine, function);
         }

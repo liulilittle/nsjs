@@ -57,16 +57,16 @@
             }
             NSJSObject objective = NSJSObject.New(machine);
             objective.Set("CurrentContext", context);
-            objective.Set("ContentEncoding", g_ContentEncodingProc);
-            objective.Set("ContentType", g_ContentTypeProc);
-            objective.Set("StatusDescription", g_StatusDescriptionProc);
-            objective.Set("StatusCode", g_StatusCodeProc);
-            objective.Set("KeepAlive", g_KeepAliveProc);
-            objective.Set("ProtocolVersion", g_ProtocolVersionProc);
-            objective.Set("RedirectLocation", g_RedirectLocationProc);
-            objective.Set("SendChunked", g_SendChunkedProc);
-            objective.Set("Headers", g_HeadersProc);
-            objective.Set("Cookies", g_CookiesProc);
+            objective.DefineProperty("ContentEncoding", g_ContentEncodingProc, g_ContentEncodingProc);
+            objective.DefineProperty("ContentType", g_ContentTypeProc, g_ContentTypeProc);
+            objective.DefineProperty("StatusDescription", g_StatusDescriptionProc, g_StatusDescriptionProc);
+            objective.DefineProperty("StatusCode", g_StatusCodeProc, g_StatusCodeProc);
+            objective.DefineProperty("KeepAlive", g_KeepAliveProc, g_KeepAliveProc);
+            objective.DefineProperty("ProtocolVersion", g_ProtocolVersionProc, g_ProtocolVersionProc);
+            objective.DefineProperty("RedirectLocation", g_RedirectLocationProc, g_RedirectLocationProc);
+            objective.DefineProperty("SendChunked", g_SendChunkedProc, g_SendChunkedProc);
+            objective.DefineProperty("Headers", g_HeadersProc, g_HeadersProc);
+            objective.DefineProperty("Cookies", g_CookiesProc, g_CookiesProc);
 
             objective.Set("Redirect", g_RedirectProc);
             objective.Set("End", g_EndProc);

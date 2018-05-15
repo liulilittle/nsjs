@@ -13,6 +13,7 @@
     using RuntimeLibrary = nsjsdotnet.Runtime.Global;
     using SystemLibrary = nsjsdotnet.Runtime.Systematic.Global;
     using FrameworkScript = nsjsdotnet.Runtime.FrameworkScript;
+    using nsjsdotnet.Core.Utilits;
 
     public unsafe class NSJSVirtualMachine : EventArgs, IRelational
     {
@@ -219,6 +220,7 @@
                     this.stacktrace = null;
                     this.exception = null;
                     runings.Clear();
+                    datas.Clear();
                     NSJSVirtualMachine machine;
                     machines.TryRemove(this.Handle, out machine);
                     this.OnDisposed(EventArgs.Empty);
@@ -261,6 +263,8 @@
         internal NSJSStructural.NSJSStackTrace* stacktrace = null;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private IDictionary<string, RunContext> runings = new Dictionary<string, RunContext>();
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private ConcurrentDictionary<string, object> datas = new ConcurrentDictionary<string, object>();
 
         private class RunContext
         {
@@ -653,7 +657,7 @@
             {
                 throw new ArgumentNullException("callback");
             }
-            IntPtr ptr = NSJSMarshalAsUtility.ObjectToIUnknown(state);
+            IntPtr ptr = MarshalAs.ObjectToIUnknown(state);
             nsjs_virtualmachine_join(this.Handle, NSJSFunction.DelegateToFunctionPtr(callback), ptr);
         }
 
@@ -925,7 +929,27 @@
             return SystemLibrary.GlobalTemplate;
         }
 
-        public virtual void SetDate(int solt, IntPtr value)
+        public virtual void SetData(int solt, object value)
+        {
+            this.SetData(solt, MarshalAs.ObjectToIUnknown(value));
+        }
+
+        public virtual T GetData<T>(int solt)
+        {
+            IntPtr p = this.GetData(solt);
+            if (typeof(T) == typeof(IntPtr))
+            {
+                return (T)(object)p;
+            }
+            object obj = MarshalAs.IUnknownToObject(p);
+            if (obj == null || !typeof(T).IsInstanceOfType(obj))
+            {
+                return default(T);
+            }
+            return (T)obj;
+        }
+
+        public virtual void SetData(int solt, IntPtr value)
         {
             if (solt < 1)
             {
@@ -949,13 +973,46 @@
             }
         }
 
-        public virtual IntPtr GetDate(int solt)
+        public virtual IntPtr GetData(int solt)
         {
             if (solt < 1)
             {
                 throw new ArgumentOutOfRangeException("solt");
             }
             return nsjs_virtualmachine_get_data(Handle, solt);
+        }
+
+        public virtual bool SetData(string key, object value)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                return false;
+            }
+            return datas.AddOrUpdate(key, value, (i, o) => value) == value;
+        }
+
+        public virtual T GetData<T>(string key)
+        {
+            object obj = this.GetData(key);
+            if (obj == null || !typeof(T).IsInstanceOfType(obj))
+            {
+                return default(T);
+            }
+            return (T)obj;
+        }
+
+        public virtual object GetData(string key)
+        {
+            if (key == null)
+            {
+                return null;
+            }
+            object o;
+            if (datas.TryGetValue(key, out o))
+            {
+                return o;
+            }
+            return null;
         }
 
         public static NSJSVirtualMachine From(IntPtr handle)
@@ -969,7 +1026,7 @@
             {
                 return machine;
             }
-            return NSJSMarshalAsUtility.CookieToObject(handle) as NSJSVirtualMachine;
+            return MarshalAs.CookieToObject(handle) as NSJSVirtualMachine;
         }
     }
 }

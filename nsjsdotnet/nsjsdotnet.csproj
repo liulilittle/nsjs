@@ -150,7 +150,7 @@
     <Compile Include="Core\Utilits\TypeTool.cs" />
     <Compile Include="Core\Utilits\ValuetypeFormatter.cs" />
     <Compile Include="NSJSException.cs" />
-    <Compile Include="NSJSMarshalAsUtility.cs" />
+    <Compile Include="Core\Utilits\MarshalAs.cs" />
     <Compile Include="NSJSMessage.cs" />
     <Compile Include="NSJSInt64.cs" />
     <Compile Include="NSJSJson.cs" />

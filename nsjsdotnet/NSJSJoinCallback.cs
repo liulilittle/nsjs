@@ -1,5 +1,6 @@
 ﻿namespace nsjsdotnet
 {
+    using nsjsdotnet.Core.Utilits;
     using System;
     using System.Runtime.InteropServices;
 
@@ -84,7 +85,7 @@
             }
             else if (this.kind == MarshalAsKind.kStateObject)
             {
-                return NSJSMarshalAsUtility.ObjectToIUnknown(ManagedObj);
+                return MarshalAs.ObjectToIUnknown(ManagedObj);
             }
             return NULL;
         }
@@ -97,7 +98,7 @@
             }
             if (this.kind == MarshalAsKind.kStateObject)
             {
-                return NSJSMarshalAsUtility.IUnknownToObject(pNativeData);
+                return MarshalAs.IUnknownToObject(pNativeData);
             }
             if (this.kind == MarshalAsKind.kVirtualMachine)
             {

@@ -625,34 +625,6 @@
             return new NSJSFunctionCallbackInfo(handle);
         }
 
-        public void SetDate(int solt, IntPtr value)
-        {
-            if (solt < 1)
-            {
-                throw new ArgumentOutOfRangeException("solt");
-            }
-            IntPtr isolate = this.Isolate;
-            if (isolate == NULL)
-            {
-                throw new InvalidOperationException();
-            }
-            nsjs_virtualmachine_set_data2(isolate, solt, value);
-        }
-
-        public IntPtr GetDate(int solt)
-        {
-            if (solt < 1)
-            {
-                throw new ArgumentOutOfRangeException("solt");
-            }
-            IntPtr isolate = this.Isolate;
-            if (isolate == NULL)
-            {
-                throw new InvalidOperationException();
-            }
-            return nsjs_virtualmachine_get_data2(isolate, solt);
-        }
-
         public NSJSVirtualMachine VirtualMachine
         {
             get

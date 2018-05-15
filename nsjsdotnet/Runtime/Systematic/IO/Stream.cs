@@ -33,8 +33,8 @@
             o.Set("CanSeek", stream.CanSeek);
             o.Set("CanRead", stream.CanRead);
 
-            o.Set("Length", m_LengthProc);
-            o.Set("Position", m_PositionProc);
+            o.DefineProperty("Length", m_LengthProc, (NSJSFunctionCallback)null);
+            o.DefineProperty("Position", m_PositionProc, m_PositionProc);
             o.Set("Seek", m_SeekProc);
 
             o.Set("Read", m_ReadProc);

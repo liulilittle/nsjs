@@ -25,6 +25,7 @@
             _assert = compliedassertbridging();
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
+            owner.AddFunction("title", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(title));
             owner.AddFunction("error", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(error));
             owner.AddFunction("assert", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(assert));
             owner.AddFunction("log", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(log));
@@ -35,6 +36,19 @@
             owner.AddFunction("system", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(system));
             owner.AddFunction("clear", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(clear));
             owner.AddFunction("message", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(message));
+        }
+
+        private static void title(IntPtr info)
+        {
+            NSJSFunctionCallbackInfo arguments = NSJSFunctionCallbackInfo.From(info);
+            if (arguments.Length <= 0)
+            {
+                arguments.SetReturnValue(CONSOLE.Title);
+            }
+            else
+            {
+                CONSOLE.Title = (arguments[0] as NSJSString)?.Value ?? string.Empty;
+            }
         }
 
         private static Action<bool, string, string> compliedassertbridging()

@@ -1,9 +1,9 @@
-﻿namespace nsjsdotnet
+﻿namespace nsjsdotnet.Core.Utilits
 {
     using System;
     using System.Runtime.InteropServices;
 
-    public static class NSJSMarshalAsUtility
+    public static class MarshalAs
     {
         private static readonly IntPtr NULL = IntPtr.Zero;
 
