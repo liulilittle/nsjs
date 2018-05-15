@@ -188,7 +188,7 @@
             });
         }
 
-        public static bool Close(NSJSValue response)
+        public static bool Close(NSJSObject response)
         {
             return ObjectAuxiliary.RemoveInKeyValueCollection(response);
         }
@@ -240,7 +240,7 @@
             ObjectAuxiliary.GetOrSetProperty<HTTPResponse>(info, (response) => response.ContentType, (response, value) => response.ContentType = value);
         }
 
-        public static HTTPResponse GetResponse(NSJSValue response)
+        public static HTTPResponse GetResponse(NSJSObject response)
         {
             if (response == null)
             {
@@ -266,7 +266,7 @@
                 }
                 else
                 {
-                    var encoding = NSJSEncoding.GetEncoding(arguments[0]);
+                    var encoding = NSJSEncoding.GetEncoding(arguments[0] as NSJSObject);
                     if (encoding == null)
                     {
                         encoding = NSJSEncoding.DefaultEncoding;

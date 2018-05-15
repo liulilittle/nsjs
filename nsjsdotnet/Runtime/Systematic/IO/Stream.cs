@@ -16,7 +16,7 @@
         private static readonly NSJSFunctionCallback m_DisposeProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Dispose);
         private static readonly NSJSFunctionCallback m_ReadBytesProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ReadBytes);
 
-        public static BaseStream Get(NSJSValue stream)
+        public static BaseStream Get(NSJSObject stream)
         {
             return NSJSKeyValueCollection.Get<BaseStream>(stream);
         }

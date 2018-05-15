@@ -77,13 +77,13 @@
                     int count = arguments.Length;
                     int ofs = count - 1;
                     NSJSValue value = arguments[ofs];
-                    IDbTransaction transaction = DatabaseTransaction.GetTransaction(value);
+                    IDbTransaction transaction = DatabaseTransaction.GetTransaction(value as NSJSObject);
                     if (transaction == null)
                     {
                         ofs = count - 2;
                         if (ofs >= 0)
                         {
-                            transaction = DatabaseTransaction.GetTransaction(arguments[ofs]);
+                            transaction = DatabaseTransaction.GetTransaction(arguments[ofs] as NSJSObject);
                         }
                     }
                     int commandType = ValueAuxiliary.ToInt32(value);
@@ -196,7 +196,7 @@
                 RollbackOrCommit(info, true);
             }
 
-            public static IDbTransaction GetTransaction(NSJSValue value)
+            public static IDbTransaction GetTransaction(NSJSObject value)
             {
                 return NSJSKeyValueCollection.Get<IDbTransaction>(value);
             }
@@ -232,7 +232,7 @@
             }
         }
 
-        public static DATATableGateway GetGateway(NSJSValue value)
+        public static DATATableGateway GetGateway(NSJSObject value)
         {
             return NSJSKeyValueCollection.Get<DATATableGateway>(value);
         }
@@ -269,14 +269,14 @@
             });
         }
 
-        public static DatabaseAccessAdapter GetAdapter(NSJSValue value)
+        public static DatabaseAccessAdapter GetAdapter(NSJSObject value)
         {
             return NSJSKeyValueCollection.Get<DatabaseAccessAdapter>(value);
         }
 
         public static void New(NSJSFunctionCallbackInfo arguments)
         {
-            DatabaseAccessAdapter adapter = GetAdapter(arguments.Length > 0 ? arguments[0] : null);
+            DatabaseAccessAdapter adapter = GetAdapter(arguments.Length > 0 ? arguments[0] as NSJSObject : null);
             if (adapter == null)
             {
                 Throwable.ArgumentNullException(arguments.VirtualMachine);

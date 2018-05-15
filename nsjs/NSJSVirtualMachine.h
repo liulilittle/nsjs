@@ -83,13 +83,13 @@ public:
 	const char* StackTrace;
 } NSJSException;
 
-typedef struct {
+typedef struct NSJSLocalValue {
 public:
 	v8::Local<v8::Value> LocalValue;
 	v8::Persistent<v8::Value> PersistentValue;
 	v8::Isolate* Isolate = NULL;
 	bool CrossThreading = false;
-	void* LinkedListNode = NULL;
+	LinkedListNode<NSJSLocalValue*>* LinkedListNode = NULL;
 } NSJSLocalValue;
 
 class NSJSLocalValueAllocator

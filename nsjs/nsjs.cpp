@@ -593,11 +593,11 @@ DLLEXPORT void DLLEXPORTNSAPI nsjs_localvalue_object_internalfield_set(NSJSLocal
 	{
 		throw new ArgumentNullException("Parameter value cannot be null");
 	}
-	if (solt < 0 || solt >= nsjs_localvalue_object_internalfield_count(obj))
+	v8::Local<v8::Object> o = NSJSGetLocalValue(obj).As<v8::Object>();
+	if (solt < 0 || solt >= o->InternalFieldCount())
 	{
 		throw new ArgumentOutOfRangeException("The solt location of the access exceeds the specified range");
 	}
-	v8::Local<v8::Object> o = NSJSGetLocalValue(obj).As<v8::Object>();
 	o->SetInternalField(solt, NSJSGetLocalValue(value));
 }
 
@@ -611,12 +611,11 @@ DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_object_internalfield_ge
 	{
 		throw new ArgumentOutOfRangeException("The solt location of the access exceeds the specified range");
 	}
-	v8::Local<v8::Object> o = NSJSGetLocalValue(obj).As<v8::Object>();
-	v8::Local<v8::Value> r = o->GetInternalField(solt);
-	NSJSLocalValue* localValue;
-	NSJSNewLocalValue(localValue);
-	localValue->LocalValue = r;
-	return localValue;
+	v8::Local<v8::Value> result = NSJSGetLocalValue(obj).As<v8::Object>()->GetInternalField(solt);
+	NSJSLocalValue* rax;
+	NSJSNewLocalValue(rax);
+	rax->LocalValue = result;
+	return rax;
 }
 
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_undefined(v8::Isolate* isolate)
@@ -670,17 +669,27 @@ DLLEXPORT int DLLEXPORTNSAPI nsjs_localvalue_hashcode(NSJSLocalValue* value)
 	return o.As<v8::Object>()->GetIdentityHash();
 }
 
-DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_object_new(v8::Isolate* isolate)
+DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_object_new(v8::Isolate* isolate, int fieldcount)
 {
 	if (isolate == NULL)
 	{
 		throw new ArgumentNullException("Parameter isolate cannot be null");
 	}
-	v8::Local<v8::Value> r = v8::Object::New(isolate);
-	NSJSLocalValue* localValue;
-	NSJSNewLocalValue(localValue);
-	localValue->LocalValue = r;
-	return localValue;
+	v8::Local<v8::Value> result;
+	if (fieldcount <= 0)
+	{
+		result = v8::Object::New(isolate);
+	}
+	else
+	{
+		v8::Local<v8::ObjectTemplate> object_template = v8::ObjectTemplate::New(isolate);
+		object_template->SetInternalFieldCount(fieldcount);
+		result = object_template->NewInstance();
+	}
+	NSJSLocalValue* rax;
+	NSJSNewLocalValue(rax);
+	rax->LocalValue = result;
+	return rax;
 }
 
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_int32_new(v8::Isolate* isolate, int32_t value)

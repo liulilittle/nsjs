@@ -8,14 +8,19 @@
     public unsafe class NSJSObject : NSJSValue
     {
         [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static IntPtr nsjs_localvalue_object_new(IntPtr isolate);
+        private extern static IntPtr nsjs_localvalue_object_new(IntPtr isolate, int fieldcount);
 
-        internal NSJSObject(NSJSVirtualMachine machine) : base(nsjs_localvalue_object_new(machine.Isolate), NSJSValueType.kObject, machine)
+        internal NSJSObject(NSJSVirtualMachine machine, int fieldcount) : base(nsjs_localvalue_object_new(machine.Isolate, fieldcount), NSJSValueType.kObject, machine)
         {
 
         }
 
         public static NSJSObject New(NSJSVirtualMachine machine)
+        {
+            return New(machine, 0);
+        }
+
+        protected static NSJSObject New(NSJSVirtualMachine machine, int fieldcount)
         {
             if (machine == null)
             {
@@ -25,7 +30,7 @@
             {
                 throw new InvalidOperationException("machine");
             }
-            return new NSJSObject(machine);
+            return new NSJSObject(machine, fieldcount);
         }
 
         internal NSJSObject(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kObject, machine)
@@ -104,9 +109,16 @@
         [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_localvalue_object_internalfield_set([In]IntPtr obj, int solt, IntPtr value);
 
-        public virtual int GetInternalFieldCount()
+        public virtual object UserToken
         {
-            return nsjs_localvalue_object_internalfield_count(this.Handle);
+            get
+            {
+                return NSJSKeyValueCollection.Get(this as NSJSObject);
+            }
+            set
+            {
+                NSJSKeyValueCollection.Set(this as NSJSObject, value);
+            }
         }
 
         public override object GetValue()
@@ -114,7 +126,12 @@
             return NSJSJson.Stringify(this);
         }
 
-        public virtual NSJSValue GetInternalField(int solt)
+        protected virtual int GetInternalFieldCount()
+        {
+            return nsjs_localvalue_object_internalfield_count(this.Handle);
+        }
+
+        protected virtual NSJSValue GetInternalField(int solt)
         {
             if (solt < 0 || solt >= GetInternalFieldCount())
             {
@@ -128,7 +145,7 @@
             return NSJSValueBuilder.From(this.Handle, this, this.VirtualMachine);
         }
 
-        public virtual void SetInternalField(int solt, NSJSValue value)
+        protected virtual void SetInternalField(int solt, NSJSValue value)
         {
             if (solt < 0 || solt >= GetInternalFieldCount())
             {
@@ -137,7 +154,7 @@
             nsjs_localvalue_object_internalfield_set(this.Handle, solt, value.Handle);
         }
 
-        public virtual NSJSValue Get(string key)
+        protected internal virtual IntPtr GetPropertyAndReturnHandle(string key)
         {
             if (key == null)
             {
@@ -149,13 +166,18 @@
             }
             fixed (byte* s = Encoding.UTF8.GetBytes(key))
             {
-                IntPtr p = nsjs_localvalue_object_property_get(this.Isolate, this.Handle, s);
-                if (p == NULL)
-                {
-                    return null;
-                }
-                return NSJSValueBuilder.From(p, this, this.VirtualMachine);
+                return nsjs_localvalue_object_property_get(this.Isolate, this.Handle, s);
             }
+        }
+
+        public virtual NSJSValue Get(string key)
+        {
+            IntPtr p = this.GetPropertyAndReturnHandle(key);
+            if (p == null)
+            {
+                return null;
+            }
+            return NSJSValueBuilder.From(p, this, this.VirtualMachine);
         }
 
         public virtual bool Set(string key, NSJSValue value)

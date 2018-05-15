@@ -3,30 +3,72 @@
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.Diagnostics;
+    using System.Threading;
 
-    public class NSJSKeyValueCollection
+    public class NSJSKeyValueCollection 
     {
         private static readonly ConcurrentDictionary<NSJSVirtualMachine, ConcurrentDictionary<int, object>> kvtables =
             new ConcurrentDictionary<NSJSVirtualMachine, ConcurrentDictionary<int, object>>();
         private const int NULL = 0;
+        private static volatile int seedofobjectid = 0;
+        private const string RUNTIME_OBJECTID_PROPERTYKEY = "#____nsjsdotnet_framework_internalfield_objectid";
 
-        public static bool Set(NSJSValue key, object value)
+        public static bool Set(NSJSObject obj, object value)
         {
-            if (key == null)
+            if (obj == null)
             {
                 return false;
             }
-            return Set(key.VirtualMachine, key.GetHashCode(), value);
+            NSJSVirtualMachine machine = obj.VirtualMachine;
+            ConcurrentDictionary<int, object> dd = GetTable(machine);
+            lock (dd)
+            {
+                int key = GetObjectIdentity(obj);
+                if (dd.ContainsKey(key))
+                {
+                    dd[key] = value;
+                }
+                else
+                {
+                    key = GetObjectIdentity(dd);
+                    dd.TryAdd(key, value);
+                    SetObjectIdentity(obj, key);
+                }
+                return true;
+            }
         }
 
-        public static bool Set(NSJSVirtualMachine machine, int key, object value)
+        protected static int GetObjectIdentity(NSJSObject obj)
         {
-            if (key == NULL || value == null)
+            if (obj == null)
             {
-                return false;
+                return 0;
             }
-            return GetTable(machine).AddOrUpdate(key, value, (i, oldValue) => value) == value;
+            IntPtr handle = obj.GetPropertyAndReturnHandle(RUNTIME_OBJECTID_PROPERTYKEY);
+            if (handle == null)
+            {
+                return 0;
+            }
+            return new NSJSInt32(handle, obj.VirtualMachine).Value;
+        }
+
+        protected static int GetObjectIdentity(ConcurrentDictionary<int, object> objects)
+        {
+            int key = 0;
+            do
+            {
+                key = Interlocked.Increment(ref seedofobjectid);
+            } while (key == 0 || objects.ContainsKey(key));
+            return key;
+        }
+
+        protected static bool SetObjectIdentity(NSJSObject obj, int key)
+        {
+            if (obj == null)
+            {
+                throw new ArgumentNullException("obj");
+            }
+            return obj.Set(RUNTIME_OBJECTID_PROPERTYKEY, key);
         }
 
         public static IEnumerable<NSJSVirtualMachine> GetAllVirtualMachine()
@@ -49,158 +91,104 @@
             {
                 throw new ObjectDisposedException("machine");
             }
-            lock (kvtables)
+            return kvtables.GetOrAdd(machine, (key) =>
             {
-                return kvtables.GetOrAdd(machine, (key) =>
-                {
-                    var dictionary = new ConcurrentDictionary<int, object>();
-                    machine.Disposed += (sender, e) => ReleaseAll(machine);
-                    kvtables.TryAdd(machine, dictionary);
-                    return dictionary;
-                });
-            }
+                ConcurrentDictionary<int, object> dd = new ConcurrentDictionary<int, object>();
+                machine.Disposed += (sender, e) => ReleaseAll(machine);
+                kvtables.TryAdd(machine, dd);
+                return dd;
+            });
         }
 
-        public static object Get(NSJSValue key)
+        public static object Get(NSJSObject obj)
         {
-            if (key == null)
+            if (obj == null)
             {
                 return null;
             }
-            return Get(key.VirtualMachine, key.GetHashCode());
-        }
-
-        public static object Get(NSJSVirtualMachine machine, int key)
-        {
-            if (key == NULL)
-            {
-                return null;
-            }
-            ConcurrentDictionary<int, object> table = GetTable(machine);
+            NSJSVirtualMachine machine = obj.VirtualMachine;
+            ConcurrentDictionary<int, object> dd = GetTable(machine);
+            int key = GetObjectIdentity(obj);
             object value;
-            table.TryGetValue(key, out value);
-            return value;
-        }
-
-        public static TValue Get<TValue>(NSJSValue key)
-        {
-            if (key == null)
+            if (dd.TryGetValue(key, out value))
             {
-                return default(TValue);
+                return value;
             }
-            return Get<TValue>(key.VirtualMachine, key.GetHashCode());
+            return default(object);
         }
 
-        public static TValue Get<TValue>(NSJSVirtualMachine machine, int key)
+        public static TValue Get<TValue>(NSJSObject obj)
         {
-            object obj = Get(machine, key);
             if (obj == null)
             {
                 return default(TValue);
             }
-            if (typeof(TValue).IsInstanceOfType(obj))
+            object result = Get(obj);
+            if (result == null || !typeof(TValue).IsInstanceOfType(result))
             {
-                return (TValue)obj;
+                return default(TValue);
             }
-            return default(TValue);
+            return (TValue)result;
         }
 
-        public static bool Release<TValue>(NSJSVirtualMachine machine, int key, out TValue value)
+        public static bool Release<TValue>(NSJSObject obj, out TValue value)
         {
-            object o;
-            Release(machine, key, out o);
-            if (o == null)
+            if (obj == null)
             {
                 value = default(TValue);
                 return false;
             }
-            if (typeof(TValue).IsInstanceOfType(o))
+            object result;
+            bool success = Release(obj, out result);
+            if (!success)
             {
-                value = default(TValue);
-                return false;
+                result = default(TValue);
             }
-            value = (TValue)o;
-            return true;
+            value = (TValue)result;
+            return success;
         }
 
-        public static bool Release<TValue>(NSJSValue key, out TValue value)
+        public static bool Release(NSJSObject obj, out object value)
         {
-            if (key == null)
-            {
-                value = default(TValue);
-                return false;
-            }
-            return Release<TValue>(key.VirtualMachine, key.GetHashCode(), out value);
-        }
-
-        public static bool Release(NSJSValue key, out object value)
-        {
-            value = null;
-            if (key == null)
-            {
-                return false;
-            }
-            return Release(key.VirtualMachine, key.GetHashCode(), out value);
-        }
-
-        public static bool Release(NSJSVirtualMachine machine, int key)
-        {
-            if (machine == null)
-            {
-                return false;
-            }
-            object value;
-            return Release(machine, key, out value);
-        }
-
-        public static bool Release(NSJSValue key)
-        {
-            if (key == null)
-            {
-                return false;
-            }
-            object value;
-            return Release(key, out value);
-        }
-
-        public static bool Release(NSJSVirtualMachine machine, int key, out object value)
-        {
-            if (key == NULL)
+            if (obj == null)
             {
                 value = null;
                 return false;
             }
-            ConcurrentDictionary<int, object> table = GetTable(machine);
-            bool success = table.TryRemove(key, out value);
-            return success;
+            NSJSVirtualMachine machine = obj.VirtualMachine;
+            ConcurrentDictionary<int, object> dd = GetTable(machine);
+            int key = GetObjectIdentity(obj);
+            return dd.TryRemove(key, out value);
         }
 
-        public static IEnumerable<int> GetAllKey(NSJSVirtualMachine machine)
+        public static bool Release(NSJSObject obj)
         {
-            ConcurrentDictionary<int, object> table = GetTable(machine);
-            return table.Keys;
+            if (obj == null)
+            {
+                return false;
+            }
+            object value;
+            return Release(obj, out value);
         }
 
         public static IEnumerable<object> GetAllValue(NSJSVirtualMachine machine)
         {
-            ConcurrentDictionary<int, object> table = GetTable(machine);
-            return table.Values;
+            ConcurrentDictionary<int, object> dd = GetTable(machine);
+            return dd.Values;
         }
 
         public static int GetCount(NSJSVirtualMachine machine)
         {
-            return GetTable(machine).Count;
+            ConcurrentDictionary<int, object> dd = GetTable(machine);
+            return dd.Count;
         }
 
         public static void ReleaseAll(NSJSVirtualMachine machine)
         {
-            lock (kvtables)
+            ConcurrentDictionary<int, object> dd;
+            if (kvtables.TryRemove(machine, out dd))
             {
-                ConcurrentDictionary<int, object> dictionary;
-                if (kvtables.TryRemove(machine, out dictionary))
-                {
-                    dictionary.Clear(); ;
-                }
+                dd.Clear(); ;
             }
         }
 

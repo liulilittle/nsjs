@@ -73,7 +73,7 @@
                 Encoding encodings = NSJSEncoding.DefaultEncoding;
                 if (arguments.Length > 1)
                 {
-                    encodings = NSJSEncoding.GetEncoding(arguments[1]);
+                    encodings = NSJSEncoding.GetEncoding(arguments[1] as NSJSObject);
                 }
                 try
                 {
@@ -110,7 +110,7 @@
                 Encoding encodings = NSJSEncoding.DefaultEncoding;
                 if (arguments.Length > 2)
                 {
-                    encodings = NSJSEncoding.GetEncoding(arguments[2]);
+                    encodings = NSJSEncoding.GetEncoding(arguments[2] as NSJSObject);
                 }
                 try
                 {

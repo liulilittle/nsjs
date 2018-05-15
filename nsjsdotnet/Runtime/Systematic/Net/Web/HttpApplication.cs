@@ -46,7 +46,7 @@
                 NSJSFunctionCallbackInfo arguments = NSJSFunctionCallbackInfo.From(info);
                 NSJSObject self = arguments.This;
                 HttpRequest.Close(self.Get("Request"));
-                HttpResponse.Close(self.Get("Response"));
+                HttpResponse.Close(self.Get("Response") as NSJSObject);
             }
 
             public HTTPApplication Application
@@ -227,7 +227,7 @@
             {
                 return null;
             }
-            NSJSObject o = new NSJSObject(machine);
+            NSJSObject o = NSJSObject.New(machine);
             o.Set("Name", g_NameProc);
             o.Set("Handler", NSJSValue.Null(machine));
             o.Set("Root", g_RootProc);

@@ -569,7 +569,7 @@ bool NSJSLocalValueAllocator::Free(NSJSLocalValue* value)
 	{
 		do
 		{
-			LinkedListNode<NSJSLocalValue*>* node = (LinkedListNode<NSJSLocalValue*>*)value->LinkedListNode;
+			LinkedListNode<NSJSLocalValue*>* node = value->LinkedListNode;
 			if (node == NULL) // this->actives.Find(value);
 			{
 				break;

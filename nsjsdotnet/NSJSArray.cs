@@ -37,7 +37,7 @@
             }
         }
 
-        public static NSJSArray New(NSJSVirtualMachine machine, int length)
+        public static new NSJSArray New(NSJSVirtualMachine machine, int length)
         {
             if (length < 0)
             {

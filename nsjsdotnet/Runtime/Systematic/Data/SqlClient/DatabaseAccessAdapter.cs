@@ -24,7 +24,7 @@
             owner.AddFunction("Invalid", NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(Invalid));
         }
 
-        public static DatabaseAccessAdapter GetAdapter(NSJSValue value)
+        public static DatabaseAccessAdapter GetAdapter(NSJSObject value)
         {
             return NSJSKeyValueCollection.Get<DatabaseAccessAdapter>(value);
         }
@@ -44,7 +44,8 @@
             {
                 return NSJSValue.Null(machine);
             }
-            NSJSObject self = new NSJSObject(machine) { UserToken = adapter };
+            NSJSObject self = NSJSObject.New(machine);
+            self.UserToken = adapter;
             self.Set("Close", g_CloseProc);
             self.Set("Dispose", g_CloseProc);
             return self;

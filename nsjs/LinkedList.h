@@ -4,13 +4,16 @@
 #include <assert.h>
 
 template<typename T>
+class LinkedList;
+
+template<typename T>
 struct LinkedListNode
 {
 public:
 	LinkedListNode<T>* Previous;
 	LinkedListNode<T>* Next;
 	T Value;
-	void* LinkedList;
+	LinkedList<T>* LinkedList;
 };
 
 template<typename T>

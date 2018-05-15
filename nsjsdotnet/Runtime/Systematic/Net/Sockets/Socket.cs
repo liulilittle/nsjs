@@ -70,7 +70,7 @@
         private static void Invalid(IntPtr info)
         {
             NSJSFunctionCallbackInfo arguments = NSJSFunctionCallbackInfo.From(info);
-            SocketContext context = GetSocketContext(arguments.Length > 0 ? arguments[0] : null);
+            SocketContext context = GetSocketContext(arguments.Length > 0 ? arguments[0] as NSJSObject : null);
             NSJSObject o = NSJSObject.New(arguments.VirtualMachine);
             arguments.SetReturnValue(!(context != null && context.Socket != null && context.This != null));
         }
@@ -960,7 +960,7 @@
             arguments.SetReturnValue(success);
         }
 
-        private static SocketContext GetSocketContext(NSJSValue socket)
+        private static SocketContext GetSocketContext(NSJSObject socket)
         {
             if (socket == null)
             {
@@ -969,7 +969,7 @@
             return NSJSKeyValueCollection.Get<SocketContext>(socket);
         }
 
-        private static SOCKET GetSocket(NSJSValue socket)
+        private static SOCKET GetSocket(NSJSObject socket)
         {
             SocketContext context = GetSocketContext(socket);
             if (context != null)

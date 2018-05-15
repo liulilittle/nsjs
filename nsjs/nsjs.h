@@ -137,7 +137,7 @@ DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_undefined(v8::Isolate* 
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_null(v8::Isolate* isolate);
 DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_free(NSJSLocalValue* value);
 DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_equals(NSJSLocalValue* x, NSJSLocalValue* y);
-DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_object_new(v8::Isolate* isolate);
+DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_object_new(v8::Isolate* isolate, int fieldcount);
 DLLEXPORT int64_t DLLEXPORTNSAPI nsjs_localvalue_get_int64(NSJSLocalValue* localValue);
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_int32_new(v8::Isolate* isolate, int32_t value);
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_uint32_new(v8::Isolate* isolate, uint32_t value);

@@ -15,7 +15,7 @@
             {
                 return false;
             }
-            ObjectAuxiliary.RemoveInKeyValueCollection(o.Get("InputStream"));
+            ObjectAuxiliary.RemoveInKeyValueCollection(o.Get("InputStream") as NSJSObject);
             NSJSArray files = o.Get("Files") as NSJSArray;
             if (files != null)
             {
@@ -30,10 +30,10 @@
                     {
                         continue;
                     }
-                    ObjectAuxiliary.RemoveInKeyValueCollection(o.Get("InputStream"));
+                    ObjectAuxiliary.RemoveInKeyValueCollection(o.Get("InputStream") as NSJSObject);
                 }
             }
-            return ObjectAuxiliary.RemoveInKeyValueCollection(request);
+            return ObjectAuxiliary.RemoveInKeyValueCollection(request as NSJSObject);
         }
 
         public static NSJSObject New(NSJSVirtualMachine machine, NSJSObject context, HTTPRequest request)

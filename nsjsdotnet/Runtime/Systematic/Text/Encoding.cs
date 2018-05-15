@@ -64,7 +64,7 @@
 
         public static readonly ENCODING DefaultEncoding = ENCODING.UTF8;
 
-        public static ENCODING GetEncoding(NSJSValue value)
+        public static ENCODING GetEncoding(NSJSObject value)
         {
             if (value == null)
             {

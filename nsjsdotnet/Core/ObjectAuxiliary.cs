@@ -20,7 +20,7 @@
     {
         private static readonly IntPtr NULL = IntPtr.Zero;
 
-        public static bool RemoveInKeyValueCollection(NSJSValue value)
+        public static bool RemoveInKeyValueCollection(NSJSObject value)
         {
             if (value == null)
             {
@@ -247,7 +247,7 @@
                 string fileName = o.Get("FileName").As<string>();
                 string mediaType = o.Get("MediaType").As<string>();
                 string blobName = o.Get("Name").As<string>();
-                Stream contentStream = NSJSStream.Get(o.Get("ContentStream"));
+                Stream contentStream = NSJSStream.Get(o.Get("ContentStream") as NSJSObject);
                 if (contentStream != null && !string.IsNullOrEmpty(blobName))
                 {
                     return new Attachment(contentStream, blobName, mediaType);

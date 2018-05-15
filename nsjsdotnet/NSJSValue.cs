@@ -116,18 +116,6 @@
             set;
         }
 
-        public virtual object UserToken
-        {
-            get
-            {
-                return NSJSKeyValueCollection.Get(this);
-            }
-            set
-            {
-                NSJSKeyValueCollection.Set(this, value);
-            }
-        }
-
         public static int GetHashCode(NSJSValue value)
         {
             if (value == null)

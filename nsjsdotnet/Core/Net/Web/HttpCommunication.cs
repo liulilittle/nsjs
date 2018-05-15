@@ -33,20 +33,17 @@
                 }
                 else
                 {
+                    HttpListenerContext context = null;
                     try
                     {
-                        HttpListenerContext context = server.EndGetContext(result);
-                        if (context == null)
-                        {
-                            break;
-                        }
-                        Action<object, HttpListenerContext> received = this.Received;
-                        if (received != null)
-                        {
-                            received(this, context);
-                        }
+                        context = server.EndGetContext(result);
                     }
                     catch (Exception) { break; }
+                    Action<object, HttpListenerContext> received = this.Received;
+                    if (received != null)
+                    {
+                        received(this, context);
+                    }
                     this.InternalGetContextAsyncCycleLooper(null);
                 }
             } while (false);

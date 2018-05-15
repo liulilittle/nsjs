@@ -39,7 +39,7 @@
                         Encoding encoding = NSJSEncoding.DefaultEncoding;
                         if (arguments.Length > 1)
                         {
-                            encoding = NSJSEncoding.GetEncoding(arguments[1]);
+                            encoding = NSJSEncoding.GetEncoding(arguments[1] as NSJSObject);
                         }
                         buffer = encoding.GetBytes(s);
                     }
