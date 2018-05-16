@@ -5,6 +5,7 @@
     using System.IO;
     using System.Net;
     using System.Text;
+    using System.Web;
 
     public class HttpRequest
     {
@@ -12,6 +13,7 @@
         private string path = null;
         private HttpForm form = null;
         private MemoryStream uploadStream = null;
+        private NameValueCollection queryString = null;
 
         public HttpContext CurrentContext
         {
@@ -205,7 +207,52 @@
         {
             get
             {
-                return request.QueryString;
+                lock (this)
+                {
+                    if (this.queryString == null)
+                    {
+                        this.queryString = new NameValueCollection();
+                        Uri url = this.Url;
+                        string query = url.Query;
+                        do
+                        {
+                            if (string.IsNullOrEmpty(query))
+                            {
+                                break;
+                            }
+                            if (query[0] == '?')
+                            {
+                                if (query.Length <= 1)
+                                {
+                                    break;
+                                }
+                                query = query.Substring(1);
+                            }
+                            if (!string.IsNullOrEmpty(query))
+                            {
+                                foreach (string kv in query.Split('&'))
+                                {
+                                    int i = kv.IndexOf('=');
+                                    string key = null;
+                                    string value = null;
+                                    if (i <= -1)
+                                    {
+                                        key = kv;
+                                    }
+                                    else
+                                    {
+                                        key = kv.Substring(0, i);
+                                        value = kv.Substring(i + 1);
+                                    }
+                                    key = HttpUtility.UrlDecode(key);
+                                    value = HttpUtility.UrlDecode(value);
+                                    this.queryString.Add(key, value);
+                                }
+                            }
+                        } while (false);
+                    }
+                }
+                return this.queryString;
             }
         }
 

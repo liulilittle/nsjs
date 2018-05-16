@@ -32,7 +32,7 @@
             byte[] Unicode = new byte[] { 0xFF, 0xFE, 0x41 };
             byte[] UnicodeBIG = new byte[] { 0xFE, 0xFF, 0x00 };
             byte[] UTF8 = new byte[] { 0xEF, 0xBB, 0xBF }; // 带BOM 
-            if (IsUTF8Bytes(s) || (s[0] == 0xEF && s[1] == 0xBB && s[2] == 0xBF))
+            if (s[0] == 0xEF && s[1] == 0xBB && s[2] == 0xBF)
             {
                 encoding = Encoding.UTF8;
             }
@@ -45,42 +45,6 @@
                 encoding = Encoding.Unicode;
             }
             return encoding;
-        }
-
-        private static bool IsUTF8Bytes(byte[] data)
-        {
-            int charByteCounter = 1;  // 计算当前正分析的字符应还有的字节数 
-            byte curByte; // 当前分析的字节. 
-            for (int i = 0; i < data.Length; i++)
-            {
-                curByte = data[i];
-                if (charByteCounter == 1)
-                {
-                    if (curByte >= 0x80)
-                    {
-                        // 判断当前 
-                        while (((curByte <<= 1) & 0x80) != 0)
-                        {
-                            charByteCounter++;
-                        }
-                        // 标记位首位若为非0 则至少以2个1开始 如:110XXXXX...........1111110X 
-                        if (charByteCounter == 1 || charByteCounter > 6)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    // 若是UTF-8 此时第一位必须为1 
-                    if ((curByte & 0xC0) != 0x80)
-                    {
-                        return false;
-                    }
-                    charByteCounter--;
-                }
-            }
-            return !(charByteCounter > 1);
         }
 
         public static bool TryReadAllText(string path, out string value)
