@@ -3,6 +3,7 @@
     using System;
     using System.Runtime.InteropServices;
     using System.Text;
+    using System.Diagnostics;
 
     public unsafe class NSJSString : NSJSValue
     {
@@ -102,22 +103,38 @@
             return 0;
         }
 
-        public static bool IsUTF8Bytes(byte[] data)
+        public static bool IsUTF8Buffer(byte[] buffer)
         {
-            int charByteCounter = 1;  // 计算当前正分析的字符应还有的字节数 
-            byte curByte; // 当前分析的字节. 
-            for (int i = 0; i < data.Length; i++)
+            if (buffer == null)
             {
-                curByte = data[i];
-                if (charByteCounter == 1)
+                return false;
+            }
+            fixed (byte* pinned = buffer)
+            {
+                return IsUTF8Buffer(pinned, buffer.Length);
+            }
+        }
+
+        public static bool IsUTF8Buffer(byte* buffer, int count)
+        {
+            if (buffer == null || count <= 0)
+            {
+                return false;
+            }
+            int counter = 1;
+            byte key = 0;
+            for (int i = 0; i < count; i++)
+            {
+                key = buffer[i];
+                if (counter == 1)
                 {
-                    if (curByte >= 0x80)  // 判断当前 
+                    if (key >= 0x80)
                     {
-                        while (((curByte <<= 1) & 0x80) != 0)
+                        while (((key <<= 1) & 0x80) != 0)
                         {
-                            charByteCounter++;
-                        } // 标记位首位若为非0 则至少以2个1开始 如:110XXXXX...........1111110X 
-                        if (charByteCounter == 1 || charByteCounter > 6)
+                            counter++;
+                        }
+                        if (counter == 1 || counter > 6)
                         {
                             return false;
                         }
@@ -125,17 +142,19 @@
                 }
                 else
                 {
-                    if ((curByte & 0xC0) != 0x80) // 若是UTF-8 此时第一位必须为1 
+                    if ((key & 0xC0) != 0x80)
                     {
                         return false;
                     }
-                    charByteCounter--;
+                    counter--;
                 }
             }
-            return !(charByteCounter > 1);
+            return !(counter > 1);
         }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private object value;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private bool initialized;
 
         internal NSJSString(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kString, machine)
