@@ -52,12 +52,15 @@ void SpinLock::Enter(bool* localTaken, uint64_t* iterations, uint32_t* timeval)
 	else
 	{
 		uint64_t startMilliseconds = GetSystemTickCount64();
-		long count = 0;
+		uint64_t count = 0;
 		while (!*localTaken)
 		{
-			if (iterations && (*iterations != INFINITE && ++count > *iterations))
+			if (iterations && *iterations != INFINITE)
 			{
-				break;
+				if (++count >= *iterations)
+				{
+					break;
+				}
 			}
 			if (timeval && *timeval != INFINITE)
 			{
@@ -67,7 +70,7 @@ void SpinLock::Enter(bool* localTaken, uint64_t* iterations, uint32_t* timeval)
 					break;
 				}
 			}
-			if (InterlockedIncrement(&__signal) == 0x01) // 获取到锁信号
+			if (InterlockedCompareExchange(&__signal, 0x01L , 0x00L) == 0x01L) // 获取到锁信号
 			{
 				*localTaken = true;
 				InterlockedExchange(&__threadid, threadid);
@@ -89,6 +92,6 @@ void SpinLock::Exit()
 	if (InterlockedDecrement(&__refcount) <= 0x00L)
 	{
 		InterlockedExchange(&__threadid, 0x00L);
-		InterlockedExchange(&__signal, 0x00L);
+		InterlockedCompareExchange(&__signal, 0x00L, 0x01L);
 	}
 }
