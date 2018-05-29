@@ -91,6 +91,7 @@ namespace Environment
 	void GetApplicationStartupPath(const v8::FunctionCallbackInfo<v8::Value>& info);
 	void GetProcessorCount(const v8::FunctionCallbackInfo<v8::Value>& info);
 	void GetApplicationCommandLine(const v8::FunctionCallbackInfo<v8::Value>& info);
+	void CurrentDirectory(const v8::FunctionCallbackInfo<v8::Value>& info);
 	void GetTickCount(const v8::FunctionCallbackInfo<v8::Value>& info);
 	void GetVirtualMachineId(const v8::FunctionCallbackInfo<v8::Value>& info);
 };

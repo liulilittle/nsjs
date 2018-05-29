@@ -15,6 +15,36 @@
         private static readonly NSJSFunctionCallback m_FlushProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Flush);
         private static readonly NSJSFunctionCallback m_DisposeProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Dispose);
         private static readonly NSJSFunctionCallback m_ReadBytesProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ReadBytes);
+        private static readonly NSJSFunctionCallback m_CopyToProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(CopyTo);
+
+        private static void CopyTo(IntPtr info)
+        {
+            NSJSFunctionCallbackInfo arguments = NSJSFunctionCallbackInfo.From(info);
+            BaseStream stream = NSJSKeyValueCollection.Get<BaseStream>(arguments.This);
+            if (stream == null)
+            {
+                Throwable.ObjectDisposedException(arguments.VirtualMachine);
+            }
+            else
+            {
+                BaseStream destination = NSJSKeyValueCollection.Get<BaseStream>(arguments.Length > 0 ? arguments[0] as NSJSObject : null);
+                if (destination == null)
+                {
+                    Throwable.ArgumentNullException(arguments.VirtualMachine);
+                }
+                else
+                {
+                    try
+                    {
+                        stream.CopyTo(destination);
+                    }
+                    catch (Exception e)
+                    {
+                        Throwable.Exception(arguments.VirtualMachine, e);
+                    }
+                }
+            }
+        }
 
         public static BaseStream Get(NSJSObject stream)
         {
@@ -36,6 +66,7 @@
             o.DefineProperty("Length", m_LengthProc, (NSJSFunctionCallback)null);
             o.DefineProperty("Position", m_PositionProc, m_PositionProc);
             o.Set("Seek", m_SeekProc);
+            o.Set("CopyTo", m_CopyToProc);
 
             o.Set("Read", m_ReadProc);
             o.Set("Write", m_WriteProc);

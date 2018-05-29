@@ -247,6 +247,7 @@ void Environment::Initialize(NSJSVirtualMachine & machine)
 	}
 	else
 	{
+		environment->AddFunction("CurrentDirectory", &Environment::CurrentDirectory);
 		environment->AddFunction("GetVirtualMachineId", &Environment::GetVirtualMachineId);
 		environment->AddFunction("GetApplicationStartupPath", &Environment::GetApplicationStartupPath);
 		environment->AddFunction("GetProcessorCount", &Environment::GetProcessorCount);
@@ -302,6 +303,53 @@ void Environment::GetProcessorCount(const FunctionCallbackInfo<Value>& info)
 void Environment::GetApplicationCommandLine(const FunctionCallbackInfo<Value>& info)
 {
 	info.GetReturnValue().Set(String::NewFromUtf8(info.GetIsolate(), GetCommandLineA(), NewStringType::kNormal).ToLocalChecked());
+}
+
+void Environment::CurrentDirectory(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+	v8::ReturnValue<v8::Value> result = info.GetReturnValue();
+	if (info.Length() <= 0)
+	{
+		size_t size = MAX_PATH;
+		LPSTR path = NULL;
+		do
+		{
+			if (path != NULL)
+			{
+				Memory::Free(path);
+			}
+			path = (LPSTR)Memory::Alloc(size);
+			DWORD len = GetCurrentDirectoryA((DWORD)size, path);
+			if (len <= 0)
+			{
+				Memory::Free(path);
+				path = NULL;
+				break;
+			}
+			if (!(len >= (size - 1)))
+			{
+				break;
+			}
+			size *= 2;
+		} while (true);
+		const char* data = (path == NULL ? NULL : ASCIIToUtf8(path));
+		if (data != NULL)
+		{
+			v8::Local<v8::String> s;
+			if (v8::String::NewFromUtf8(info.GetIsolate(), data, v8::NewStringType::kNormal).ToLocal(&s))
+			{
+				result.Set(s);
+			}
+		}
+		Memory::Free(path);
+		Memory::Free(data);
+	}
+	else
+	{
+		const char* data = Utf8ToASCII(*String::Utf8Value(info[0]));
+		result.Set((int32_t)SetCurrentDirectoryA(data));
+		Memory::Free(data);
+	}
 }
 
 void Environment::GetTickCount(const FunctionCallbackInfo<Value>& info)
