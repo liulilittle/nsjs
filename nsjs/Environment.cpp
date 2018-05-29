@@ -318,7 +318,7 @@ void Environment::CurrentDirectory(const v8::FunctionCallbackInfo<v8::Value>& in
 			{
 				Memory::Free(path);
 			}
-			path = (LPSTR)Memory::Alloc(size);
+			path = (LPSTR)Memory::Alloc((uint32_t)size);
 			DWORD len = GetCurrentDirectoryA((DWORD)size, path);
 			if (len <= 0)
 			{
