@@ -191,7 +191,9 @@
                                     {
                                         byte[] payload = value.Payload;
                                         int len = payload.Length;
-                                        if (values.Count >= 2 && payload[len - 2] == '\r' && payload[len - 1] == '\n')
+                                        if (len >= 2 && values.Count >= 2 &&
+                                            payload[len - 2] == '\r' &&
+                                            payload[len - 1] == '\n')
                                         {
                                             len -= 2;
                                         }
