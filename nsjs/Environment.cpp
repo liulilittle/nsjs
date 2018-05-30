@@ -267,37 +267,40 @@ void GetCurrentApplicationPath(const FunctionCallbackInfo<Value>& info, int oper
 	{
 		result.Set(v8::Null(isolate));
 	}
-	string path = (const char*)out;
-	int position = (int)path.find_last_of('\\', path.length());
-	if (position < 0)
-	{
-		result.Set(v8::Null(isolate));
-	}
 	else
 	{
-		const char* data = NULL;
-		switch (operation)
+		string path = (const char*)out;
+		int position = (int)path.find_last_of('\\', path.length());
+		if (position < 0)
 		{
-		case 0:
-			data = path.substr(0, position).data();
-			break;
-		case 1:
-			data = path.substr(position + 1).data();
-			break;
-		default:
-			data = (const char*)(out);
-			break;
+			result.Set(v8::Null(isolate));
 		}
-		data = ASCIIToUtf8(data);
-		v8::Local<v8::Value> str;
-		if (!String::NewFromUtf8(isolate, data, NewStringType::kNormal).ToLocal(&str))
+		else
 		{
-			str = v8::Null(isolate);
+			const char* data = NULL;
+			switch (operation)
+			{
+			case 0:
+				data = path.substr(0, position).data();
+				break;
+			case 1:
+				data = path.substr(position + 1).data();
+				break;
+			default:
+				data = (const char*)(out);
+				break;
+			}
+			data = ASCIIToUtf8(data);
+			v8::Local<v8::Value> str;
+			if (!String::NewFromUtf8(isolate, data, NewStringType::kNormal).ToLocal(&str))
+			{
+				str = v8::Null(isolate);
+			}
+			result.Set(str);
+			Memory::Free(data);
 		}
-		result.Set(str);
-		Memory::Free(data);
+		Memory::Free(out);
 	}
-	Memory::Free(out);
 }
 
 void Environment::GetApplicationFileName(const FunctionCallbackInfo<Value>& info)
