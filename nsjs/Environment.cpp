@@ -257,40 +257,75 @@ void Environment::Initialize(NSJSVirtualMachine & machine)
 	}
 }
 
-void Environment::GetApplicationFileName(const FunctionCallbackInfo<Value>& info)
+void GetCurrentApplicationPath(const FunctionCallbackInfo<Value>& info, int operation)
 {
-	char ch[MAX_PATH];
-	GetModuleFileNameA(NULL, ch, MAX_PATH);
-	string path = ch;
-	int position = (int)path.rfind('\\');
-	Local<Value> result;
+	const void* out = NULL;
+	GetBufferNativeString(out, GetModuleFileNameA(NULL, (LPSTR)buffer, (DWORD)size));
+	v8::Isolate* isolate = info.GetIsolate();
+	v8::ReturnValue<v8::Value> result = info.GetReturnValue();
+	if (out == NULL)
+	{
+		result.Set(v8::Null(isolate));
+	}
+	string path = (const char*)out;
+	int position = (int)path.find_last_of('\\', path.length());
 	if (position < 0)
 	{
-		result = v8::Undefined(info.GetIsolate());
+		result.Set(v8::Null(isolate));
 	}
 	else
 	{
-		result = String::NewFromUtf8(info.GetIsolate(), path.substr(position + 1).data(), NewStringType::kNormal).ToLocalChecked();
+		const char* data = NULL;
+		switch (operation)
+		{
+		case 0:
+			data = path.substr(0, position).data();
+			break;
+		case 1:
+			data = path.substr(position + 1).data();
+			break;
+		default:
+			data = (const char*)(out);
+			break;
+		}
+		data = ASCIIToUtf8(data);
+		v8::Local<v8::Value> str;
+		if (!String::NewFromUtf8(isolate, data, NewStringType::kNormal).ToLocal(&str))
+		{
+			str = v8::Null(isolate);
+		}
+		result.Set(str);
+		Memory::Free(data);
 	}
-	info.GetReturnValue().Set(result);
+	Memory::Free(out);
+}
+
+void Environment::GetApplicationFileName(const FunctionCallbackInfo<Value>& info)
+{
+	GetCurrentApplicationPath(info, 1);
+}
+
+void Environment::CurrentDirectory(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+	v8::ReturnValue<v8::Value> result = info.GetReturnValue();
+	if (info.Length() <= 0)
+	{
+		v8::Isolate* isolate = info.GetIsolate();
+		v8::Local<v8::Value> out = v8::Undefined(isolate);
+		GetBufferLocalString(isolate, out, GetCurrentDirectoryA((DWORD)size, (LPSTR)buffer));
+		result.Set(out);
+	}
+	else
+	{
+		const char* data = Utf8ToASCII(*String::Utf8Value(info[0]));
+		result.Set((int32_t)SetCurrentDirectoryA(data));
+		Memory::Free(data);
+	}
 }
 
 void Environment::GetApplicationStartupPath(const FunctionCallbackInfo<Value>& info)
 {
-	char ch[MAX_PATH];
-	GetModuleFileNameA(NULL, ch, MAX_PATH);
-	string path = ch;
-	int position = (int)path.find_last_of('\\', path.length());
-	Local<Value> result;
-	if (position < 0)
-	{
-		result = v8::Undefined(info.GetIsolate());
-	}
-	else
-	{
-		result = String::NewFromUtf8(info.GetIsolate(), path.substr(0, position).data(), NewStringType::kNormal).ToLocalChecked();
-	}
-	info.GetReturnValue().Set(result);
+	GetCurrentApplicationPath(info, 0);
 }
 
 void Environment::GetProcessorCount(const FunctionCallbackInfo<Value>& info)
@@ -302,59 +337,14 @@ void Environment::GetProcessorCount(const FunctionCallbackInfo<Value>& info)
 
 void Environment::GetApplicationCommandLine(const FunctionCallbackInfo<Value>& info)
 {
-	info.GetReturnValue().Set(String::NewFromUtf8(info.GetIsolate(), GetCommandLineA(), NewStringType::kNormal).ToLocalChecked());
-}
-
-void Environment::CurrentDirectory(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-	v8::ReturnValue<v8::Value> result = info.GetReturnValue();
-	if (info.Length() <= 0)
-	{
-		size_t size = MAX_PATH;
-		LPSTR path = NULL;
-		do
-		{
-			if (path != NULL)
-			{
-				Memory::Free(path);
-			}
-			path = (LPSTR)Memory::Alloc((uint32_t)size);
-			DWORD len = GetCurrentDirectoryA((DWORD)size, path);
-			if (len <= 0)
-			{
-				Memory::Free(path);
-				path = NULL;
-				break;
-			}
-			if (!(len >= (size - 1)))
-			{
-				break;
-			}
-			size *= 2;
-		} while (true);
-		const char* data = (path == NULL ? NULL : ASCIIToUtf8(path));
-		if (data != NULL)
-		{
-			v8::Local<v8::String> s;
-			if (v8::String::NewFromUtf8(info.GetIsolate(), data, v8::NewStringType::kNormal).ToLocal(&s))
-			{
-				result.Set(s);
-			}
-		}
-		Memory::Free(path);
-		Memory::Free(data);
-	}
-	else
-	{
-		const char* data = Utf8ToASCII(*String::Utf8Value(info[0]));
-		result.Set((int32_t)SetCurrentDirectoryA(data));
-		Memory::Free(data);
-	}
+	info.GetReturnValue().Set(String::NewFromUtf8(info.GetIsolate(), 
+		GetCommandLineA(), NewStringType::kNormal).ToLocalChecked());
 }
 
 void Environment::GetTickCount(const FunctionCallbackInfo<Value>& info)
 {
-	info.GetReturnValue().Set(Integer::NewFromUnsigned(info.GetIsolate(), (uint32_t)GetSystemTickCount64()));
+	info.GetReturnValue().Set(Integer::NewFromUnsigned(info.GetIsolate(), 
+		(uint32_t)GetSystemTickCount64()));
 }
 
 void Environment::GetVirtualMachineId(const v8::FunctionCallbackInfo<v8::Value>& info)

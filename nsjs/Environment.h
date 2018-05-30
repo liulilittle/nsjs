@@ -6,64 +6,47 @@
 #include <stdint.h>
 #include <v8.h>
 
-#ifndef LocalArrayToBufferValueEx
-#define LocalArrayToBufferValueEx(cchtype, assign, value, typetoken) \
+#define GetBufferNativeString(out, callback) \
 { \
-	const char* __xd_cc_offset__ = *String::Utf8Value(value); \
-	int __xd_cc_len__ = String::Utf8Value(value).length(); \
-	const char* __xd_cc_end__ = &__xd_cc_offset__[__xd_cc_len__]; \
-	const char* __xd_cc_last__ = __xd_cc_offset__; \
-	int __xd_cc_count__ = 1; \
-	while (__xd_cc_offset__ != __xd_cc_end__) \
+	out = NULL; \
+	size_t size = MAX_PATH; \
+	void* buffer = NULL; \
+	do \
 	{ \
-		if (*__xd_cc_offset__ == ',') \
+		if (buffer != NULL) \
 		{ \
-			__xd_cc_count__++; \
+			Memory::Free(buffer); \
 		} \
-		__xd_cc_offset__++; \
-	} \
-	if (__xd_cc_count__ <= 0) \
-	{ \
-		assign = NULL; \
-	} \
-	else \
-	{ \
-		cchtype* __xd_cc_ch_buf_tt__ = (cchtype*)Memory::Alloc(sizeof(cchtype) * __xd_cc_count__); \
-		__xd_cc_offset__ = __xd_cc_last__; \
-		int __xd_cc_ch_ii_t__ = 0; \
-		while (__xd_cc_offset__ != __xd_cc_end__) \
+		buffer = Memory::Alloc((uint32_t)size); \
+		uint32_t len = (uint32_t)callback; \
+		if (len <= 0) \
 		{ \
-			if (*__xd_cc_offset__ == ',') \
-			{ \
-				if(typetoken == 0) { \
-					__xd_cc_ch_buf_tt__[__xd_cc_ch_ii_t__] = (cchtype)atoll(__xd_cc_last__); \
-				} else { \
-					__xd_cc_ch_buf_tt__[__xd_cc_ch_ii_t__] = (cchtype)atof(__xd_cc_last__); \
-				}\
-				__xd_cc_ch_ii_t__++; \
-				__xd_cc_last__ = __xd_cc_offset__ + 1; \
-			} \
-			__xd_cc_offset__++; \
+			Memory::Free(buffer); \
+			buffer = NULL; \
+			break; \
 		} \
-		assign = __xd_cc_ch_buf_tt__; \
-	} \
+		if (!(len >= (size - 1))) \
+		{ \
+			break; \
+		} \
+		size *= 2; \
+	} while (true); \
+	out = buffer; \
 }
-#endif
 
-#ifndef LocalArrayToBufferValue
-#define LocalArrayToBufferValue(cchtype, assign, assignlen, value, valuetype, procgetvalue) \
+#define GetBufferLocalString(isolate, out, callback) \
 { \
-	v8::Local<valuetype> __xd_cc_ssarr__ = value.As<valuetype>(); \
-	int __xd_cc_len__ = (int)__xd_cc_ssarr__->Length(); \
-	cchtype* __xd_cc_cch__ = (cchtype*)Memory::Alloc((size_t)(sizeof(cchtype) * __xd_cc_len__)); \
-	for (int __xd_cc__jj_ii__ = 0; __xd_cc__jj_ii__ < __xd_cc_len__; __xd_cc__jj_ii__++) \
+	void* buffer = NULL; \
+	GetBufferNativeString(buffer, callback); \
+	const char* data = (buffer == NULL ? NULL : ASCIIToUtf8((char*)buffer)); \
+	if (data == NULL || !v8::String::NewFromUtf8(isolate, data, \
+		v8::NewStringType::kNormal).ToLocal(&out)) \
 	{ \
-		__xd_cc_cch__[__xd_cc__jj_ii__] = (cchtype)(__xd_cc_ssarr__->Get(__xd_cc__jj_ii__)->procgetvalue()); \
+		out = v8::Undefined(isolate); \
 	} \
-	assign = __xd_cc_cch__; \
-	assignlen = __xd_cc_len__; \
-}
-#endif
+	Memory::Free(buffer); \
+	Memory::Free(data); \
+} \
 
 char* UnicodeToUtf8(const wchar_t* s);
 char* UnicodeToUtf8(const wchar_t* s, int& len);
