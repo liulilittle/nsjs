@@ -80,7 +80,7 @@
                 {
                     try
                     {
-                        DIRECTORY.Delete(path);
+                        DIRECTORY.Delete(path, true);
                         success = true;
                     }
                     catch (Exception e)
