@@ -114,51 +114,24 @@
         private const string RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY = @"____nsjsdotnet_framework_object_getpropertydescriptor";
         private const string RUNTIME_GETPROPERTYNAMES_PROPERTYKEY = @"____nsjsdotnet_framework_object_getpropertynames";
 
+        protected internal virtual NSJSFunction GetFrameworkFunction(string key)
+        {
+            return NSJSFunction.GetFrameworkFunction(this.VirtualMachine, key);
+        }
+
         public virtual NSJSObject GetPropertyDescriptor(string key)
         {
             if (string.IsNullOrEmpty(key))
             {
                 return null;
             }
-            NSJSVirtualMachine machine = this.VirtualMachine;
-            NSJSFunction function = null;
-            lock (machine)
-            {
-                function = machine.GetData<NSJSFunction>(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY);
-                if (function == null)
-                {
-                    NSJSObject o = machine.Global;
-                    function = o.Get(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY) as NSJSFunction;
-                    if (function == null)
-                    {
-                        throw new InvalidProgramException("Framework system internal function appears to be deleted");
-                    }
-                    function.CrossThreading = true;
-                    machine.SetData(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY, function);
-                }
-            }
-            return function.Call(this, NSJSString.New(machine, key)) as NSJSObject;
+            NSJSFunction function = this.GetFrameworkFunction(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY);
+            return function.Call(this, NSJSString.New(this.VirtualMachine, key)) as NSJSObject;
         }
 
         public virtual IEnumerable<string> GetPropertyNames()
         {
-            NSJSVirtualMachine machine = this.VirtualMachine;
-            NSJSFunction function = null;
-            lock (machine)
-            {
-                function = machine.GetData<NSJSFunction>(RUNTIME_GETPROPERTYNAMES_PROPERTYKEY);
-                if (function == null)
-                {
-                    NSJSObject o = machine.Global;
-                    function = o.Get(RUNTIME_GETPROPERTYNAMES_PROPERTYKEY) as NSJSFunction;
-                    if (function == null)
-                    {
-                        throw new InvalidProgramException("Framework system internal function appears to be deleted");
-                    }
-                    function.CrossThreading = true;
-                    machine.SetData(RUNTIME_GETPROPERTYNAMES_PROPERTYKEY, function);
-                }
-            }
+            NSJSFunction function = this.GetFrameworkFunction(RUNTIME_GETPROPERTYNAMES_PROPERTYKEY);
             return ArrayAuxiliary.ToStringList(function.Call(this));
         }
 
@@ -176,24 +149,8 @@
             {
                 throw new ArgumentNullException("key is not allowed to be empty");
             }
-            NSJSVirtualMachine machine = this.VirtualMachine;
-            NSJSFunction function = null;
-            lock (machine)
-            {
-                function = machine.GetData<NSJSFunction>(RUNTIME_DEFINEPROPERTY_PROPERTYKEY);
-                if (function == null)
-                {
-                    NSJSObject o = machine.Global;
-                    function = o.Get(RUNTIME_DEFINEPROPERTY_PROPERTYKEY) as NSJSFunction;
-                    if (function == null)
-                    {
-                        throw new InvalidProgramException("Framework system internal function appears to be deleted");
-                    }
-                    function.CrossThreading = true;
-                    machine.SetData(RUNTIME_DEFINEPROPERTY_PROPERTYKEY, function);
-                }
-            }
-            executing(machine, function);
+            NSJSFunction function = this.GetFrameworkFunction(RUNTIME_DEFINEPROPERTY_PROPERTYKEY);
+            executing(this.VirtualMachine, function);
         }
 
         public virtual void DefineProperty(string key, NSJSFunctionCallback2 get, NSJSFunctionCallback2 set)

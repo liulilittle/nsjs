@@ -29,6 +29,31 @@
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private bool initialized;
 
+        protected static internal NSJSFunction GetFrameworkFunction(NSJSVirtualMachine machine, string key)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                return null;
+            }
+            NSJSFunction function = null;
+            lock (machine)
+            {
+                function = machine.GetData<NSJSFunction>(key);
+                if (function == null)
+                {
+                    NSJSObject o = machine.Global;
+                    function = o.Get(key) as NSJSFunction;
+                    if (function == null)
+                    {
+                        throw new InvalidProgramException("Framework system internal function appears to be deleted");
+                    }
+                    function.CrossThreading = true;
+                    machine.SetData(key, function);
+                }
+            }
+            return function;
+        }
+
         public override object GetValue()
         {
             lock (this)
