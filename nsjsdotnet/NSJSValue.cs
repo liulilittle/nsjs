@@ -141,6 +141,10 @@
             {
                 return false;
             }
+            if (x.IsNullOrUndfined && y.IsNullOrUndfined)
+            {
+                return true;
+            }
             return nsjs_localvalue_equals(x.Handle, y.Handle);
         }
 
