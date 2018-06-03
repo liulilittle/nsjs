@@ -120,20 +120,44 @@
             {
                 return null;
             }
-            NSJSFunction function = this.Get(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY) as NSJSFunction;
-            if (function == null)
+            NSJSVirtualMachine machine = this.VirtualMachine;
+            NSJSFunction function = null;
+            lock (machine)
             {
-                throw new InvalidProgramException("Framework system internal function appears to be deleted");
+                function = machine.GetData<NSJSFunction>(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY);
+                if (function == null)
+                {
+                    NSJSObject o = machine.Global;
+                    function = o.Get(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY) as NSJSFunction;
+                    if (function == null)
+                    {
+                        throw new InvalidProgramException("Framework system internal function appears to be deleted");
+                    }
+                    function.CrossThreading = true;
+                    machine.SetData(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY, function);
+                }
             }
             return function.Call(this, NSJSString.New(this.VirtualMachine, key)) as NSJSObject;
         }
 
         public virtual IEnumerable<string> GetPropertyNames()
         {
-            NSJSFunction function = this.Get(RUNTIME_GETPROPERTYNAMES_PROPERTYKEY) as NSJSFunction;
-            if (function == null)
+            NSJSVirtualMachine machine = this.VirtualMachine;
+            NSJSFunction function = null;
+            lock (machine)
             {
-                throw new InvalidProgramException("Framework system internal function appears to be deleted");
+                function = machine.GetData<NSJSFunction>(RUNTIME_GETPROPERTYNAMES_PROPERTYKEY);
+                if (function == null)
+                {
+                    NSJSObject o = machine.Global;
+                    function = o.Get(RUNTIME_GETPROPERTYNAMES_PROPERTYKEY) as NSJSFunction;
+                    if (function == null)
+                    {
+                        throw new InvalidProgramException("Framework system internal function appears to be deleted");
+                    }
+                    function.CrossThreading = true;
+                    machine.SetData(RUNTIME_GETPROPERTYNAMES_PROPERTYKEY, function);
+                }
             }
             return ArrayAuxiliary.ToStringList(function.Call(this));
         }
@@ -153,9 +177,10 @@
                 throw new ArgumentNullException("key is not allowed to be empty");
             }
             NSJSVirtualMachine machine = this.VirtualMachine;
-            NSJSFunction function = machine.GetData<NSJSFunction>(RUNTIME_DEFINEPROPERTY_PROPERTYKEY);
+            NSJSFunction function = null;
             lock (machine)
             {
+                function = machine.GetData<NSJSFunction>(RUNTIME_DEFINEPROPERTY_PROPERTYKEY);
                 if (function == null)
                 {
                     NSJSObject o = machine.Global;
