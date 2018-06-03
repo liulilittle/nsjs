@@ -1,5 +1,6 @@
 ﻿namespace nsjsdotnet
 {
+    using nsjsdotnet.Core;
     using System;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
@@ -110,6 +111,32 @@
         private extern static void nsjs_localvalue_object_internalfield_set([In]IntPtr obj, int solt, IntPtr value);
 
         private const string RUNTIME_DEFINEPROPERTY_PROPERTYKEY = @"____nsjsdotnet_framework_object_defineproperty";
+        private const string RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY = @"____nsjsdotnet_framework_object_getpropertydescriptor";
+        private const string RUNTIME_GETPROPERTYNAMES_PROPERTYKEY = @"____nsjsdotnet_framework_object_getpropertynames";
+
+        public virtual NSJSObject GetPropertyDescriptor(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                return null;
+            }
+            NSJSFunction function = this.Get(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY) as NSJSFunction;
+            if (function == null)
+            {
+                throw new InvalidProgramException("Framework system internal function appears to be deleted");
+            }
+            return function.Call(this, NSJSString.New(this.VirtualMachine, key)) as NSJSObject;
+        }
+
+        public virtual IEnumerable<string> GetPropertyNames()
+        {
+            NSJSFunction function = this.Get(RUNTIME_GETPROPERTYNAMES_PROPERTYKEY) as NSJSFunction;
+            if (function == null)
+            {
+                throw new InvalidProgramException("Framework system internal function appears to be deleted");
+            }
+            return ArrayAuxiliary.ToStringList(function.Call(this));
+        }
 
         private void InternalDefineProperty(string key, Action<NSJSVirtualMachine, NSJSFunction> executing)
         {
