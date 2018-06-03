@@ -137,7 +137,7 @@
                     machine.SetData(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY, function);
                 }
             }
-            return function.Call(this, NSJSString.New(this.VirtualMachine, key)) as NSJSObject;
+            return function.Call(this, NSJSString.New(machine, key)) as NSJSObject;
         }
 
         public virtual IEnumerable<string> GetPropertyNames()
