@@ -135,7 +135,7 @@
                 this.m_handle = nsjs_virtualmachine_object_new();
                 if (this.m_handle == NULL)
                 {
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException("handle");
                 }
             }
 
@@ -605,6 +605,20 @@
             }
             byte[] source = File.ReadAllBytes(path.FullName);
             return Run(FileAuxiliary.GetEncoding(source).GetString(source), path.FullName, out exception);
+        }
+
+        public virtual bool Extension(string key, NSJSValue value)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException("The extension parameter key is not allowed to be null");
+            }
+            if (key.Length <= 0)
+            {
+                throw new ArgumentNullException("The extension parameter key is not allowed to be empty");
+            }
+            NSJSObject global = this.Global;
+            return global.Set(key, value);
         }
 
         public virtual void Join(NSJSJoinCallback callback)
