@@ -44,6 +44,12 @@
             }
         }
 
+        public bool Asynchronous
+        {
+            get;
+            set;
+        }
+
         [SecurityCritical]
         internal HttpContext(HttpRequest request, HttpResponse response)
         {

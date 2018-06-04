@@ -66,6 +66,7 @@
                 throw new ArgumentNullException("e");
             }
             HttpListenerResponse response = e.Response;
+            HttpContext context = null;
             try
             {
                 response.AppendHeader("Server", string.Empty);
@@ -84,7 +85,7 @@
                     }
                     else
                     {
-                        HttpContext context = new HttpContext(new HttpRequest(e.Request), new HttpResponse(response)
+                        context = new HttpContext(new HttpRequest(e.Request), new HttpResponse(response)
                         {
                             ContentType = "text/html",
                             StatusCode = 200,
@@ -100,7 +101,10 @@
             catch (Exception) { /*------------------------------------------A------------------------------------------*/ }
             try
             {
-                response.Close();
+                if (context != null && !context.Asynchronous)
+                {
+                    response.Close();
+                }
             }
             catch (Exception) { /*------------------------------------------W------------------------------------------*/ }
         }
