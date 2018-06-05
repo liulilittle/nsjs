@@ -606,13 +606,14 @@
                         continue;
                     }
                     string value = s.Get(key);
-                    if (value == null)
+                    string name = key.ToLower();
+                    if (value != null)
                     {
-                        obj.Set(key, NSJSValue.Null(machine));
+                        obj.Set(name, value);
                     }
                     else
                     {
-                        obj.Set(key, value);
+                        obj.Set(name, NSJSValue.Null(machine));
                     }
                 }
             }
