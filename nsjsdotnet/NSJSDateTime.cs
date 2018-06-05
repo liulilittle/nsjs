@@ -27,9 +27,7 @@
             return this.value;
         }
 
-        private static readonly long Timestamp = NSJSDateTime.Min.Ticks;
-
-        public static DateTime Min = new DateTime(1970, 1, 1, 8, 0, 0);
+        public static DateTime Min = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc);
 
         internal NSJSDateTime(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kDateTime, machine)
         {
@@ -46,20 +44,19 @@
 
         public static bool Invalid(DateTime dateTime)
         {
-            return dateTime.Ticks < Timestamp;
+            return dateTime.Ticks < Min.Ticks;
         }
 
         public static long DateTimeToLocalDate(DateTime datetime)
         {
-            DateTime d2 = datetime.ToUniversalTime();
-            TimeSpan ts = new TimeSpan(d2.Ticks - Timestamp);
-            return (long)ts.TotalMilliseconds;
+            TimeSpan ts = new TimeSpan(datetime.Ticks - Min.Ticks);
+            return unchecked((long)ts.TotalMilliseconds);
         }
 
         public static DateTime LocalDateToDateTime(long millitime)
         {
-            DateTime datetime = new DateTime((Timestamp + millitime * 10000));
-            return datetime;
+            DateTime dt = new DateTime(Min.Ticks + millitime * 10000);
+            return dt;
         }
 
         public static NSJSDateTime New(NSJSVirtualMachine machine, long ticks)
