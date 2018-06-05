@@ -73,20 +73,28 @@
                 IDbCommand command = null;
                 try
                 {
-                    command = ObjectAuxiliary.ToDbCommand(adapter, text, 1, arguments.GetParameters());
-                    int count = arguments.Length;
-                    int ofs = count - 1;
-                    NSJSValue value = arguments[ofs];
-                    IDbTransaction transaction = DatabaseTransaction.GetTransaction(value as NSJSObject);
-                    if (transaction == null)
+                    IDbTransaction transaction = null;
+                    NSJSArray parameters = null;
+                    NSJSInt32 cmdtype = null;
+                    for (int solt = 1, count = arguments.Length; solt < count && (transaction == null ||
+                        cmdtype == null || parameters == null); solt++)
                     {
-                        ofs = count - 2;
-                        if (ofs >= 0)
+                        NSJSValue current = arguments[solt];
+                        if (transaction == null)
                         {
-                            transaction = DatabaseTransaction.GetTransaction(arguments[ofs] as NSJSObject);
+                            transaction = DatabaseTransaction.GetTransaction(current as NSJSObject);
+                        }
+                        if (cmdtype == null)
+                        {
+                            cmdtype = current as NSJSInt32;
+                        }
+                        if (parameters == null)
+                        {
+                            parameters = current as NSJSArray;
                         }
                     }
-                    int commandType = ValueAuxiliary.ToInt32(value);
+                    command = ObjectAuxiliary.ToDbCommand(adapter, text, parameters);
+                    int commandType = ValueAuxiliary.ToInt32(cmdtype);
                     switch (commandType)
                     {
                         case 1:

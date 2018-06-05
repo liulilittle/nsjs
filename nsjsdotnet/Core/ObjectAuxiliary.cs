@@ -387,8 +387,13 @@
             Call<TThis>(info, callback);
         }
 
+        public static IDbCommand ToDbCommand(DatabaseAccessAdapter adapter, string text, IEnumerable<NSJSValue> arguments)
+        {
+            return ToDbCommand(adapter, text, 0, arguments);
+        }
+
         public static IDbCommand ToDbCommand(DatabaseAccessAdapter adapter, string text,
-            int startIndex, IList<NSJSValue> arguments)
+            int startIndex, IEnumerable<NSJSValue> arguments)
         {
             if (startIndex < 0 || adapter == null || string.IsNullOrEmpty(text))
             {
@@ -399,14 +404,26 @@
             IDataParameterCollection parameters = command.Parameters;
             if (arguments != null)
             {
-                for (; startIndex < arguments.Count; startIndex++)
+                int solt = 0;
+                foreach (NSJSValue item in arguments)
                 {
-                    IDbDataParameter parameter = ToDbDataParameter(adapter, arguments[startIndex]);
-                    if (parameter == null)
+                    try
                     {
-                        continue;
+                        if (solt > startIndex)
+                        {
+                            continue;
+                        }
+                        IDbDataParameter parameter = ToDbDataParameter(adapter, item);
+                        if (parameter == null)
+                        {
+                            continue;
+                        }
+                        parameters.Add(parameter);
                     }
-                    parameters.Add(parameter);
+                    finally
+                    {
+                        solt++;
+                    }
                 }
             }
             return command;
