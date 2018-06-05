@@ -409,7 +409,7 @@
                 {
                     try
                     {
-                        if (solt > startIndex)
+                        if (startIndex > solt)
                         {
                             continue;
                         }
