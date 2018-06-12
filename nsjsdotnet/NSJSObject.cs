@@ -142,7 +142,7 @@
             {
                 return false;
             }
-            NSJSFunction function = this.GetFrameworkFunction(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY);
+            NSJSFunction function = this.GetFrameworkFunction(RUNTIME_ISDEFINED_PROPERTYKEY);
             return (function.Call(new NSJSValue[] { this, NSJSString.New(this.VirtualMachine, key) }) as NSJSInt32)?.Value == 1;
         }
 
