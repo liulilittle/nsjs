@@ -25,7 +25,12 @@
             return SendEvent(obj, evt, null);
         }
 
-        public static NSJSValue SendEvent(NSJSObject obj, string evt, NSJSValue e)
+        public static NSJSValue SendEvent(NSJSObject obj, string evt, params NSJSValue[] args)
+        {
+            return SendEvent(obj, evt, (IEnumerable<NSJSValue>)args);
+        }
+
+        public static NSJSValue SendEvent(NSJSObject obj, string evt, IEnumerable<NSJSValue> args)
         {
             if (obj == null || string.IsNullOrEmpty(evt))
             {
@@ -36,11 +41,11 @@
             {
                 return null;
             }
-            if (e == null)
+            if (args == null)
             {
                 return callback.Call();
             }
-            return callback.Call(e);
+            return callback.Call(args);
         }
 
         public static bool RemoveInKeyValueCollection(NSJSObject value)

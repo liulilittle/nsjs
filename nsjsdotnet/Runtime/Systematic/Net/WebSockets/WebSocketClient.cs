@@ -63,6 +63,8 @@
 
             objective.DefineProperty("NoDelay", m_NoDelayProc, m_NoDelayProc);
             objective.DefineProperty("Available", m_AvailableProc, (NSJSFunctionCallback)null);
+
+            NSJSKeyValueCollection.Set(objective, websocket);
             return objective;
         }
 
@@ -81,7 +83,7 @@
             data.Set("IsText", message.IsText);
             if (message.IsText)
             {
-                data.Set("Message", message.Message);
+                data.Set("RawData", message.Message);
             }
             else // BLOB
             {
@@ -118,9 +120,12 @@
             NSJSVirtualMachine machine = websocket.VirtualMachine;
             machine.Join(delegate
             {
-                NSJSObject data = WebSocketClient.GetMessageEventData(machine, e);
-                data.Set("Socket", websocket);
-                ObjectAuxiliary.SendEvent(websocket, evt, data);
+                NSJSFunction callback = websocket.Get(evt) as NSJSFunction;
+                if (callback != null)
+                {
+                    NSJSObject data = WebSocketClient.GetMessageEventData(machine, e);
+                    callback.Call(new NSJSValue[] { data });
+                }
             });
             return true;
         }
@@ -202,7 +207,7 @@
                 }
                 else
                 {
-                    string message = arguments.Length > 0 ? (arguments[1] as NSJSString)?.Value : null;
+                    string message = arguments.Length > 0 ? (arguments[0] as NSJSString)?.Value : null;
                     if (message != null)
                     {
                         success = websocket.Send(message);

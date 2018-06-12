@@ -17,6 +17,7 @@
         private static readonly NSJSFunctionCallback g_GetBindPortProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetBindPort);
         private static readonly NSJSFunctionCallback g_CloseProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Close);
         private static readonly NSJSFunctionCallback g_StopProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Stop);
+        private static readonly NSJSFunctionCallback g_StartProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Start);
 
         static WebSocketServer()
         {
@@ -41,6 +42,7 @@
             objective.Set("Port", server.Port);
             objective.Set("GetBindPort", g_GetBindPortProc);
             objective.Set("Stop", g_StopProc);
+            objective.Set("Start", g_StartProc);
             objective.Set("Close", g_CloseProc);
             objective.Set("Dispose", g_CloseProc);
 
@@ -48,14 +50,15 @@
             objective.CrossThreading = true;
 
             server.OnMessage += (websocket, e) => ProcessEvent(objective, websocket, "OnMessage", e);
-            server.OnOpen += (websocket, e) => ProcessEvent(objective, websocket, "OnOpen", e);
+            server.OnOpen += (websocket, e) => ProcessEvent(objective, websocket, "OnOpen", e, true);
             server.OnError += (websocket, e) => ProcessEvent(objective, websocket, "OnError", e);
             server.OnClose += (websocket, e) => ProcessEvent(objective, websocket, "OnClose", e);
 
+            NSJSKeyValueCollection.Set(objective, server);
             return objective;
         }
 
-        private static bool ProcessEvent(NSJSObject server, WebSocket socket, string evt, EventArgs e)
+        private static bool ProcessEvent(NSJSObject server, WebSocket socket, string evt, EventArgs e, bool newing = false)
         {
             if (server == null || socket == null || string.IsNullOrEmpty(evt))
             {
@@ -64,9 +67,17 @@
             NSJSVirtualMachine machine = server.VirtualMachine;
             machine.Join(delegate
             {
-                NSJSObject data = WebSocketClient.GetMessageEventData(machine, e);
-                data.Set("Socket", WebSocketClient.Get(socket));
-                ObjectAuxiliary.SendEvent(server, evt, data);
+                NSJSObject socketclient = WebSocketClient.Get(socket);
+                if (newing && socketclient == null)
+                {
+                    socketclient = WebSocketClient.New(machine, socket);
+                }
+                NSJSFunction function = server.Get(evt) as NSJSFunction;
+                if (function != null)
+                {
+                    NSJSObject data = WebSocketClient.GetMessageEventData(machine, e);
+                    function.Call(new NSJSValue[] { socketclient, data });
+                }
             });
             return true;
         }

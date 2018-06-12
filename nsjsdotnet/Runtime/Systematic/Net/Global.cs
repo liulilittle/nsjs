@@ -18,7 +18,7 @@
             owner.AddObject("Mail", Mail.ClassTemplate);
             owner.AddObject("Web", Web.Global.GlobalTemplate);
             owner.AddObject("Sockets", Sockets.Global.GlobalTemplate);
-            owner.AddObject("WebSocket", Sockets.Global.GlobalTemplate);
+            owner.AddObject("WebSockets", WebSockets.Global.GlobalTemplate);
         }
     }
 }
