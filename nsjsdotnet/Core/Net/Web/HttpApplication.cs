@@ -33,67 +33,67 @@
             set;
         }
 
-        public event EventHandler<HttpPretreatmentContext> PretreatmentContext;
+        public event EventHandler<HttpBeginProcessRequestEventArgs> BeginProcessRequest;
+        public event EventHandler<HttpContext> EndProcessRequest;
 
-        protected virtual void OnPretreatmentContext(HttpListenerContext e)
+        protected virtual void OnBeginProcessRequest(HttpContext context)
         {
-            do
+            if (context == null)
             {
-                if (e == null)
-                {
-                    break;
-                }
-                EventHandler<HttpPretreatmentContext> handler = this.PretreatmentContext;
-                bool cancel = false;
-                if (handler != null)
-                {
-                    HttpPretreatmentContext context = new HttpPretreatmentContext(this, e);
-                    handler(this, context);
-                    cancel = context.Cancel;
-                }
-                if (cancel)
-                {
-                    break;
-                }
-                this.OnProcessContext(e);
-            } while (false);
+                throw new ArgumentNullException("context");
+            }
+            EventHandler<HttpBeginProcessRequestEventArgs> handler = this.BeginProcessRequest;
+            bool cancel = false;
+            if (handler != null)
+            {
+                HttpBeginProcessRequestEventArgs args = new HttpBeginProcessRequestEventArgs(this, context);
+                handler(this, args);
+                cancel = args.Cancel;
+            }
+            if (!cancel)
+            {
+                this.OnProcessContext(context);
+            }
         }
 
-        protected virtual void OnProcessContext(HttpListenerContext e)
+        protected internal virtual void OnEndProcessRequest(HttpContext context)
         {
-            if (e == null)
+            if (context == null)
             {
-                throw new ArgumentNullException("e");
+                throw new ArgumentNullException("context");
             }
-            HttpListenerResponse response = e.Response;
-            HttpContext context = null;
+            EventHandler<HttpContext> handler = this.EndProcessRequest;
+            if (handler != null)
+            {
+                handler(this, context);
+            }
+        }
+
+        protected virtual void OnProcessContext(HttpContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+            HttpResponse response = context.Response;
             try
             {
                 response.AppendHeader("Server", string.Empty);
                 if (!string.IsNullOrEmpty(Name))
                 {
-                    response.AppendHeader("Server-Name", Name);
+                    response.AppendHeader("Servers", Name);
                 }
                 response.StatusCode = 404;
-                HttpFileModule module = new HttpFileModule(this, e);
+                HttpFileModule module = new HttpFileModule(this, context);
                 if (!module.Handle())
                 {
                     IHttpHandler currentHandler = this.Handler;
-                    if (currentHandler == null)
+                    if (currentHandler != null)
                     {
-                        response.Close();
-                    }
-                    else
-                    {
-                        context = new HttpContext(new HttpRequest(e.Request), new HttpResponse(response)
-                        {
-                            ContentType = "text/html",
-                            StatusCode = 200,
-                            ContentEncoding = Encoding.UTF8,
-                        })
-                        {
-                            Handler = currentHandler
-                        };
+                        context.Handler = currentHandler;
+                        response.ContentType = "text/html";
+                        response.StatusCode = 200;
+                        response.ContentEncoding = Encoding.UTF8;
                         currentHandler.ProcessRequest(context);
                     }
                 }
@@ -103,7 +103,7 @@
             {
                 if (context != null && !context.Asynchronous)
                 {
-                    response.Close();
+                    response.End();
                 }
             }
             catch (Exception) { /*------------------------------------------W------------------------------------------*/ }
@@ -130,7 +130,11 @@
 
         protected virtual void OnReceived(HttpListenerContext context)
         {
-            this.OnPretreatmentContext(context);
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+            this.OnBeginProcessRequest(new HttpContext(this, new HttpRequest(context.Request), new HttpResponse(context.Response)));
         }
 
         public void Stop()

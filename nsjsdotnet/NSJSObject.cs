@@ -113,6 +113,7 @@
         private const string RUNTIME_DEFINEPROPERTY_PROPERTYKEY = @"____nsjsdotnet_framework_object_defineproperty";
         private const string RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY = @"____nsjsdotnet_framework_object_getpropertydescriptor";
         private const string RUNTIME_GETPROPERTYNAMES_PROPERTYKEY = @"____nsjsdotnet_framework_object_getpropertynames";
+        private const string RUNTIME_ISDEFINED_PROPERTYKEY = @"____nsjsdotnet_framework_object_isdefined";
 
         protected internal virtual NSJSFunction GetFrameworkFunction(string key)
         {
@@ -126,13 +127,23 @@
                 return null;
             }
             NSJSFunction function = this.GetFrameworkFunction(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY);
-            return function.Call(this, NSJSString.New(this.VirtualMachine, key)) as NSJSObject;
+            return function.Call(new NSJSValue[] { this, NSJSString.New(this.VirtualMachine, key) }) as NSJSObject;
         }
 
         public virtual IEnumerable<string> GetPropertyNames()
         {
             NSJSFunction function = this.GetFrameworkFunction(RUNTIME_GETPROPERTYNAMES_PROPERTYKEY);
             return ArrayAuxiliary.ToStringList(function.Call(this));
+        }
+
+        public virtual bool IsDefined(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                return false;
+            }
+            NSJSFunction function = this.GetFrameworkFunction(RUNTIME_GETPROPERTYDESCRIPTOR_PROPERTYKEY);
+            return (function.Call(new NSJSValue[] { this, NSJSString.New(this.VirtualMachine, key) }) as NSJSInt32)?.Value == 1;
         }
 
         private void InternalDefineProperty(string key, Action<NSJSVirtualMachine, NSJSFunction> executing)

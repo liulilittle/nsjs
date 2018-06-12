@@ -45,6 +45,17 @@
                         }");
         }
 
+        private static void ____nsjsdotnet_framework_object_isdefined(NSJSVirtualMachine machine)
+        {
+            machine.Run(@"
+                        function ____nsjsdotnet_framework_object_isdefined(obj, key) {
+                            if(obj === null || obj === undefined) {
+                                return 0;
+                            }
+                            return obj.hasOwnProperty(key) ? 1 : 0;
+                        }");
+        }
+
         public static void Initialization(NSJSVirtualMachine machine)
         {
             if (machine == null)
@@ -53,6 +64,7 @@
             }
             ____nsjsdotnet_framework_object_getpropertynames(machine);
             ____nsjsdotnet_framework_object_defineproperty(machine);
+            ____nsjsdotnet_framework_object_isdefined(machine);
             ____nsjsdotnet_framework_object_getpropertydescriptor(machine);
         }
     }

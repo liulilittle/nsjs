@@ -9,17 +9,15 @@
 
     sealed class HttpFileModule
     {
-        private HttpListenerContext context = null;
-        private HttpListenerRequest request = null;
-        private HttpListenerResponse response = null;
+        private HttpRequest request = null;
+        private HttpResponse response = null;
         private HttpApplication application = null;
         // 1:GET, 2:POST, 3:HEAD, 4:DELETE
         private int methodid = -1;
 
-        public HttpFileModule(HttpApplication application, HttpListenerContext context)
+        public HttpFileModule(HttpApplication application, HttpContext context)
         {
             this.application = application;
-            this.context = context;
             this.request = context.Request;
             this.response = context.Response;
         }
@@ -216,7 +214,7 @@
                             break;
                         }
                         response.StatusCode = 200;
-                        response.ContentLength64 = size;
+                        response.ContentLength = size;
                     }
                 }
                 catch (Exception) { /*--A--*/ }
@@ -312,7 +310,7 @@
                             stream = count > ofs ? &stream[ofs] : null;
                         }
                         response.StatusCode = 200;
-                        response.ContentLength64 = count;
+                        response.ContentLength = count;
                         if (count > 0)
                         {
                             Stream output = response.OutputStream;
@@ -338,7 +336,6 @@
                 });
             }
             catch (Exception) { /*--A--*/ }
-            response.Close();
         }
     }
 }

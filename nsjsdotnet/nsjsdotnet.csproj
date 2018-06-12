@@ -110,7 +110,7 @@
     <Compile Include="Core\Net\Web\HttpFileModule.cs" />
     <Compile Include="Core\Net\Web\HttpForm.cs" />
     <Compile Include="Core\Net\Web\HttpPostedFile.cs" />
-    <Compile Include="Core\Net\Web\HttpPretreatmentContext.cs" />
+    <Compile Include="Core\Net\Web\HttpBeginProcessRequestEventArgs.cs" />
     <Compile Include="Core\Net\Web\HttpRequest.cs" />
     <Compile Include="Core\Net\Web\HttpResponse.cs" />
     <Compile Include="Core\Net\Web\IHttpHandler.cs" />

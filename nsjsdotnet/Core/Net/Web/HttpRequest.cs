@@ -26,13 +26,6 @@
             this.request = request;
         }
 
-        public void Abort()
-        {
-            HttpContext context = this.CurrentContext;
-            HttpResponse response = context.Response;
-            response.Abort();
-        }
-
         public string HttpMethod
         {
             get { return request.HttpMethod; }

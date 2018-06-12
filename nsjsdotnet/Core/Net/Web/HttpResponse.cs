@@ -9,6 +9,7 @@
     public class HttpResponse
     {
         private HttpListenerResponse response = null;
+        private bool closed = false;
 
         public HttpContext CurrentContext
         {
@@ -125,7 +126,7 @@
             }
         }
 
-        private long ContentLength
+        public long ContentLength
         {
             get
             {
@@ -158,19 +159,6 @@
             set
             {
                 response.ContentEncoding = value;
-            }
-        }
-
-        public bool Abort()
-        {
-            try
-            {
-                response.Abort();
-                return true;
-            }
-            catch
-            {
-                return false;
             }
         }
 
@@ -229,13 +217,42 @@
         {
             try
             {
-                response.Close();
+                bool doEvt = false;
+                lock (this)
+                {
+                    if (!this.closed)
+                    {
+                        doEvt = true;
+                        this.closed = true;
+                    }
+                }
+                if (doEvt)
+                {
+                    HttpContext context = this.CurrentContext;
+                    if (context == null)
+                    {
+                        throw new InvalidOperationException("context");
+                    }
+                    HttpApplication application = context.Application;
+                    application.OnEndProcessRequest(context);
+                }
+                this.response.Close(); // this.response.Abort();
                 return true;
             }
             catch
             {
                 return false;
             }
+        }
+
+        public bool Close()
+        {
+            return this.End();
+        }
+
+        public bool Abort()
+        {
+            return this.End();
         }
 
         public bool Redirect(string url)

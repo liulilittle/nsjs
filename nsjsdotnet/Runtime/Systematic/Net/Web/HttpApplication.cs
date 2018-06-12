@@ -2,6 +2,7 @@
 {
     using nsjsdotnet.Core;
     using nsjsdotnet.Core.Linq;
+    using nsjsdotnet.Core.Net.Web;
     using System;
     using System.Collections.Generic;
     using System.Threading;
@@ -23,6 +24,9 @@
         private static readonly NSJSFunctionCallback g_NameProc;
         private static readonly NSJSFunctionCallback g_CloseProc;
 
+        private static readonly EventHandler<HttpBeginProcessRequestEventArgs> g_BeginProcessRequestProc;
+        private static readonly EventHandler<HTTPContext> g_EndProcessRequestProc;
+
         static HttpApplication()
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
@@ -34,12 +38,13 @@
             g_CloseProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Close);
             owner.AddFunction("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(New));
             owner.AddFunction("Invalid", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Invalid));
+            g_EndProcessRequestProc = OnEndProcessRequest;
+            g_BeginProcessRequestProc = OnBeginProcessRequest;
         }
 
         private class HttpHandler : IHTTPHandler
         {
             private static readonly NSJSFunctionCallback m_CloseProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Close);
-            private NSJSFunction m_ProcessRequestCallback = null;
 
             private static void Close(IntPtr info)
             {
@@ -73,19 +78,12 @@
 
             protected virtual NSJSFunction GetProcessRequestCallback()
             {
-                lock (this)
+                NSJSObject currentHandler = this.GetCurrentHandler();
+                if (currentHandler == null)
                 {
-                    if (this.m_ProcessRequestCallback == null)
-                    {
-                        NSJSObject currentHandler = this.GetCurrentHandler();
-                        if (currentHandler != null)
-                        {
-                            this.m_ProcessRequestCallback = currentHandler.Get("ProcessRequest") as NSJSFunction;
-                            this.m_ProcessRequestCallback.CrossThreading = true;
-                        }
-                    }
-                    return this.m_ProcessRequestCallback;
+                    return null;
                 }
+                return currentHandler.Get("ProcessRequest") as NSJSFunction;
             }
 
             public HttpHandler(NSJSObject source, HTTPApplication application)
@@ -131,13 +129,27 @@
 
             public NSJSObject NewContextObject(HTTPContext context)
             {
+                return NewContextObject(this.GetVirtualMachine(), this.Source, context);
+            }
+
+            public static NSJSObject NewContextObject(NSJSVirtualMachine machine,
+                NSJSObject application,
+                HTTPContext context)
+            {
                 if (context == null)
                 {
                     throw new ArgumentNullException("context");
                 }
-                NSJSVirtualMachine machine = this.GetVirtualMachine();
+                if (application == null)
+                {
+                    throw new ArgumentNullException("application");
+                }
+                if (machine == null)
+                {
+                    throw new ArgumentNullException("machine");
+                }
                 NSJSObject objective = NSJSObject.New(machine); // ctx
-                objective.Set("Application", this.Source);
+                objective.Set("Application", application);
                 objective.Set("Close", m_CloseProc);
                 objective.Set("Dispose", m_CloseProc);
                 objective.Set("Request", HttpRequest.New(machine, objective, context.Request));
@@ -227,16 +239,72 @@
             {
                 return null;
             }
-            NSJSObject o = NSJSObject.New(machine);
-            o.DefineProperty("Name", g_NameProc, g_NameProc);
-            o.DefineProperty("Root", g_RootProc, g_RootProc);
-            o.Set("Start", g_StartProc);
-            o.Set("Stop", g_StopProc);
-            o.Set("Close", g_CloseProc);
-            o.Set("Dispose", g_CloseProc);
-            application.Handler = new HttpHandler(o, application);
-            NSJSKeyValueCollection.Set(o, application);
-            return o;
+            NSJSObject objective = NSJSObject.New(machine);
+            objective.DefineProperty("Name", g_NameProc, g_NameProc);
+            objective.DefineProperty("Root", g_RootProc, g_RootProc);
+            objective.Set("Start", g_StartProc);
+            objective.Set("Stop", g_StopProc);
+            objective.Set("Close", g_CloseProc);
+            objective.Set("Dispose", g_CloseProc);
+
+            application.Tag = objective;
+            objective.CrossThreading = true;
+
+            application.Handler = new HttpHandler(objective, application);
+            application.EndProcessRequest += g_EndProcessRequestProc;
+            application.BeginProcessRequest += g_BeginProcessRequestProc;
+
+            NSJSKeyValueCollection.Set(objective, application);
+            return objective;
+        }
+
+        private static void OnEndProcessRequest(object sender, HTTPContext e)
+        {
+            DoProcessRequest(sender, (application, origin, machine) =>
+            {
+                NSJSFunction callback = origin.Get("OnEndProcessRequest") as NSJSFunction;
+                if (callback != null)
+                {
+                    callback.Call(HttpHandler.NewContextObject(machine, origin, e));
+                }
+            });
+        }
+
+        private static void DoProcessRequest(object sender, Action<HTTPApplication, NSJSObject, NSJSVirtualMachine> callback)
+        {
+            if (callback == null)
+            {
+                throw new ArgumentNullException("callback");
+            }
+            HTTPApplication application = sender as HTTPApplication;
+            if (application == null)
+            {
+                return /* false */;
+            }
+            NSJSObject origin = application.Tag as NSJSObject;
+            if (origin == null)
+            {
+                return /* false */;
+            }
+            NSJSVirtualMachine machine = origin.VirtualMachine;
+            machine.Join((M, X) => callback(application, origin, machine));
+        }
+
+        private static void OnBeginProcessRequest(object sender, HttpBeginProcessRequestEventArgs e)
+        {
+            DoProcessRequest(sender, (application, origin, machine) =>
+            {
+                NSJSFunction callback = origin.Get("OnBeginProcessRequest") as NSJSFunction;
+                if (callback != null)
+                {
+                    NSJSObject args = NSJSObject.New(machine);
+                    args.Set("Cancel", e.Cancel);
+                    args.Set("Application", origin);
+                    args.Set("CurrentContext", HttpHandler.NewContextObject(machine, origin, e.CurrentContext));
+                    callback.Call(args);
+                    e.Cancel = args.Get("Cancel").As<bool>();
+                }
+            });
         }
 
         private static void New(IntPtr info)

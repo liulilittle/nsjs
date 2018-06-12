@@ -1,9 +1,8 @@
 ﻿namespace nsjsdotnet.Core.Net.Web
 {
     using System;
-    using System.Net;
 
-    public class HttpPretreatmentContext : EventArgs
+    public class HttpBeginProcessRequestEventArgs : EventArgs
     {
         public HttpApplication Application
         {
@@ -11,7 +10,7 @@
             private set;
         }
 
-        public HttpListenerContext CurrentContext
+        public HttpContext CurrentContext
         {
             get;
             private set;
@@ -23,7 +22,7 @@
             set;
         }
 
-        public HttpPretreatmentContext(HttpApplication application, HttpListenerContext context)
+        public HttpBeginProcessRequestEventArgs(HttpApplication application, HttpContext context)
         {
             if (application == null)
             {

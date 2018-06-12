@@ -5,7 +5,7 @@
     using System.Security;
     using System.Threading;
 
-    public class HttpContext
+    public class HttpContext : EventArgs
     {
         private static IDictionary<Thread, HttpContext> contexts = new Dictionary<Thread, HttpContext>();
 
@@ -22,6 +22,12 @@
         }
 
         public HttpResponse Response
+        {
+            get;
+            private set;
+        }
+
+        public HttpApplication Application
         {
             get;
             private set;
@@ -51,11 +57,24 @@
         }
 
         [SecurityCritical]
-        internal HttpContext(HttpRequest request, HttpResponse response)
+        internal HttpContext(HttpApplication application, HttpRequest request, HttpResponse response)
         {
+            if (application == null)
+            {
+                throw new ArgumentNullException("application");
+            }
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
+            if (response == null)
+            {
+                throw new ArgumentNullException("response");
+            }
             request.CurrentContext = this;
             response.CurrentContext = this;
 
+            this.Application = application;
             this.Request = request;
             this.Response = response;
 
