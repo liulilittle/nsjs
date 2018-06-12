@@ -45,11 +45,13 @@
         private class HttpHandler : IHTTPHandler
         {
             private static readonly NSJSFunctionCallback m_CloseProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Close);
+            private static readonly NSJSFunctionCallback m_AsynchronousProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Asynchronous);
 
             private static void Close(IntPtr info)
             {
                 NSJSFunctionCallbackInfo arguments = NSJSFunctionCallbackInfo.From(info);
                 NSJSObject self = arguments.This;
+                ObjectAuxiliary.RemoveInKeyValueCollection(self);
                 HttpRequest.Close(self.Get("Request"));
                 HttpResponse.Close(self.Get("Response") as NSJSObject);
             }
@@ -154,7 +156,14 @@
                 objective.Set("Dispose", m_CloseProc);
                 objective.Set("Request", HttpRequest.New(machine, objective, context.Request));
                 objective.Set("Response", HttpResponse.New(machine, objective, context.Response));
+                objective.DefineProperty("Asynchronous", m_AsynchronousProc, m_AsynchronousProc);
+                NSJSKeyValueCollection.Set(objective, context);
                 return objective;
+            }
+
+            private static void Asynchronous(IntPtr info)
+            {
+                ObjectAuxiliary.GetOrSetProperty<HTTPContext>(info, (context) => context.Asynchronous, (context, value) => context.Asynchronous = value);
             }
         }
 
@@ -262,7 +271,7 @@
         {
             DoProcessRequest(sender, (application, origin, machine) =>
             {
-                NSJSFunction callback = origin.Get("OnEndProcessRequest") as NSJSFunction;
+                NSJSFunction callback = origin.Get("EndProcessRequest") as NSJSFunction;
                 if (callback != null)
                 {
                     callback.Call(HttpHandler.NewContextObject(machine, origin, e));
@@ -294,7 +303,7 @@
         {
             DoProcessRequest(sender, (application, origin, machine) =>
             {
-                NSJSFunction callback = origin.Get("OnBeginProcessRequest") as NSJSFunction;
+                NSJSFunction callback = origin.Get("BeginProcessRequest") as NSJSFunction;
                 if (callback != null)
                 {
                     NSJSObject args = NSJSObject.New(machine);
