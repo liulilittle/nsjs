@@ -48,6 +48,11 @@
             objective.Set("Send", m_SendProc);
             objective.Set("Path", websocket.Path);
 
+            objective.Set("Ttl", websocket.Ttl);
+            objective.Set("Handle", websocket.Handle.ToInt32());
+            objective.Set("LocalEndPoint", ObjectAuxiliary.ToObject(machine, websocket.LocalEndPoint));
+            objective.Set("RemoteEndPoint", ObjectAuxiliary.ToObject(machine, websocket.RemoteEndPoint));
+
             objective.Set("OnMessage", NSJSValue.Null(machine));
             objective.Set("OnClose", NSJSValue.Null(machine));
             objective.Set("OnError", NSJSValue.Null(machine));

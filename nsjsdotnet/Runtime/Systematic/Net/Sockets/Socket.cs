@@ -101,6 +101,7 @@
             o.Set("RemoteEndPoint", ObjectAuxiliary.ToObject(machine, socket.RemoteEndPoint));
             o.Set("Send", m_SendProc);
             o.Set("Bind", m_BindProc);
+            o.Set("Handle", socket.Handle.ToInt32());
             o.Set("Close", m_CloseProc);
             o.Set("Dispose", m_CloseProc);
             o.Set("Connect", m_ConnectProc);

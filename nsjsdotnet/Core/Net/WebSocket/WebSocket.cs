@@ -2,13 +2,12 @@
 {
     using System;
     using System.IO;
+    using System.Net;
     using System.Net.Sockets;
-    using System.Text;
-    using System.Threading;
     using System.Security;
     using System.Security.Permissions;
-    using System.Net;
-    using nsjsdotnet.Core.Utilits;
+    using System.Text;
+    using System.Threading;
 
     public class WebSocket
     {
@@ -40,6 +39,38 @@
                     }
                     return socket.Connected;
                 }
+            }
+        }
+
+        public EndPoint LocalEndPoint
+        {
+            get
+            {
+                return socket.LocalEndPoint;
+            }
+        }
+
+        public int Ttl
+        {
+            get
+            {
+                return socket.Ttl;
+            }
+        }
+
+        public IntPtr Handle
+        {
+            get
+            {
+                return socket.Handle;
+            }
+        }
+
+        public EndPoint RemoteEndPoint
+        {
+            get
+            {
+                return socket.RemoteEndPoint;
             }
         }
 
