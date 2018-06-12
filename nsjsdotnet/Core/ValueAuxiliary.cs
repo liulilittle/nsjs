@@ -270,6 +270,23 @@
             return (T)result;
         }
 
+        public static object Value(this NSJSValue value)
+        {
+            if (value == null || value.IsNullOrUndfined)
+            {
+                return null;
+            }
+            if ((value.DateType & NSJSValueType.kFunction) > 0)
+            {
+                return null;
+            }
+            if ((value.DateType & NSJSValueType.kArray) > 0)
+            {
+                return ArrayAuxiliary.ToArray(value as NSJSArray);
+            }
+            return value.GetValue();
+        }
+
         public static NSJSValue As(this object value, NSJSVirtualMachine machine)
         {
             if (machine == null)

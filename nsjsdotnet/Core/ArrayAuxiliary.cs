@@ -11,7 +11,7 @@
 
     public static class ArrayAuxiliary
     {
-        private static T[] ToBuffer<T>(IEnumerable s)
+        private static T[] ToArray<T>(IEnumerable s)
         {
             if (s != null)
             {
@@ -38,6 +38,19 @@
             return new T[0];
         }
 
+        public static IList<object> ToArray(IEnumerable<NSJSValue> s)
+        {
+            IList<object> list = new List<object>();
+            if (s != null)
+            {
+                foreach (NSJSValue i in s)
+                {
+                    list.Add(ValueAuxiliary.Value(i));
+                }
+            }
+            return list;
+        }
+
         public static NSJSValue ToArray(NSJSVirtualMachine machine, Type element, IList s)
         {
             if (machine == null)
@@ -48,35 +61,35 @@
             NSJSArray array = null;
             if (element == typeof(byte))
             {
-                array = NSJSUInt8Array.New(machine, ToBuffer<byte>(s));
+                array = NSJSUInt8Array.New(machine, ToArray<byte>(s));
             }
             else if (element == typeof(sbyte))
             {
-                array = NSJSInt8Array.New(machine, ToBuffer<sbyte>(s));
+                array = NSJSInt8Array.New(machine, ToArray<sbyte>(s));
             }
             else if (element == typeof(short))
             {
-                array = NSJSInt16Array.New(machine, ToBuffer<short>(s));
+                array = NSJSInt16Array.New(machine, ToArray<short>(s));
             }
             else if (element == typeof(ushort))
             {
-                array = NSJSUInt16Array.New(machine, ToBuffer<ushort>(s));
+                array = NSJSUInt16Array.New(machine, ToArray<ushort>(s));
             }
             else if (element == typeof(int))
             {
-                array = NSJSInt32Array.New(machine, ToBuffer<int>(s));
+                array = NSJSInt32Array.New(machine, ToArray<int>(s));
             }
             else if (element == typeof(uint))
             {
-                array = NSJSUInt32Array.New(machine, ToBuffer<uint>(s));
+                array = NSJSUInt32Array.New(machine, ToArray<uint>(s));
             }
             else if (element == typeof(float))
             {
-                array = NSJSFloat32Array.New(machine, ToBuffer<float>(s));
+                array = NSJSFloat32Array.New(machine, ToArray<float>(s));
             }
             else if (element == typeof(double))
             {
-                array = NSJSFloat64Array.New(machine, ToBuffer<double>(s));
+                array = NSJSFloat64Array.New(machine, ToArray<double>(s));
             }
             else
             {

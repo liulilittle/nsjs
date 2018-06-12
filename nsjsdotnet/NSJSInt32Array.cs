@@ -47,10 +47,10 @@
 
         public override object GetValue()
         {
-            return LocalValueToArray();
+            return this.ValueToArray();
         }
 
-        protected virtual int[] LocalValueToArray()
+        protected virtual int[] ValueToArray()
         {
             int count = 0;
             void* cch = null;

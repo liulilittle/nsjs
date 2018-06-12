@@ -20,6 +20,29 @@
     {
         private static readonly IntPtr NULL = IntPtr.Zero;
 
+        public static NSJSValue SendEvent(NSJSObject obj, string evt)
+        {
+            return SendEvent(obj, evt, null);
+        }
+
+        public static NSJSValue SendEvent(NSJSObject obj, string evt, NSJSValue e)
+        {
+            if (obj == null || string.IsNullOrEmpty(evt))
+            {
+                return null;
+            }
+            NSJSFunction callback = obj.Get(evt) as NSJSFunction;
+            if (callback == null)
+            {
+                return null;
+            }
+            if (e == null)
+            {
+                return callback.Call();
+            }
+            return callback.Call(e);
+        }
+
         public static bool RemoveInKeyValueCollection(NSJSObject value)
         {
             if (value == null)

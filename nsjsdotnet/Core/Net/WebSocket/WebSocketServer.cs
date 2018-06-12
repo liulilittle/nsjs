@@ -39,6 +39,36 @@
             }
         }
 
+        public int Port
+        {
+            get
+            {
+                return port;
+            }
+        }
+
+        public object Tag
+        {
+            get;
+            set;
+        }
+
+        public object UserToken
+        {
+            get;
+            set;
+        }
+
+        public int GetBindPort()
+        {
+            if (server == null)
+            {
+                return 0;
+            }
+            IPEndPoint ipep = (IPEndPoint)server.LocalEndPoint;
+            return ipep.Port;
+        }
+
         public void Stop()
         {
             lock (this)

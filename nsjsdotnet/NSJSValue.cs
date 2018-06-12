@@ -226,7 +226,7 @@
             {
                 return NullString;
             }
-            return null;
+            return default(object);
         }
 
         public bool CrossThreading

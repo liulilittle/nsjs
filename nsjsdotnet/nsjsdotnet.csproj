@@ -236,6 +236,9 @@
     <Compile Include="Runtime\Systematic\Net\Mail.cs" />
     <Compile Include="Runtime\Systematic\Net\Sockets\Global.cs" />
     <Compile Include="Runtime\Systematic\Net\Sockets\Socket.cs" />
+    <Compile Include="Runtime\Systematic\Net\WebSockets\Global.cs" />
+    <Compile Include="Runtime\Systematic\Net\WebSockets\WebSocketClient.cs" />
+    <Compile Include="Runtime\Systematic\Net\WebSockets\WebSocketServer.cs" />
     <Compile Include="Runtime\Systematic\Net\Web\Global.cs" />
     <Compile Include="Runtime\Systematic\Net\Web\HttpApplication.cs" />
     <Compile Include="Runtime\Systematic\Net\Web\HttpRequest.cs" />
