@@ -127,13 +127,16 @@
                 long count = 0;
                 while (!*localTaken)
                 {
-                    if (iterations != null && (*iterations != Infinite && ++count > *iterations))
+                    if (iterations != null && count++ >= *iterations)
                     {
                         break;
                     }
-                    if (timeval != null && (*timeval != Infinite && sw.ElapsedMilliseconds >= *timeval))
+                    if (timeval != null && *timeval >= 0)
                     {
-                        break;
+                        if (sw.ElapsedMilliseconds >= *timeval)
+                        {
+                            break;
+                        }
                     }
                     if (Interlocked.CompareExchange(ref signal, 0x01, 0x00) == 0x00) // 获取到锁信号
                     {

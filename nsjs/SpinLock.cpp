@@ -20,7 +20,7 @@ SpinLock::~SpinLock()
 
 void SpinLock::Enter(bool& localTaken)
 {
-	int32_t tv = INFINITE;
+	int32_t tv = -1;
 	this->Enter(localTaken, &tv);
 }
 
@@ -51,14 +51,11 @@ void SpinLock::Enter(bool& localTaken, uint32_t* iterations, int32_t* timeval)
 		uint64_t count = 0;
 		while (!localTaken)
 		{
-			if (iterations != NULL && *iterations != INFINITE)
+			if (iterations != NULL && count++ >= *iterations)
 			{
-				if (++count >= *iterations)
-				{
-					break;
-				}
+				break;
 			}
-			if (timeval != NULL && *timeval != INFINITE)
+			if (timeval != NULL && *timeval >= 0)
 			{
 				uint64_t elapsedMilliseconds = GetSystemTickCount64() - startMilliseconds;
 				if (elapsedMilliseconds >= *timeval)
