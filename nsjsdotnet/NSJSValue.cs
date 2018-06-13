@@ -30,6 +30,16 @@
         [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static sbyte* nsjs_localvalue_typeof(IntPtr isolate, IntPtr value);
 
+        private static bool nsjs_localvalue_instanceof(NSJSValue instance, NSJSValue type)
+        {
+            if (instance == null || type == null)
+            {
+                return false;
+            }
+            NSJSFunction __instanceof = instance.GetFrameworkFunction(RUNTIME_INSTANCEOF_PROPERTYKEY);
+            return (__instanceof.Call(new NSJSValue[] { instance, type }) as NSJSInt32)?.Value == 1;
+        }
+
         protected static readonly IntPtr NULL = IntPtr.Zero;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -38,6 +48,8 @@
         private int? hashcodeTokenId;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private NSJSValueType? metadataToken;
+
+        private const string RUNTIME_INSTANCEOF_PROPERTYKEY = @"____nsjsdotnet_framework_instanceof";
 
         public const string NullString = "null";
         public const string UndefinedString = "undefined";
@@ -69,6 +81,29 @@
             string r = s != null ? new string(s) : null;
             NSJSMemoryManagement.Free(s);
             return r;
+        }
+
+        protected internal virtual NSJSFunction GetFrameworkFunction(string key)
+        {
+            return NSJSFunction.GetFrameworkFunction(this.VirtualMachine, key);
+        }
+
+        public static bool InstanceOf(NSJSValue instance, string type)
+        {
+            if (instance == null || string.IsNullOrEmpty(type))
+            {
+                return false;
+            }
+            return nsjs_localvalue_instanceof(instance, NSJSString.New(instance.VirtualMachine, type));
+        }
+
+        public static bool InstanceOf(NSJSValue instance, NSJSFunction constructor)
+        {
+            if (instance == null || constructor == null)
+            {
+                return false;
+            }
+            return nsjs_localvalue_instanceof(instance, (NSJSValue)constructor);
         }
 
         public override int GetHashCode()

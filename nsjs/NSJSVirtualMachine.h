@@ -6,7 +6,11 @@
 #include <hash_map>
 #include <hash_set>
 
+#ifdef ENABLE_MONITOR_LOCK
 #include "Monitor.h"
+#else
+#include "SpinLock.h"
+#endif
 #include "LinkedList.h"
 
 #define MAXSTACKFRAMECOUNT 100
@@ -95,7 +99,11 @@ public:
 class NSJSLocalValueAllocator
 {
 private:
+#ifdef ENABLE_MONITOR_LOCK
 	Monitor locker;
+#else
+	SpinLock locker;
+#endif
 	LinkedList<NSJSLocalValue*> actives;
 	LinkedList<NSJSLocalValue*> frees;
 	void Clear(NSJSLocalValue* value);

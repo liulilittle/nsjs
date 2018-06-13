@@ -135,7 +135,7 @@
                     {
                         break;
                     }
-                    if (Interlocked.CompareExchange(ref signal, 0x01L, 0x00L) == 0x01L) // 获取到锁信号
+                    if (Interlocked.CompareExchange(ref signal, 0x01, 0x00) == 0x00) // 获取到锁信号
                     {
                         *localTaken = true;
                         Interlocked.Exchange(ref this.threadid, threadid);
@@ -161,7 +161,7 @@
             if (Interlocked.Decrement(ref refcount) <= 0x00)
             {
                 Interlocked.Exchange(ref threadid, 0x00);
-                Interlocked.CompareExchange(ref signal, 0x00L, 0x01L);
+                Interlocked.CompareExchange(ref signal, 0x00, 0x01);
             }
         }
     }

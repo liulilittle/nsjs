@@ -6,63 +6,59 @@
 
 SpinLock::SpinLock()
 {
-	this->__refcount = 0x00L;
-	this->__signal = 0x00L;
-	this->__threadid = 0x00L;
+	this->m_refcount = 0x00;
+	this->m_signal = 0x00;
+	this->m_threadid = 0x00;
 }
 
 SpinLock::~SpinLock()
 {
-	this->__refcount = 0x00L;
-	this->__signal = 0x00L;
-	this->__threadid = 0x00L;
+	this->m_refcount = 0x00;
+	this->m_signal = 0x00;
+	this->m_threadid = 0x00;
 }
 
-void SpinLock::Enter(bool* localTaken)
+void SpinLock::Enter(bool& localTaken)
 {
-	uint32_t timeval = INFINITE;
-	this->Enter(localTaken, &timeval);
+	int32_t tv = INFINITE;
+	this->Enter(localTaken, &tv);
 }
 
-void SpinLock::Enter(bool* localTaken, uint64_t* iterations)
+void SpinLock::Enter(bool& localTaken, uint32_t* iterations)
 {
 	this->Enter(localTaken, iterations, NULL);
 }
 
-void SpinLock::Enter(bool* localTaken, uint32_t* timeval)
+void SpinLock::Enter(bool& localTaken, int32_t* timeval)
 {
 	this->Enter(localTaken, NULL, timeval);
 }
 
-void SpinLock::Enter(bool* localTaken, uint64_t* iterations, uint32_t* timeval)
+void SpinLock::Enter(bool& localTaken, uint32_t* iterations, int32_t* timeval)
 {
-	if (localTaken == NULL)
-	{
-		throw new ArgumentNullException("localTaken");
-	}
-	if (*localTaken)
+	if (localTaken)
 	{
 		throw new ArgumentException("localTaken");
 	}
-	int threadid = GetCurrentThreadId();
-	if (threadid == InterlockedCompareExchange(&__threadid, 0x00L, 0x00L))
+	uint32_t threadid = (uint32_t)GetCurrentThreadId();
+	if (threadid == InterlockedCompareExchange(&m_threadid, 0x00, 0x00))
 	{
-		*localTaken = true;
+		localTaken = true;
 	}
 	else
 	{
 		uint64_t startMilliseconds = GetSystemTickCount64();
 		uint64_t count = 0;
-		while (!*localTaken)
+		while (!localTaken)
 		{
-			if (iterations && *iterations != INFINITE)
+			if (iterations != NULL && *iterations != INFINITE)
 			{
 				if (++count >= *iterations)
 				{
 					break;
 				}
 			}
-			if (timeval && *timeval != INFINITE)
+			if (timeval != NULL && *timeval != INFINITE)
 			{
 				uint64_t elapsedMilliseconds = GetSystemTickCount64() - startMilliseconds;
 				if (elapsedMilliseconds >= *timeval)
@@ -70,28 +66,29 @@ void SpinLock::Enter(bool* localTaken, uint64_t* iterations, uint32_t* timeval)
 					break;
 				}
 			}
-			if (InterlockedCompareExchange(&__signal, 0x01L , 0x00L) == 0x01L) // 获取到锁信号
+			if (InterlockedCompareExchange(&m_signal, 0x01, 0x00) == 0x00) // 获取到锁信号
 			{
-				*localTaken = true;
-				InterlockedExchange(&__threadid, threadid);
+				localTaken = true;
+				InterlockedExchange(&m_threadid, threadid);
 			}
 		}
 	}
-	if (*localTaken)
+	if (localTaken)
 	{
-		InterlockedIncrement(&__refcount);
+		InterlockedIncrement(&m_refcount);
 	}
 }
 
 void SpinLock::Exit()
 {
-	if (InterlockedCompareExchange(&__threadid, 0x00L, 0x00L))
+	uint32_t threadid = (uint32_t)GetCurrentThreadId();
+	if (threadid != InterlockedCompareExchange(&m_threadid, 0x00, 0x00))
 	{
 		throw new InvalidOperationException("this");
 	}
-	if (InterlockedDecrement(&__refcount) <= 0x00L)
+	if (InterlockedDecrement(&m_refcount) <= 0x00)
 	{
-		InterlockedExchange(&__threadid, 0x00L);
-		InterlockedCompareExchange(&__signal, 0x00L, 0x01L);
+		InterlockedExchange(&m_threadid, 0x00);
+		InterlockedCompareExchange(&m_signal, 0x00, 0x01);
 	}
 }

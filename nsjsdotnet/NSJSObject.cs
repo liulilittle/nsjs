@@ -115,11 +115,6 @@
         private const string RUNTIME_GETPROPERTYNAMES_PROPERTYKEY = @"____nsjsdotnet_framework_object_getpropertynames";
         private const string RUNTIME_ISDEFINED_PROPERTYKEY = @"____nsjsdotnet_framework_object_isdefined";
 
-        protected internal virtual NSJSFunction GetFrameworkFunction(string key)
-        {
-            return NSJSFunction.GetFrameworkFunction(this.VirtualMachine, key);
-        }
-
         public virtual NSJSObject GetPropertyDescriptor(string key)
         {
             if (string.IsNullOrEmpty(key))

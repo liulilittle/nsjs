@@ -535,7 +535,12 @@ void NSJSLocalValueAllocator::Clear(NSJSLocalValue* value)
 NSJSLocalValue* NSJSLocalValueAllocator::Alloc(void)
 {
 	NSJSLocalValue* chunk = NULL;
+#ifdef ENABLE_MONITOR_LOCK
 	this->locker.Enter();
+#else
+	bool localTaken = false;
+	this->locker.Enter(localTaken);
+#endif
 	{
 		LinkedListNode<NSJSLocalValue*>* node = this->frees.First();
 		if (node != NULL)
@@ -565,7 +570,12 @@ bool NSJSLocalValueAllocator::Free(NSJSLocalValue* value)
 	}
 	NSJSLocalValueAllocator::Clear(value);
 	bool success = true;
+#ifdef ENABLE_MONITOR_LOCK
 	this->locker.Enter();
+#else
+	bool localTaken = false;
+	this->locker.Enter(localTaken);
+#endif
 	{
 		do
 		{
@@ -597,7 +607,12 @@ int NSJSLocalValueAllocator::GetIdleValueCapacity(void)
 
 void NSJSLocalValueAllocator::SetIdleValueCapacity(int capacity)
 {
+#ifdef ENABLE_MONITOR_LOCK
 	this->locker.Enter();
+#else
+	bool localTaken = false;
+	this->locker.Enter(localTaken);
+#endif
 	{
 		int count = this->frees.Count();
 		if (count < capacity)

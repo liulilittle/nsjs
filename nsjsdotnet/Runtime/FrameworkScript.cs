@@ -56,12 +56,26 @@
                         }");
         }
 
+        private static void ____nsjsdotnet_framework_instanceof(NSJSVirtualMachine machine)
+        {
+            machine.Run(@"
+                        var ____nsjsdotnet_framework_instanceof = function(instance, type) {
+                            var x1 = instance instanceof type;
+                            var x2 = false;
+                            if (instance !== null && instance !== undefined) {
+                                x2 = instance.constructor.toString() == type.toString();
+                            }
+                            return (x1 || x2) ? 1 : 0;
+                        }");
+        }
+
         public static void Initialization(NSJSVirtualMachine machine)
         {
             if (machine == null)
             {
                 throw new ArgumentNullException("machine");
             }
+            ____nsjsdotnet_framework_instanceof(machine);
             ____nsjsdotnet_framework_object_getpropertynames(machine);
             ____nsjsdotnet_framework_object_defineproperty(machine);
             ____nsjsdotnet_framework_object_isdefined(machine);
