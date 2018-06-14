@@ -1140,9 +1140,15 @@ int main(int argc, char* argv[]) {
 		Extension::Initialize(*machine);
 		nsjs_virtualmachine_initialize(machine);
 		{
+			int characterset = 0;
+			size_t size = 0;
 			const char* src = File::ReadAllText(argv[1], size, characterset);
 			NSJSException exception;
-			machine->Run(src, NULL, &exception);
+			const char* result = machine->Run(src, NULL, &exception);
+			if (result != NULL)
+			{
+				printf("%s\n", result);
+			}
 		}
 	}
 	return getchar();

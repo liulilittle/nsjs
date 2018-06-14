@@ -306,7 +306,6 @@ NSJSValueType NSJSVirtualMachine::GetType(const v8::Local<v8::Value> value)
 		valuetype = NSJSValueType::kNull;
 	}
 	if (!value->IsUndefined()) {
-
 		if (value->IsString()) {
 			valuetype = NSJSValueType::kString;
 		}
@@ -325,7 +324,9 @@ NSJSValueType NSJSVirtualMachine::GetType(const v8::Local<v8::Value> value)
 		else if (value->IsUint32()) {
 			valuetype = NSJSValueType::kUInt32;
 		}
-
+		else if (value->IsBoolean()) {
+			valuetype = NSJSValueType::kBoolean;
+		}
 		else if (value->IsInt8Array()) {
 			valuetype = NSJSValueType::kInt8Array;
 		}
@@ -344,7 +345,6 @@ NSJSValueType NSJSVirtualMachine::GetType(const v8::Local<v8::Value> value)
 		else if (value->IsUint16Array()) {
 			valuetype = NSJSValueType::kUInt16Array;
 		}
-
 		else if (value->IsFloat32Array()) {
 			valuetype = NSJSValueType::kFloat32Array;
 		}
@@ -354,7 +354,6 @@ NSJSValueType NSJSVirtualMachine::GetType(const v8::Local<v8::Value> value)
 		else if (value->IsArray()) {
 			valuetype = NSJSValueType::kArray;
 		}
-
 		if (value->IsInt32() || value->IsUint32()) {
 			int64_t n = value->IntegerValue();
 			if (n < INT_MIN || n > UINT_MAX) {

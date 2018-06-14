@@ -1,6 +1,12 @@
 #include "Environment.h"
 #include "Memory.h"
 
+#ifdef ENABLE_MONITOR_LOCK
+#include "Monitor.h"
+#else
+#include "SpinLock.h"
+#endif
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <Windows.h>
@@ -9,6 +15,13 @@
 
 using namespace std;
 using namespace v8;
+
+static void* GlobalConstants[2] = { 0 };
+#ifdef ENABLE_MONITOR_LOCK
+static Monitor GlobalLocker;
+#else
+static SpinLock GlobalLocker;
+#endif
 
 wchar_t* ASCIIToUnicode(const char* s)
 {
@@ -259,47 +272,61 @@ void Environment::Initialize(NSJSVirtualMachine & machine)
 
 void GetCurrentApplicationPath(const FunctionCallbackInfo<Value>& info, int operation)
 {
-	const void* out = NULL;
-	GetBufferNativeString(out, GetModuleFileNameA(NULL, (LPSTR)buffer, (DWORD)size));
+	const char* data = (char*)GlobalConstants[operation];
 	v8::Isolate* isolate = info.GetIsolate();
 	v8::ReturnValue<v8::Value> result = info.GetReturnValue();
-	if (out == NULL)
+#ifdef ENABLE_MONITOR_LOCK
+	GlobalLocker.Enter();
+#else
+	bool localTaken = false;
+	GlobalLocker.Enter(localTaken);
+#endif
+	if (data == NULL)
+	{
+		const void* out = NULL;
+		GetBufferNativeString(out, GetModuleFileNameA(NULL, (LPSTR)buffer, (DWORD)size));
+		if (out != NULL)
+		{
+			string path = (const char*)out;
+			int position = (int)path.find_last_of('\\');
+			if (position >= 0)
+			{
+				data = (const char*)out;
+				switch (operation)
+				{
+				case 0:
+					*((char*)&data[position]) = '\0';
+					break;
+				case 1:
+					data = &data[position + 1];
+					break;
+				default:
+					data = NULL;
+					break;
+				}
+				data = ASCIIToUtf8(data);
+				GlobalConstants[operation] = (void*)data;
+			}
+			Memory::Free(out);
+		}
+	}
+#ifdef ENABLE_MONITOR_LOCK
+	GlobalLocker.Exit();
+#else
+	GlobalLocker.Exit();
+#endif
+	if (data == NULL)
 	{
 		result.Set(v8::Null(isolate));
 	}
 	else
 	{
-		string path = (const char*)out;
-		int position = (int)path.find_last_of('\\', path.length());
-		if (position < 0)
+		v8::Local<v8::Value> contents;
+		if (!String::NewFromUtf8(isolate, data, NewStringType::kNormal).ToLocal(&contents))
 		{
-			result.Set(v8::Null(isolate));
+			contents = v8::Null(isolate);
 		}
-		else
-		{
-			const char* data = NULL;
-			switch (operation)
-			{
-			case 0:
-				data = path.substr(0, position).data();
-				break;
-			case 1:
-				data = path.substr(position + 1).data();
-				break;
-			default:
-				data = (const char*)(out);
-				break;
-			}
-			data = ASCIIToUtf8(data);
-			v8::Local<v8::Value> str;
-			if (!String::NewFromUtf8(isolate, data, NewStringType::kNormal).ToLocal(&str))
-			{
-				str = v8::Null(isolate);
-			}
-			result.Set(str);
-			Memory::Free(data);
-		}
-		Memory::Free(out);
+		result.Set(contents);
 	}
 }
 

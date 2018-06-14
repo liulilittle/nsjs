@@ -337,7 +337,7 @@
         public NSJSVirtualMachine()
         {
             this.AutomaticallyPrintException = true;
-            this.IntegerBoolean = true;
+            this.IntegerBoolean = false;
             this.Handle = nsjs_virtualmachine_new();
             if (this.Handle == NULL)
             {
