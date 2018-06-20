@@ -1,27 +1,25 @@
 ﻿namespace nsjsdotnet
 {
+    using nsjsdotnet.Core;
     using System;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
 
     public unsafe class NSJSFloat32Array : NSJSArray, IEnumerable<float>
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_float32array_new(IntPtr isolate, float* buffer, uint count);
 
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static void* memcpy(void* dest, void* src, uint count);
-
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static float* nsjs_localvalue_get_float32array(IntPtr localValue, ref int len);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static int nsjs_localvalue_float32array_get_length(IntPtr value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_float32array_indexset(IntPtr s, int index, float value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static float nsjs_localvalue_float32array_indexget(IntPtr s, int index);
 
         public override int Length
@@ -57,15 +55,15 @@
             try
             {
                 cch = nsjs_localvalue_get_float32array(this.Handle, ref count);
-                float[] buf = new float[count];
+                float[] buffer = new float[count];
                 if (count > 0)
                 {
-                    fixed (float* pinned = buf)
+                    fixed (float* data = buffer)
                     {
-                        memcpy(pinned, cch, (uint)(sizeof(float) * count));
+                        BufferExtension.memcpy(cch, data, sizeof(float) * count);
                     }
                 }
-                return buf;
+                return buffer;
             }
             finally
             {

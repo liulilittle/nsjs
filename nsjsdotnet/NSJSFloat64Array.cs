@@ -1,27 +1,25 @@
 ﻿namespace nsjsdotnet
 {
+    using nsjsdotnet.Core;
     using System;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
 
     public unsafe class NSJSFloat64Array : NSJSArray, IEnumerable<double>
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static double* nsjs_localvalue_get_float64array(IntPtr localValue, ref int len);
 
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static void* memcpy(void* dest, void* src, uint count);
-
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_float64array_new(IntPtr isolate, double* buffer, uint count);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static int nsjs_localvalue_float64array_get_length(IntPtr value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_float64array_indexset(IntPtr s, int index, double value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static double nsjs_localvalue_float64array_indexget(IntPtr s, int index);
 
         public override int Length
@@ -57,15 +55,15 @@
             try
             {
                 cch = nsjs_localvalue_get_float64array(this.Handle, ref count);
-                double[] buf = new double[count];
+                double[] buffer = new double[count];
                 if (count > 0)
                 {
-                    fixed (double* pinned = buf)
+                    fixed (double* data = buffer)
                     {
-                        memcpy(pinned, cch, (uint)(sizeof(double) * count));
+                        BufferExtension.memcpy(cch, data, sizeof(double) * count);
                     }
                 }
-                return buf;
+                return buffer;
             }
             finally
             {

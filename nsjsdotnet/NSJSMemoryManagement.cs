@@ -6,22 +6,22 @@
 
     public unsafe static class NSJSMemoryManagement
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static byte* nsjs_memory_alloc(uint size);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_memory_free(void* memory);
 
         [DllImport("kernel32.dll", SetLastError = false)]
         private static extern bool SetProcessWorkingSetSize(IntPtr hProcess, int dwMinimumWorkingSetSize, int dwMaximumWorkingSetSize);
 
-        [DllImport("nsjs.dll", SetLastError = false)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false)]
         private static extern int nsjs_idlelocalvalues_getcapacity();
 
-        [DllImport("nsjs.dll", SetLastError = false)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false)]
         private static extern void nsjs_idlelocalvalues_setcapacity(int capacity);
 
-        [DllImport("nsjs.dll", SetLastError = false)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false)]
         private static extern int nsjs_activelocalvalues_getcount();
 
         public static int IdleValueCapacity

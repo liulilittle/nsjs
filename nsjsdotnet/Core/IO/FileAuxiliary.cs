@@ -2,26 +2,10 @@
 {
     using System;
     using System.IO;
-    using System.Runtime.InteropServices;
     using System.Text;
 
     public static class FileAuxiliary
     {
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern int GetFileSize(IntPtr hFile, IntPtr lpFileSizeHigh);
-
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
-        private static extern IntPtr _lopen(string lpPathName, int iReadWrite);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern int _lclose(IntPtr hFile);
-
-        private static readonly IntPtr INVALID_HANDLE_VALUE = unchecked((IntPtr)(-1));
-        private const int OF_READWRITE = 2;
-        private const int OF_READ = 0;
-        private const int OF_WRITE = 1;
-        private const int OF_SHARE_COMPAT = 0;
-
         public static Encoding GetEncoding(byte[] s)
         {
             Encoding encoding = Encoding.Default;
@@ -77,14 +61,24 @@
 
         public static int GetFileLength(string path)
         {
-            IntPtr hFile = _lopen(path, OF_SHARE_COMPAT | OF_READ);
-            if (hFile != INVALID_HANDLE_VALUE)
+            return unchecked((int)GetFileLength64(path));
+        }
+
+        public static long GetFileLength64(string path)
+        {
+            try
             {
-                int count = GetFileSize(hFile, IntPtr.Zero);
-                _lclose(hFile);
-                return count;
+                if (!File.Exists(path))
+                {
+                    return 0;
+                }
+                FileInfo info = new FileInfo(path);
+                return info.Length;
             }
-            return 0;
+            catch (Exception)
+            {
+                return 0;
+            }
         }
     }
 }

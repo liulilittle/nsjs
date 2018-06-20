@@ -1,27 +1,25 @@
 ﻿namespace nsjsdotnet
 {
+    using nsjsdotnet.Core;
     using System;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
 
     public unsafe class NSJSInt16Array : NSJSArray, IEnumerable<short>
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_int16array_new(IntPtr isolate, short* buffer, uint count);
 
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static void* memcpy(void* dest, void* src, uint count);
-
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static short* nsjs_localvalue_get_int16array(IntPtr localValue, ref int len);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static int nsjs_localvalue_int16array_get_length(IntPtr value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_int16array_indexset(IntPtr s, int index, short value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static short nsjs_localvalue_int16array_indexget(IntPtr s, int index);
 
         public override int Length
@@ -57,15 +55,15 @@
             try
             {
                 cch = nsjs_localvalue_get_int16array(this.Handle, ref count);
-                short[] buf = new short[count];
+                short[] buffer = new short[count];
                 if (count > 0)
                 {
-                    fixed (short* pinned = buf)
+                    fixed (short* data = buffer)
                     {
-                        memcpy(pinned, cch, (uint)(sizeof(short) * count));
+                        BufferExtension.memcpy(cch, data, sizeof(short) * count);
                     }
                 }
-                return buf;
+                return buffer;
             }
             finally
             {

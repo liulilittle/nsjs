@@ -1,8 +1,10 @@
 ﻿namespace nsjsdotnet.Core.Net.Web
 {
     using nsjsdotnet.Core;
+    using nsjsdotnet.Core.IO;
     using System;
     using System.IO;
+    using System.IO.MemoryMappedFiles;
     using System.Net;
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
@@ -20,45 +22,6 @@
             this.application = application;
             this.request = context.Request;
             this.response = context.Response;
-        }
-
-        private static class NativeMethods
-        {
-            [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
-            public static extern IntPtr _lopen(string lpPathName, int iReadWrite);
-
-            [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
-            public static extern IntPtr _lcreat(string lpPathName, int iAttribute);
-
-            [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
-            public static extern IntPtr CreateFileMapping(IntPtr hFile, IntPtr lpFileMappingAttributes, int flProtect, uint dwMaximumSizeHigh, uint dwMaximumSizeLow, string lpName);
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            public static extern IntPtr MapViewOfFile(IntPtr hFileMappingObject, int dwDesiredAccess, int dwFileOffsetHigh, int dwFileOffsetLow, IntPtr dwNumberOfBytesToMap);
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            public static extern int UnmapViewOfFile(IntPtr hMapFile);
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            public static extern int _lclose(IntPtr hFile);
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            public static extern int GetFileSize(IntPtr hFile, IntPtr lpFileSizeHigh);
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            public static extern bool GetFileSizeEx(IntPtr hFile, ref long lpFileSizeHigh);
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            public static extern int CloseHandle(IntPtr hObject);
-
-            public static readonly IntPtr INVALID_HANDLE_VALUE = unchecked((IntPtr)(-1));
-            public static readonly IntPtr NULL = IntPtr.Zero;
-            public const int OF_SHARE_COMPAT = 0;
-            public const int PAGE_READONLY = 2;
-            public const int PAGE_READWRITE = 4;
-            public const int FILE_MAP_READ = 4;
-            public const int FILE_MAP_WRITE = 2;
-            public const int OF_READWRITE = 2;
         }
 
         private int GetMethodId()
@@ -127,7 +90,7 @@
                 {
                     response.ContentType = "application/octet-stream";
                 }
-                this.ProcessReponse(methodid, path);
+                this.ProcessRequest(methodid, path);
             }
             catch (Exception)
             {
@@ -171,7 +134,7 @@
             }
         }
 
-        private void ProcessReponse(int methodid, string path)
+        private void ProcessRequest(int methodid, string path)
         {
             try
             {
@@ -180,11 +143,11 @@
                     int? from;
                     int? to;
                     this.TryGetRange(out from, out to);
-                    this.ProcessStream(path, from, to);
+                    this.WriteFileToContentStream(path, from, to);
                 }
                 else if (methodid == 3)
                 {
-                    this.ProcessStreamSize(path);
+                    this.SetContentLengthByFile(path);
                 }
                 else
                 {
@@ -194,93 +157,48 @@
             catch (Exception) { /*--A--*/ }
         }
 
-        private void ProcessStreamSize(string path)
+        private void SetContentLengthByFile(string path)
         {
-            IntPtr hf = NativeMethods._lopen(path, NativeMethods.OF_SHARE_COMPAT | NativeMethods.OF_READWRITE);
-            do
+            try
             {
-                try
+                response.StatusCode = 500;
+                if (File.Exists(path))
                 {
-                    response.StatusCode = 500;
-                    if (hf == NativeMethods.INVALID_HANDLE_VALUE)
+                    response.StatusCode = 200;
+                    response.ContentLength = FileAuxiliary.GetFileLength(path);
+                }
+            }
+            catch (Exception) { /*--A--*/ }
+        }
+
+        private unsafe void OpenFileViewAccessor(string path, Action<IntPtr, long> callback)
+        {
+            if (callback != null)
+            {
+                if (File.Exists(path))
+                {
+                    using (MemoryMappedFile mmf = MemoryMappedFile.CreateFromFile(path))
                     {
-                        break;
-                    }
-                    else
-                    {
-                        long size = 0;
-                        if (!NativeMethods.GetFileSizeEx(hf, ref size))
+                        using (MemoryMappedViewAccessor mmva = mmf.CreateViewAccessor())
                         {
-                            break;
+                            SafeHandle handle = mmva.SafeMemoryMappedViewHandle;
+                            callback(handle.DangerousGetHandle(), FileAuxiliary.GetFileLength(path));
                         }
-                        response.StatusCode = 200;
-                        response.ContentLength = size;
                     }
                 }
-                catch (Exception) { /*--A--*/ }
-            } while (false);
-            if (hf != NativeMethods.INVALID_HANDLE_VALUE)
-            {
-                NativeMethods._lclose(hf);
             }
         }
 
-        private unsafe void ProcessStream(string path, Action<IntPtr, long> callback)
-        {
-            IntPtr hf = NativeMethods.INVALID_HANDLE_VALUE;
-            IntPtr hm = NativeMethods.NULL;
-            IntPtr pl = NativeMethods.NULL;
-            do
-            {
-                hf = NativeMethods._lopen(path, NativeMethods.OF_SHARE_COMPAT | NativeMethods.OF_READWRITE);
-                if (hf == NativeMethods.INVALID_HANDLE_VALUE)
-                {
-                    break;
-                }
-                long size = 0;
-                if (!NativeMethods.GetFileSizeEx(hf, ref size) || size <= 0)
-                {
-                    break;
-                }
-                hm = NativeMethods.CreateFileMapping(hf, NativeMethods.NULL, NativeMethods.PAGE_READWRITE, unchecked((uint)(size >> 32)), unchecked((uint)size), null);
-                if (hm == NativeMethods.NULL)
-                {
-                    break;
-                }
-                pl = NativeMethods.MapViewOfFile(hm, NativeMethods.FILE_MAP_READ | NativeMethods.FILE_MAP_WRITE, 0, 0, NativeMethods.NULL);
-                if (pl == NativeMethods.NULL)
-                {
-                    break;
-                }
-                if (callback != null)
-                {
-                    callback(pl, size);
-                }
-            } while (false);
-            if (pl != NativeMethods.NULL)
-            {
-                NativeMethods.UnmapViewOfFile(pl);
-            }
-            if (hm != NativeMethods.NULL)
-            {
-                NativeMethods._lclose(hm);
-            }
-            if (hf != NativeMethods.INVALID_HANDLE_VALUE)
-            {
-                NativeMethods.CloseHandle(hf);
-            }
-        }
-
-        private unsafe void ProcessStream(string path, int? from, int? to)
+        private unsafe void WriteFileToContentStream(string path, int? from, int? to)
         {
             try
             {
                 response.Headers.Add(HttpResponseHeader.AcceptRanges, "bytes");
-                this.ProcessStream(path, (pfile, count) =>
+                this.OpenFileViewAccessor(path, (accessor, count) =>
                 {
                     try
                     {
-                        byte* stream = (byte*)pfile;
+                        byte* stream = (byte*)accessor;
                         if (from.HasValue && to.HasValue) // range
                         {
                             int ofs = from.Value < 0 ? 0 : from.Value; // 206

@@ -6,10 +6,10 @@
 
     public class NSJSUInt32 : NSJSValue
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_uint32_new(IntPtr isolate, uint value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static uint nsjs_localvalue_get_uint32(IntPtr localValue);
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]

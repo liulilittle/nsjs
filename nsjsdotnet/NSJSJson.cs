@@ -6,10 +6,10 @@
 
     public unsafe static class NSJSJson
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_json_stringify(IntPtr isolate, IntPtr value, ref int len);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_json_parse(IntPtr isolate, byte* json);
 
         private static readonly IntPtr NULL = IntPtr.Zero;

@@ -8,7 +8,7 @@
 
     public unsafe class NSJSObject : NSJSValue
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_object_new(IntPtr isolate, int fieldcount);
 
         internal NSJSObject(NSJSVirtualMachine machine, int fieldcount) : base(nsjs_localvalue_object_new(machine.Isolate, fieldcount), NSJSValueType.kObject, machine)
@@ -44,70 +44,70 @@
 
         }
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_object_property_get(IntPtr isolate, IntPtr localValue, void* key);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static sbyte** nsjs_localvalue_object_getallkeys(IntPtr localValue, ref int count);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set(IntPtr isolate, IntPtr obj, IntPtr key, IntPtr value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_int32(IntPtr isolate, IntPtr obj, IntPtr key, int value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_uint32(IntPtr isolate, IntPtr obj, IntPtr key, uint value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_boolean(IntPtr isolate, IntPtr obj, IntPtr key, bool value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_string(IntPtr isolate, IntPtr obj, IntPtr key, void* value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_float64(IntPtr isolate, IntPtr obj, IntPtr key, double value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_datetime(IntPtr isolate, IntPtr obj, IntPtr key, long value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_function(IntPtr isolate, IntPtr obj, IntPtr key, IntPtr value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_int8array(IntPtr isolate, IntPtr obj, IntPtr key, sbyte* buffer, uint count);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_uint8array(IntPtr isolate, IntPtr obj, IntPtr key, byte* buffer, uint count);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_int16array(IntPtr isolate, IntPtr obj, IntPtr key, short* buffer, uint count);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_uint16array(IntPtr isolate, IntPtr obj, IntPtr key, ushort* buffer, uint count);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_int32array(IntPtr isolate, IntPtr obj, IntPtr key, int* buffer, uint count);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_uint32array(IntPtr isolate, IntPtr obj, IntPtr key, uint* buffer, uint count);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_float32array(IntPtr isolate, IntPtr obj, IntPtr key, float* buffer, uint count);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_float64array(IntPtr isolate, IntPtr obj, IntPtr key, double* buffer, uint count);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_delete(IntPtr isolate, IntPtr obj, void* key);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static int nsjs_localvalue_object_internalfield_count([In]IntPtr info);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_object_internalfield_get([In]IntPtr obj, int solt);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_localvalue_object_internalfield_set([In]IntPtr obj, int solt, IntPtr value);
 
         private const string RUNTIME_DEFINEPROPERTY_PROPERTYKEY = @"____nsjsdotnet_framework_object_defineproperty";

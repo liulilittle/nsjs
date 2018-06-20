@@ -8,54 +8,54 @@
     {
         private static readonly IntPtr NULL = IntPtr.Zero;
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.SysInt)]
         private extern static IntPtr nsjs_argument_get_solt(IntPtr info, int solt);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.SysInt)]
         private extern static IntPtr nsjs_argument_get_this([In]IntPtr info);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.SysInt)]
         private extern static IntPtr nsjs_argument_get_isolate([In]IntPtr info);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static int nsjs_argument_get_length([In]IntPtr info);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static NSJSValueType nsjs_argument_get_solt_typeid([In]IntPtr info, int solt);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_virtualmachine_set_data2([In]IntPtr isolate, int solt, IntPtr data);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_virtualmachine_get_data2([In]IntPtr isolate, int solt);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_argument_returnvalue_get(IntPtr info);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_argument_returnvalue_set(IntPtr info, IntPtr value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.SysInt)]
         private extern static IntPtr nsjs_argument_get_data([In]IntPtr info);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.SysInt)]
         private extern static IntPtr nsjs_argument_get_callee([In]IntPtr info);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_argument_returnvalue_set_boolean([In]IntPtr info, bool value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_argument_returnvalue_set_int32([In]IntPtr info, int value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_argument_returnvalue_set_uint32([In]IntPtr info, uint value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_argument_returnvalue_set_float64([In]IntPtr info, double value);
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]

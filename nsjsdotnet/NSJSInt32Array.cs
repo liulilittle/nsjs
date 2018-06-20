@@ -1,27 +1,25 @@
 ﻿namespace nsjsdotnet
 {
+    using nsjsdotnet.Core;
     using System;
-    using System.Runtime.InteropServices;
     using System.Collections.Generic;
+    using System.Runtime.InteropServices;
 
     public unsafe class NSJSInt32Array : NSJSArray, IEnumerable<int>
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_int32array_new(IntPtr isolate, int* buffer, uint count);
 
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static void* memcpy(void* dest, void* src, uint count);
-
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static int* nsjs_localvalue_get_int32array(IntPtr localValue, ref int len);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static int nsjs_localvalue_int32array_get_length(IntPtr value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_int32array_indexset(IntPtr s, int index, int value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static int nsjs_localvalue_int32array_indexget(IntPtr s, int index);
 
         public override int Length
@@ -57,15 +55,15 @@
             try
             {
                 cch = nsjs_localvalue_get_int32array(this.Handle, ref count);
-                int[] buf = new int[count];
+                int[] buffer = new int[count];
                 if (count > 0)
                 {
-                    fixed (int* pinned = buf)
+                    fixed (int* data = buffer)
                     {
-                        memcpy(pinned, cch, (uint)(sizeof(int) * count));
+                        BufferExtension.memcpy(cch, data, sizeof(int) * count);
                     }
                 }
-                return buf;
+                return buffer;
             }
             finally
             {

@@ -8,10 +8,10 @@
 
     public unsafe class NSJSFunction : NSJSValue
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_function_new(IntPtr isolate, IntPtr value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_object_property_call(IntPtr isolate, IntPtr recv,
             IntPtr function, int argc, IntPtr* argv, ref NSJSStructural.NSJSExceptionInfo exception);
 
@@ -21,7 +21,7 @@
         [DllImport("user32.dll", SetLastError = true, CallingConvention = CallingConvention.StdCall)]
         private static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr IParam);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static double nsjs_localvalue_get_float64(IntPtr localValue);
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]

@@ -1,27 +1,25 @@
 ﻿namespace nsjsdotnet
 {
+    using nsjsdotnet.Core;
     using System;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
 
     public unsafe class NSJSUInt8Array : NSJSArray, IEnumerable<byte>
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_uint8array_new(IntPtr isolate, byte* buffer, uint count);
 
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static void* memcpy(void* dest, void* src, uint count);
-
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static byte* nsjs_localvalue_get_uint8array(IntPtr localValue, ref int len);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static int nsjs_localvalue_uint8array_get_length(IntPtr value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_uint8array_indexset(IntPtr s, int index, byte value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static byte nsjs_localvalue_uint8array_indexget(IntPtr s, int index);
 
         public override int Length
@@ -57,15 +55,15 @@
             try
             {
                 cch = nsjs_localvalue_get_uint8array(this.Handle, ref count);
-                byte[] buf = new byte[count];
+                byte[] buffer = new byte[count];
                 if (count > 0)
                 {
-                    fixed (byte* pinned = buf)
+                    fixed (byte* data = buffer)
                     {
-                        memcpy(pinned, cch, (uint)(sizeof(byte) * count));
+                        BufferExtension.memcpy(cch, data, sizeof(byte) * count);
                     }
                 }
-                return buf;
+                return buffer;
             }
             finally
             {

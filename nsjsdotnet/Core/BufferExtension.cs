@@ -1,19 +1,8 @@
 ﻿namespace nsjsdotnet.Core
 {
-    using System.Runtime.InteropServices;
-
     public unsafe static class BufferExtension
     {
-        [DllImport("msvcrt.dll", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int memcmp(byte[] b1, byte[] b2, int count);
-
-        [DllImport("msvcrt.dll", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int memcmp(byte* b1, byte* b2, int count);
-
         public static readonly byte[] EmptryBuffer = new byte[0];
-
-        [DllImport("msvcrt.dll", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void* memset(void* s, int ch, int n);
 
         public static bool IsZeroMemory(byte[] buffer)
         {
@@ -63,9 +52,13 @@
         public static void* memcpy(void* src, void* dest, int count)
         {
             if (dest == null || src == null)
+            {
                 return null;
+            }
             if (dest == src && count <= 0)
+            {
                 return dest;
+            }
             BufferExtension.BlockCopy((byte*)src, 0, (byte*)dest, count);
             return dest;
         }

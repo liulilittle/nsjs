@@ -36,10 +36,10 @@
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly string exception_message;
 
-        [DllImport("nsjs.dll", SetLastError = false)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false)]
         private static extern void nsjs_exception_throw_value(IntPtr isolate, IntPtr value);
 
-        [DllImport("nsjs.dll", SetLastError = false)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false)]
         private static extern void nsjs_exception_throw_error(IntPtr isolate, byte* value, NSJSErrorKind kind);
 
         public int ErrorLevel { get; private set; }

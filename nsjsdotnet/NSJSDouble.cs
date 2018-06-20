@@ -6,10 +6,10 @@
 
     public class NSJSDouble : NSJSValue
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_float64_new(IntPtr isolate, double value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static double nsjs_localvalue_get_float64(IntPtr localValue);
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]

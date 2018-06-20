@@ -1,27 +1,25 @@
 ﻿namespace nsjsdotnet
 {
+    using nsjsdotnet.Core;
     using System;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
 
     public unsafe class NSJSInt8Array : NSJSArray, IEnumerable<sbyte>
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_int8array_new(IntPtr isolate, sbyte* buffer, uint count);
 
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static void* memcpy(void* dest, void* src, uint count);
-
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static sbyte* nsjs_localvalue_get_int8array(IntPtr localValue, ref int len);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static int nsjs_localvalue_int8array_get_length(IntPtr value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_int8array_indexset(IntPtr s, int index, sbyte value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static sbyte nsjs_localvalue_int8array_indexget(IntPtr s, int index);
 
         public override int Length
@@ -52,20 +50,20 @@
 
         protected virtual sbyte[] ValueToArray()
         {
-            int count = 0;
             void* cch = null;
+            int count = 0;
             try
             {
                 cch = nsjs_localvalue_get_int8array(this.Handle, ref count);
-                sbyte[] buf = new sbyte[count];
+                sbyte[] buffer = new sbyte[count];
                 if (count > 0)
                 {
-                    fixed (sbyte* pinned = buf)
+                    fixed (sbyte* data = buffer)
                     {
-                        memcpy(pinned, cch, (uint)(sizeof(sbyte) * count));
+                        BufferExtension.memcpy(cch, data, (sizeof(sbyte) * count));
                     }
                 }
-                return buf;
+                return buffer;
             }
             finally
             {

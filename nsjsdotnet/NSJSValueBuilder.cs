@@ -5,7 +5,7 @@
 
     static class NSJSValueBuilder
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static NSJSValueType nsjs_localvalue_get_typeid(IntPtr localValue);
 
         private static readonly IntPtr NULL = IntPtr.Zero;

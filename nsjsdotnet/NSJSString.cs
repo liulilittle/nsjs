@@ -7,28 +7,7 @@
 
     public unsafe class NSJSString : NSJSValue
     {
-        [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall)]
-        private extern static int WideCharToMultiByte(uint CodePage,
-               uint dwFlags,
-               IntPtr lpWideCharStr,
-               int cchWideChar,
-               IntPtr lpMultiByteStr,
-               int cchMultiByte,
-               IntPtr lpDefaultChar,
-               IntPtr pfUsedDefaultChar);
-
-        [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall)]
-        private extern static int lstrlen(IntPtr lszValue);
-
-        [DllImport("kernel32.dll")]
-        static extern int MultiByteToWideChar(uint CodePage,
-            uint dwFlags,
-            IntPtr lpMultiByteStr,
-            int cbMultiByte,
-            IntPtr lpWideCharStr,
-            int cchWideChar);
-
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_string_new(IntPtr isolate, void* value);
 
         [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall)]
@@ -97,7 +76,8 @@
                 }
                 if (character == 0)
                 {
-                    return (int)(i - s);
+                    int len = unchecked((int)(i - (s + 1)));
+                    return len < 0 ? 0 : len;
                 }
             }
             return 0;
@@ -230,18 +210,12 @@
             {
                 return null;
             }
-            int size = WideCharToMultiByte(CP_UTF8, 0, p, -1, NULL, 0, NULL, NULL);
-            if (size < 0)
+            int len = GetUtf8BufferCount(unchecked((byte*)p));
+            if (len < 0)
             {
                 return null;
             }
-            string s = new string((sbyte*)p, 0, size, Encoding.UTF8);
-            int i = s.IndexOf('\0');
-            if (i > -1)
-            {
-                s = s.Remove(i);
-            }
-            return s;
+            return Utf8ToString(p, len);
         }
 
         public static string Utf8ToString(IntPtr p, int len)

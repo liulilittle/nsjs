@@ -17,100 +17,100 @@
 
     public unsafe class NSJSVirtualMachine : EventArgs, IRelational
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.SysInt)]
         private extern static IntPtr nsjs_virtualmachine_new();
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_virtualmachine_add_c_extension(IntPtr machine);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_virtualmachine_free(IntPtr machine);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static sbyte* nsjs_virtualmachine_run(IntPtr machine, void* source,
             void* alias, ref NSJSStructural.NSJSExceptionInfo exception);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_virtualmachine_initialize(IntPtr machine);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_initialize(void* exce_path);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_uninitialize();
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private extern static bool nsjs_virtualmachine_function_add([In]IntPtr machine,
             [MarshalAs(UnmanagedType.LPStr)]string function_name,
             IntPtr function_callback);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private extern static bool nsjs_virtualmachine_function_remove([In]IntPtr machine,
             [MarshalAs(UnmanagedType.LPStr)]string function_name);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private extern static sbyte* nsjs_virtualmachine_eval([In]IntPtr machine, void* expression, ref NSJSStructural.NSJSExceptionInfo exception);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private extern static IntPtr nsjs_virtualmachine_call2([In]IntPtr machine, void* name, int argc, void** argv, ref NSJSStructural.NSJSExceptionInfo exception);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private extern static sbyte* nsjs_virtualmachine_call([In]IntPtr machine, void* name, int argc, IntPtr* argv, ref NSJSStructural.NSJSExceptionInfo exception);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private extern static IntPtr nsjs_virtualmachine_callvir([In]IntPtr machine, void* name, int argc, IntPtr* argv, ref NSJSStructural.NSJSExceptionInfo exception);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_virtualmachine_set_data([In]IntPtr machine, int solt, IntPtr data);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_virtualmachine_get_data([In]IntPtr machine, int solt);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_virtualmachine_get_isolate([In]IntPtr machine);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_virtualmachine_join([In]IntPtr machine, [In]IntPtr callback, IntPtr state);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_virtualmachine_object_add([In]IntPtr machine, void* function_name, IntPtr object_template);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_virtualmachine_object_remove([In]IntPtr machine, void* function_name);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_virtualmachine_get_global([In]IntPtr machine);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_null(IntPtr isolate);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_undefined(IntPtr isolate);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_virtualmachine_abort(IntPtr machine);
 
         public sealed class ExtensionObjectTemplate : System.IDisposable
         {
-            [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
             private extern static void nsjs_virtualmachine_object_free([In]IntPtr object_template);
 
-            [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
             private extern static IntPtr nsjs_virtualmachine_object_new();
 
-            [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
             private extern static bool nsjs_virtualmachine_object_addfunction([In]IntPtr object_template, IntPtr function_name, IntPtr callback);
 
-            [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
             private extern static bool nsjs_virtualmachine_object_removefunction([In]IntPtr object_template, IntPtr function_name);
 
-            [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
             private extern static bool nsjs_virtualmachine_object_addobject([In]IntPtr owner, IntPtr object_name, IntPtr object_template);
 
-            [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
             private extern static bool nsjs_virtualmachine_object_removeobject([In]IntPtr owner, IntPtr object_name);
 
             private IntPtr m_handle = NULL;

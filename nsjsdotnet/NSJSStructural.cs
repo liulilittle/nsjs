@@ -6,6 +6,7 @@
     unsafe class NSJSStructural
     {
         public const int MAXSTACKFRAMECOUNT = 100;
+        public const string NSJSVMLINKLIBRARY = "nsjs.dll";
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public struct NSJSExceptionInfo

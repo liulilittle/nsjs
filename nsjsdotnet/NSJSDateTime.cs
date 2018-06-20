@@ -6,10 +6,10 @@
 
     public class NSJSDateTime : NSJSValue
     {
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_datetime_new(IntPtr isolate, long value);
 
-        [DllImport("nsjs.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static long nsjs_localvalue_get_int64(IntPtr localValue);
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
