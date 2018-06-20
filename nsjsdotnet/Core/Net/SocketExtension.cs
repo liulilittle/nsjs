@@ -1,5 +1,6 @@
 ﻿namespace nsjsdotnet.Core.Net
 {
+    using nsjsdotnet.Core.Utilits;
     using System;
     using System.Linq.Expressions;
     using System.Net;
@@ -21,6 +22,31 @@
         private const long IOC_IN = 0x80000000;
         private const long IOC_VENDOR = 0x18000000;
 
+        [DllImport("ws2_32.dll", SetLastError = true)]
+        private static extern SocketError shutdown([In] IntPtr socketHandle, [In] SocketShutdown how);
+
+        public static bool Shutdown([In] Socket socket)
+        {
+            return Shutdown(socket, SocketShutdown.Both);
+        }
+
+        public static bool Shutdown([In] Socket socket, [In] SocketShutdown how)
+        {
+            if (Platform.IsWindows())
+            {
+                return shutdown(socket.Handle, how) == SocketError.Success;
+            }
+            try
+            {
+                socket.Shutdown(how);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public static int SioUdpConnectReset(Socket s, byte[] optionInValue, byte[] optionOutValue)
         {
             return s.IOControl((IOControlCode)SIO_UDP_CONNRESET, optionInValue, optionOutValue);
@@ -29,12 +55,6 @@
         public static int SioUdpConnectReset(Socket s)
         {
             return SioUdpConnectReset(s, new byte[4], new byte[] { 0 });
-        }
-
-        private static class NativeMethods
-        {
-            [DllImport("ws2_32.dll", SetLastError = true)]
-            public static extern SocketError shutdown([In] IntPtr socketHandle, [In] SocketShutdown how);
         }
 
         public static Func<Socket, bool> CleanedUp
@@ -60,7 +80,7 @@
         {
             if (s != null)
             {
-                NativeMethods.shutdown(s.Handle, SocketShutdown.Both);
+                Shutdown(s);
                 s.Close();
             }
         }

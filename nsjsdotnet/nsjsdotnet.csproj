@@ -143,6 +143,7 @@
     <Compile Include="Core\Utilits\Ipep.cs" />
     <Compile Include="Core\Utilits\Hardware.cs" />
     <Compile Include="Core\ObjectAuxiliary.cs" />
+    <Compile Include="Core\Utilits\Platform.cs" />
     <Compile Include="Core\Utilits\Random.cs" />
     <Compile Include="Core\Net\Url.cs" />
     <Compile Include="Core\Net\SocketExtension.cs" />
