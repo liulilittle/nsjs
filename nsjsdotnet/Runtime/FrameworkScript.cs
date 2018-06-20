@@ -77,11 +77,11 @@
                                 type = eval(type);
                             }
                             if (typeof type !== 'function') {
-                                return false;
+                                return 0;
                             }
                             var x1 = instance instanceof type;
                             if (x1) {
-                                return true;
+                                return 1;
                             }
                             var x2 = false;
                             if (instance !== null && instance !== undefined) {
