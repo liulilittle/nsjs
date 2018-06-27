@@ -25,8 +25,8 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.
                 ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(New));
-            owner.AddFunction("Invalid", NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(Invalid));
+            owner.Set("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(New));
+            owner.Set("Invalid", NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(Invalid));
             g_CloseProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(Close);
             g_SelectProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(Select);
             g_ExecuteNonQueryProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(ExecuteNonQuery);

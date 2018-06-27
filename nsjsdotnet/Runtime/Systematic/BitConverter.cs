@@ -16,20 +16,20 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
 
-            owner.AddFunction("ToInt32", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToInt32));
-            owner.AddFunction("ToUInt32", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToUInt32));
-            owner.AddFunction("ToInt16", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToInt16));
-            owner.AddFunction("ToUInt16", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToUInt16));
-            owner.AddFunction("ToSByte", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToSByte));
-            owner.AddFunction("ToByte", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToByte));
+            owner.Set("ToInt32", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToInt32));
+            owner.Set("ToUInt32", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToUInt32));
+            owner.Set("ToInt16", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToInt16));
+            owner.Set("ToUInt16", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToUInt16));
+            owner.Set("ToSByte", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToSByte));
+            owner.Set("ToByte", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToByte));
 
-            owner.AddFunction("ToSingle", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToSingle));
-            owner.AddFunction("ToDouble", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToDouble));
-            owner.AddFunction("ToBoolean", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToBoolean));
-            owner.AddFunction("ToDateTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToDateTime));
+            owner.Set("ToSingle", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToSingle));
+            owner.Set("ToDouble", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToDouble));
+            owner.Set("ToBoolean", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToBoolean));
+            owner.Set("ToDateTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ToDateTime));
 
-            owner.AddFunction("IsLittleEndian", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(IsLittleEndian));
-            owner.AddFunction("GetBytes", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetBytes));
+            owner.Set("IsLittleEndian", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(IsLittleEndian));
+            owner.Set("GetBytes", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetBytes));
         }
 
         private static void IsLittleEndian(IntPtr info)

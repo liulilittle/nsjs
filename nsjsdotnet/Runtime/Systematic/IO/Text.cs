@@ -19,7 +19,7 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("GetEncoding", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetEncoding));
+            owner.Set("GetEncoding", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetEncoding));
         }
 
         public static Encoding GetEncoding(string path)

@@ -137,7 +137,7 @@
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private bool initialized;
 
-        internal NSJSString(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kString, machine)
+        internal NSJSString(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSDataType.kString, machine)
         {
 
         }

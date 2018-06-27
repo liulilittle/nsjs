@@ -74,17 +74,17 @@ void Thread::sleep(const FunctionCallbackInfo<Value>& info)
 	SLEEPRX1MS(ms);
 }
 
-void Thread::Initialize(NSJSVirtualMachine & machine)
+void Thread::Initialize(NSJSVirtualMachine& machine)
 {
-	NSJSVirtualMachine::ExtensionObjectTemplate* thread = new NSJSVirtualMachine::ExtensionObjectTemplate;
-	if (!machine.AddObject("Thread", thread))
+	NSJSVirtualMachine::ExtensionObjectTemplate* threading = new NSJSVirtualMachine::ExtensionObjectTemplate;
+	if (!machine.GetExtension().SetObject("Thread", threading))
 	{
-		delete thread;
+		delete threading;
 	}
 	else
 	{
-		thread->AddFunction("usleep", &Thread::usleep);
-		thread->AddFunction("sleep", &Thread::sleep);
-		thread->AddFunction("nanosleep", &Thread::nanosleep);
+		threading->SetFunction("usleep", &Thread::usleep);
+		threading->SetFunction("sleep", &Thread::sleep);
+		threading->SetFunction("nanosleep", &Thread::nanosleep);
 	}
 }

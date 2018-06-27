@@ -17,8 +17,8 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("GetEncoding", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetEncoding));
-            owner.AddFunction("GetEncodings", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetEncodings));
+            owner.Set("GetEncoding", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetEncoding));
+            owner.Set("GetEncodings", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetEncodings));
         }
 
         private static NSJSFunctionCallback g_GetBytesProc = null;

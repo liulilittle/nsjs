@@ -18,8 +18,8 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("ComputeHashValue", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ComputeHashValue));
-            owner.AddFunction("ComputeHashString", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ComputeHashString));
+            owner.Set("ComputeHashValue", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ComputeHashValue));
+            owner.Set("ComputeHashString", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ComputeHashString));
         }
 
         protected abstract HASHAlgorithm New();

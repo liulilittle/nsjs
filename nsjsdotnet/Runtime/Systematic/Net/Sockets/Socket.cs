@@ -46,10 +46,10 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(New));
-            owner.AddFunction("Invalid", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Invalid));
-            owner.AddFunction("GetActiveTcpListeners", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetActiveTcpListeners));
-            owner.AddFunction("GetActiveTcpListeners", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetActiveUdpListeners));
+            owner.Set("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(New));
+            owner.Set("Invalid", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Invalid));
+            owner.Set("GetActiveTcpListeners", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetActiveTcpListeners));
+            owner.Set("GetActiveTcpListeners", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetActiveUdpListeners));
             m_SendProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Send);
             m_BindProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Bind);
             m_CloseProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Close);

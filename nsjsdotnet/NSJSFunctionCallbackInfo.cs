@@ -24,7 +24,7 @@
         private extern static int nsjs_argument_get_length([In]IntPtr info);
 
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-        private extern static NSJSValueType nsjs_argument_get_solt_typeid([In]IntPtr info, int solt);
+        private extern static NSJSDataType nsjs_argument_get_solt_typeid([In]IntPtr info, int solt);
 
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_virtualmachine_set_data2([In]IntPtr isolate, int solt, IntPtr data);

@@ -276,11 +276,11 @@
             {
                 return null;
             }
-            if ((value.DateType & NSJSValueType.kFunction) > 0)
+            if ((value.DateType & NSJSDataType.kFunction) > 0)
             {
                 return null;
             }
-            if ((value.DateType & NSJSValueType.kArray) > 0)
+            if ((value.DateType & NSJSDataType.kArray) > 0)
             {
                 return ArrayAuxiliary.ToArray(value as NSJSArray);
             }

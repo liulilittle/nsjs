@@ -30,7 +30,7 @@
             }
         }
 
-        internal NSJSFloat64Array(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kFloat64Array, machine)
+        internal NSJSFloat64Array(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSDataType.kFloat64Array, machine)
         {
 
         }

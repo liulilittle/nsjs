@@ -13,7 +13,7 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.
                 ExtensionObjectTemplate();
             GlobalTemplate = owner;
-            owner.AddObject("DatabaseAccessAdapter", DatabaseAccessAdapter.ClassTemplate);
+            owner.Set("DatabaseAccessAdapter", DatabaseAccessAdapter.ClassTemplate);
         }
     }
 }

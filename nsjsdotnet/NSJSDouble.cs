@@ -27,7 +27,7 @@
             return this.value;
         }
 
-        internal NSJSDouble(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kDouble, machine)
+        internal NSJSDouble(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSDataType.kDouble, machine)
         {
 
         }

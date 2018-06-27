@@ -19,12 +19,12 @@
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_array_new(IntPtr isolate, int length);
 
-        internal NSJSArray(IntPtr handle, NSJSValueType datatype, NSJSVirtualMachine machine) : base(handle, datatype, machine)
+        internal NSJSArray(IntPtr handle, NSJSDataType datatype, NSJSVirtualMachine machine) : base(handle, datatype, machine)
         {
 
         }
 
-        internal NSJSArray(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kArray, machine)
+        internal NSJSArray(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSDataType.kArray, machine)
         {
            
         }

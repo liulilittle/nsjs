@@ -57,18 +57,19 @@
                 throw new ArgumentNullException("machine");
             }
             Timer.Initialization(machine);
-            machine.AddObject("console", Console.ClassTemplate);
-            machine.AddFunction("alert", g_AlertProc);
-            machine.AddFunction("using", g_UsingProc);
-            machine.AddFunction("require", g_RequireProc);
-            machine.AddObject("System", NSJSVirtualMachine.GetSystemTemplate());
+            var extension = machine.GetExtension();
+            extension.Set("console", Console.ClassTemplate);
+            extension.Set("alert", g_AlertProc);
+            extension.Set("using", g_UsingProc);
+            extension.Set("require", g_RequireProc);
+            extension.Set("System", NSJSVirtualMachine.GetSystemTemplate());
         }
 
         private static void Require(IntPtr info)
         {
             NSJSFunctionCallbackInfo arguments = NSJSFunctionCallbackInfo.From(info);
             NSJSString rawUri = arguments.Length > 0 ? arguments[0] as NSJSString : null;
-            if (rawUri == null || rawUri.DateType != NSJSValueType.kString)
+            if (rawUri == null || rawUri.DateType != NSJSDataType.kString)
             {
                 arguments.SetReturnValue(false);
             }

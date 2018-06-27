@@ -17,9 +17,9 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("GetHostEntry", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetHostEntry));
-            owner.AddFunction("GetHostName", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetHostName));
-            owner.AddFunction("GetHostAddresses", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetHostAddresses));
+            owner.Set("GetHostEntry", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetHostEntry));
+            owner.Set("GetHostName", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetHostName));
+            owner.Set("GetHostAddresses", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetHostAddresses));
         }
 
         private static void GetHostEntry(IntPtr info)

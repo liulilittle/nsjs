@@ -28,7 +28,7 @@
             }
         }
 
-        internal NSJSBoolean(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kBoolean, machine)
+        internal NSJSBoolean(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSDataType.kBoolean, machine)
         {
 
         }

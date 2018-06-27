@@ -29,7 +29,7 @@
 
         public static DateTime Min = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc);
 
-        internal NSJSDateTime(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kDateTime, machine)
+        internal NSJSDateTime(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSDataType.kDateTime, machine)
         {
 
         }
@@ -68,7 +68,7 @@
         {
             if (NSJSDateTime.Invalid(value))
             {
-                throw new ArgumentNullException("Parameter cannot be an invalid time");
+                throw new ArgumentOutOfRangeException("Parameter cannot be an invalid time");
             }
             if (machine == null)
             {

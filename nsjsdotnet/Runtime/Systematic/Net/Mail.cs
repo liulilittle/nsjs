@@ -21,7 +21,7 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(New));
+            owner.Set("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(New));
             g_SendProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Send);
             g_CloseProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Close);
             m_SendAsyncProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SendAsync);

@@ -75,7 +75,7 @@
       <SDLCheck>true</SDLCheck>
       <UndefinePreprocessorDefinitions>_EXEC_CHARACTER_SET_UTF8;_DLLLIB_NO_CC;_NEDMALLOC_NO_USE;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <DisableSpecificWarnings>4297</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4297;4091</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -12,13 +12,13 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             GlobalTemplate = owner;
-            owner.AddObject("Dns", Dns.ClassTemplate);
-            owner.AddObject("HttpClient", HttpClient.ClassTemplate);
-            owner.AddObject("HttpProxy", HttpProxy.ClassTemplate);
-            owner.AddObject("Mail", Mail.ClassTemplate);
-            owner.AddObject("Web", Web.Global.GlobalTemplate);
-            owner.AddObject("Sockets", Sockets.Global.GlobalTemplate);
-            owner.AddObject("WebSockets", WebSockets.Global.GlobalTemplate);
+            owner.Set("Dns", Dns.ClassTemplate);
+            owner.Set("HttpClient", HttpClient.ClassTemplate);
+            owner.Set("HttpProxy", HttpProxy.ClassTemplate);
+            owner.Set("Mail", Mail.ClassTemplate);
+            owner.Set("Web", Web.Global.GlobalTemplate);
+            owner.Set("Sockets", Sockets.Global.GlobalTemplate);
+            owner.Set("WebSockets", WebSockets.Global.GlobalTemplate);
         }
     }
 }

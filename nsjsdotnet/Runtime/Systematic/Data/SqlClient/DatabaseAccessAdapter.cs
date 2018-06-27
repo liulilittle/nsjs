@@ -20,8 +20,8 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.
                 ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(New));
-            owner.AddFunction("Invalid", NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(Invalid));
+            owner.Set("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(New));
+            owner.Set("Invalid", NSJSPinnedCollection.Pinned<NSJSFunctionCallback2>(Invalid));
         }
 
         public static DatabaseAccessAdapter GetAdapter(NSJSObject value)

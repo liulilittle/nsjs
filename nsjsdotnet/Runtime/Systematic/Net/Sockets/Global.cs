@@ -12,7 +12,7 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             GlobalTemplate = owner;
-            owner.AddObject("Socket", Socket.ClassTemplate);
+            owner.Set("Socket", Socket.ClassTemplate);
         }
     }
 }

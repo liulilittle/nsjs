@@ -21,10 +21,10 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("TryDownload", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(TryDownload));
-            owner.AddFunction("TryDownloadAsync", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(TryDownloadAsync));
-            owner.AddFunction("TryUpload", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(TryUpload));
-            owner.AddFunction("TryUploadAsync", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(TryUploadAsync));
+            owner.Set("TryDownload", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(TryDownload));
+            owner.Set("TryDownloadAsync", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(TryDownloadAsync));
+            owner.Set("TryUpload", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(TryUpload));
+            owner.Set("TryUploadAsync", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(TryUploadAsync));
         }
 
         private static HttpClientOptions object2options(NSJSObject options)

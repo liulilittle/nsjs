@@ -6,7 +6,7 @@
     static class NSJSValueBuilder
     {
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-        private extern static NSJSValueType nsjs_localvalue_get_typeid(IntPtr localValue);
+        private extern static NSJSDataType nsjs_localvalue_get_typeid(IntPtr localValue);
 
         private static readonly IntPtr NULL = IntPtr.Zero;
 
@@ -25,78 +25,78 @@
             {
                 return null;
             }
-            NSJSValueType datatype = nsjs_localvalue_get_typeid(handle);
-            if (!((datatype & NSJSValueType.kUndefined) > 0 || (datatype & NSJSValueType.kNull) > 0))
+            NSJSDataType datatype = nsjs_localvalue_get_typeid(handle);
+            if (!((datatype & NSJSDataType.kUndefined) > 0 || (datatype & NSJSDataType.kNull) > 0))
             {
-                if ((datatype & NSJSValueType.kString) > 0)
+                if ((datatype & NSJSDataType.kString) > 0)
                 {
                     return new NSJSString(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kInt32) > 0)
+                else if ((datatype & NSJSDataType.kInt32) > 0)
                 {
                     return new NSJSInt32(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kUInt32) > 0)
+                else if ((datatype & NSJSDataType.kUInt32) > 0)
                 {
                     return new NSJSUInt32(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kBoolean) > 0)
+                else if ((datatype & NSJSDataType.kBoolean) > 0)
                 {
                     return new NSJSBoolean(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kDouble) > 0)
+                else if ((datatype & NSJSDataType.kDouble) > 0)
                 {
                     return new NSJSDouble(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kFunction) > 0)
+                else if ((datatype & NSJSDataType.kFunction) > 0)
                 {
                     return new NSJSFunction(handle, owner, machine);
                 }
-                else if ((datatype & NSJSValueType.kInt64) > 0)
+                else if ((datatype & NSJSDataType.kInt64) > 0)
                 {
                     return new NSJSInt64(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kDateTime) > 0)
+                else if ((datatype & NSJSDataType.kDateTime) > 0)
                 {
                     return new NSJSDateTime(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kArray) > 0)
+                else if ((datatype & NSJSDataType.kArray) > 0)
                 {
                     return new NSJSArray(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kInt8Array) > 0)
+                else if ((datatype & NSJSDataType.kInt8Array) > 0)
                 {
                     return new NSJSInt8Array(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kUInt8Array) > 0)
+                else if ((datatype & NSJSDataType.kUInt8Array) > 0)
                 {
                     return new NSJSUInt8Array(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kInt16Array) > 0)
+                else if ((datatype & NSJSDataType.kInt16Array) > 0)
                 {
                     return new NSJSInt16Array(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kUInt16Array) > 0)
+                else if ((datatype & NSJSDataType.kUInt16Array) > 0)
                 {
                     return new NSJSUInt16Array(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kInt32Array) > 0)
+                else if ((datatype & NSJSDataType.kInt32Array) > 0)
                 {
                     return new NSJSInt32Array(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kUInt32Array) > 0)
+                else if ((datatype & NSJSDataType.kUInt32Array) > 0)
                 {
                     return new NSJSUInt32Array(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kFloat32Array) > 0)
+                else if ((datatype & NSJSDataType.kFloat32Array) > 0)
                 {
                     return new NSJSFloat32Array(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kFloat64Array) > 0)
+                else if ((datatype & NSJSDataType.kFloat64Array) > 0)
                 {
                     return new NSJSFloat64Array(handle, machine);
                 }
-                else if ((datatype & NSJSValueType.kObject) > 0)
+                else if ((datatype & NSJSDataType.kObject) > 0)
                 {
                     return new NSJSObject(handle, machine);
                 }

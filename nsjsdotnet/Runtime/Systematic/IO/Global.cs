@@ -12,11 +12,11 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             GlobalTemplate = owner;
-            owner.AddObject("File", File.ClassTemplate);
-            owner.AddObject("Text", Text.ClassTemplate);
-            owner.AddObject("FileStream", FileStream.ClassTemplate);
-            owner.AddObject("Directory", Directory.ClassTemplate);
-            owner.AddObject("MemoryStream", MemoryStream.ClassTemplate);
+            owner.Set("File", File.ClassTemplate);
+            owner.Set("Text", Text.ClassTemplate);
+            owner.Set("FileStream", FileStream.ClassTemplate);
+            owner.Set("Directory", Directory.ClassTemplate);
+            owner.Set("MemoryStream", MemoryStream.ClassTemplate);
         }
     }
 }

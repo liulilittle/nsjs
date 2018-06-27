@@ -12,7 +12,7 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             GlobalTemplate = owner;
-            owner.AddObject("Sortable", Sortable.ClassTemplate);
+            owner.Set("Sortable", Sortable.ClassTemplate);
         }
     }
 }

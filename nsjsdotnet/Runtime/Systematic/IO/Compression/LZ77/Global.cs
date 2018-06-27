@@ -13,8 +13,8 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             GlobalTemplate = owner;
 
-            owner.AddObject("GZip", GZip.Current.ClassTemplate);
-            owner.AddObject("Deflate", Deflate.Current.ClassTemplate);
+            owner.Set("GZip", GZip.Current.ClassTemplate);
+            owner.Set("Deflate", Deflate.Current.ClassTemplate);
         }
     }
 }

@@ -65,7 +65,7 @@ Handle<ObjectTemplate> NSJSVirtualMachine::GetTemplate(v8::Isolate* isolate)
 	{
 		throw new ArgumentNullException("Parameter isolate can not be null");
 	}
-	return NSJSVirtualMachine::ExtensionObjectTemplate::New(isolate, &extension_object_template);
+	return NSJSVirtualMachine::ExtensionObjectTemplate::New(isolate, &extensions);
 }
 
 NSJSVirtualMachine::NSJSVirtualMachine()
@@ -280,6 +280,11 @@ void NSJSVirtualMachine::Dispose()
 	}
 }
 
+NSJSVirtualMachine::ExtensionObjectTemplate& NSJSVirtualMachine::GetExtension()
+{
+	return extensions;
+}
+
 void NSJSVirtualMachine::Initialize(const char* exec_path)
 {
 	// Initialize V8.
@@ -299,200 +304,287 @@ void NSJSVirtualMachine::Exit()
 	delete NSJSVirtualMachine::platform;
 }
 
-NSJSValueType NSJSVirtualMachine::GetType(const v8::Local<v8::Value> value)
+NSJSDataType NSJSVirtualMachine::GetType(const v8::Local<v8::Value> value)
 {
-	NSJSValueType valuetype = NSJSValueType::kUndefined;
+	NSJSDataType datatype = NSJSDataType::kUndefined;
 	if (value->IsNull()) {
-		valuetype = NSJSValueType::kNull;
+		datatype = NSJSDataType::kNull;
 	}
 	if (!value->IsUndefined()) {
 		if (value->IsString()) {
-			valuetype = NSJSValueType::kString;
+			datatype = NSJSDataType::kString;
 		}
 		else if (value->IsInt32()) {
-			valuetype = NSJSValueType::kInt32;
+			datatype = NSJSDataType::kInt32;
 		}
 		else if (value->IsDate()) {
-			valuetype = NSJSValueType::kDateTime;
+			datatype = NSJSDataType::kDateTime;
 		}
 		else if (value->IsNumber()) {
-			valuetype = NSJSValueType::kDouble;
+			datatype = NSJSDataType::kDouble;
 		}
 		else if (value->IsFunction()) {
-			valuetype = NSJSValueType::kFunction;
+			datatype = NSJSDataType::kFunction;
 		}
 		else if (value->IsUint32()) {
-			valuetype = NSJSValueType::kUInt32;
+			datatype = NSJSDataType::kUInt32;
 		}
 		else if (value->IsBoolean()) {
-			valuetype = NSJSValueType::kBoolean;
+			datatype = NSJSDataType::kBoolean;
 		}
 		else if (value->IsInt8Array()) {
-			valuetype = NSJSValueType::kInt8Array;
+			datatype = NSJSDataType::kInt8Array;
 		}
 		else if (value->IsUint8Array()) {
-			valuetype = NSJSValueType::kUInt8Array;
+			datatype = NSJSDataType::kUInt8Array;
 		}
 		else if (value->IsInt32Array()) {
-			valuetype = NSJSValueType::kInt32Array;
+			datatype = NSJSDataType::kInt32Array;
 		}
 		else if (value->IsUint32Array()) {
-			valuetype = NSJSValueType::kUInt32Array;
+			datatype = NSJSDataType::kUInt32Array;
 		}
 		else if (value->IsInt16Array()) {
-			valuetype = NSJSValueType::kInt16Array;
+			datatype = NSJSDataType::kInt16Array;
 		}
 		else if (value->IsUint16Array()) {
-			valuetype = NSJSValueType::kUInt16Array;
+			datatype = NSJSDataType::kUInt16Array;
 		}
 		else if (value->IsFloat32Array()) {
-			valuetype = NSJSValueType::kFloat32Array;
+			datatype = NSJSDataType::kFloat32Array;
 		}
 		else if (value->IsFloat64Array()) {
-			valuetype = NSJSValueType::kFloat64Array;
+			datatype = NSJSDataType::kFloat64Array;
 		}
 		else if (value->IsArray()) {
-			valuetype = NSJSValueType::kArray;
+			datatype = NSJSDataType::kArray;
 		}
 		if (value->IsInt32() || value->IsUint32()) {
 			int64_t n = value->IntegerValue();
 			if (n < INT_MIN || n > UINT_MAX) {
-				valuetype = NSJSValueType::kInt64;
+				datatype = NSJSDataType::kInt64;
 			}
 		}
 		else if (value->IsObject()) {
-			valuetype = (NSJSValueType)(valuetype | NSJSValueType::kObject);
+			datatype = (NSJSDataType)(datatype | NSJSDataType::kObject);
 		}
 	}
-	return valuetype;
+	return datatype;
 }
 
-bool NSJSVirtualMachine::ExtensionObjectTemplate::AddFunction(const char* name, FunctionCallback function)
+bool NSJSVirtualMachine::ExtensionObjectTemplate::SetValue(const char* name, Value* value)
 {
-	if (name == NULL || function == NULL)
+	if (name == NULL || value == NULL)
 	{
 		return false;
 	}
-	if (extension_functions.find(name) != extension_functions.end())
+#ifdef ENABLE_MONITOR_LOCK
+	locker.Enter();
+#else
+	bool localTaken = false;
+	locker.Enter(localTaken);
+#endif
 	{
-		extension_functions[name] = function;
+		if (this->Contains(name))
+		{
+			Value* data = extensions[name];
+			ReleaseValue(data);
+			extensions[name] = value;
+		}
+		else
+		{
+			extensions.insert(std::hash_map<std::string, Value*>::value_type(name, value));
+		}
 	}
-	else
-	{
-		extension_functions.insert(std::hash_map<std::string, FunctionCallback>::value_type(name, function));
-	}
+	locker.Exit();
 	return true;
 }
 
-bool NSJSVirtualMachine::ExtensionObjectTemplate::RemoveFunction(const char* name)
+NSJSVirtualMachine::ExtensionObjectTemplate::Value* NSJSVirtualMachine::ExtensionObjectTemplate::NewValue(Value::Kind kind,
+	int64_t data, v8::PropertyAttribute attr)
+{
+	Value* value = (Value*)Memory::Alloc(sizeof(Value));
+	if (value != NULL)
+	{
+		value->kind = kind;
+		value->data = data;
+		value->attr = attr;
+	}
+	return value;
+}
+
+void NSJSVirtualMachine::ExtensionObjectTemplate::ReleaseValue(Value* value)
+{
+	Memory::Free(value);
+}
+
+bool NSJSVirtualMachine::ExtensionObjectTemplate::Contains(const char* name)
+{
+#ifdef ENABLE_MONITOR_LOCK
+	locker.Enter();
+#else
+	bool localTaken = false;
+	locker.Enter(localTaken);
+#endif
+	bool contains = false;
+	{
+		contains = extensions.find(name) != extensions.end();
+	}
+	locker.Exit();
+	return contains;
+}
+
+#ifndef ExtensionSetValue
+#define ExtensionSetValue(kind, value, attr) \
+{ \
+	Value* dataValue = NewValue(kind, value, attr); \
+	if (SetValue(name, dataValue)) \
+	{ \
+		return true; \
+	} \
+	ReleaseValue(dataValue); \
+	return false; \
+} \
+
+bool NSJSVirtualMachine::ExtensionObjectTemplate::SetBoolean(const char* name, bool value, v8::PropertyAttribute attr)
+{
+	ExtensionSetValue(Value::kBoolean, value ? 0x01L : 0x00L, attr);
+}
+
+bool NSJSVirtualMachine::ExtensionObjectTemplate::SetString(const char* name, const char* value, v8::PropertyAttribute attr)
+{
+	ExtensionSetValue(Value::kString, (int64_t)value, attr);
+}
+
+bool NSJSVirtualMachine::ExtensionObjectTemplate::SetNull(const char* name, v8::PropertyAttribute attr)
+{
+	ExtensionSetValue(Value::kNull, NULL, attr);
+}
+
+bool NSJSVirtualMachine::ExtensionObjectTemplate::SetUndefined(const char* name, v8::PropertyAttribute attr)
+{
+	ExtensionSetValue(Value::kUndefined, NULL, attr);
+}
+
+bool NSJSVirtualMachine::ExtensionObjectTemplate::SetObject(const char* name, NSJSVirtualMachine::ExtensionObjectTemplate* value, v8::PropertyAttribute attr)
+{
+	ExtensionSetValue(Value::kObject, (int64_t)value, attr);
+}
+
+bool NSJSVirtualMachine::ExtensionObjectTemplate::SetFunction(const char* name, v8::FunctionCallback value, v8::PropertyAttribute attr)
+{
+	ExtensionSetValue(Value::kFunction, (int64_t)value, attr);
+}
+
+bool NSJSVirtualMachine::ExtensionObjectTemplate::SetNumber(const char* name, double value, v8::PropertyAttribute attr)
+{
+	ExtensionSetValue(Value::kNumber, *(int64_t*)&value, attr);
+}
+
+#undef ExtensionSetValue
+#endif
+
+bool NSJSVirtualMachine::ExtensionObjectTemplate::RemoveValue(const char* name)
 {
 	if (name == NULL)
 	{
 		return false;
 	}
-	std::hash_map<std::string, FunctionCallback>::iterator i = extension_functions.find(name);
-	if (i != extension_functions.end())
+	auto i = extensions.find(name);
+	if (i != extensions.end())
 	{
-		extension_functions.erase(i);
+		extensions.erase(i);
+		ReleaseValue(i->second);
 	}
 	return true;
 }
 
-bool NSJSVirtualMachine::ExtensionObjectTemplate::AddObject(const char * name, NSJSVirtualMachine::ExtensionObjectTemplate * extension)
+std::hash_map<std::string, NSJSVirtualMachine::ExtensionObjectTemplate::Value*>& NSJSVirtualMachine::ExtensionObjectTemplate::GetAll()
 {
-	if (name == NULL || extension == NULL)
-	{
-		return false;
-	}
-	if (extension_objects.find(name) != extension_objects.end())
-	{
-		extension_objects[name] = extension;
-	}
-	else
-	{
-		extension_objects.insert(std::hash_map<std::string, ExtensionObjectTemplate*>::value_type(name, extension));
-	}
-	return true;
+	return extensions;
 }
 
-bool NSJSVirtualMachine::ExtensionObjectTemplate::RemoveObject(const char* name)
-{
-	if (name == NULL)
-	{
-		return false;
-	}
-	std::hash_map<std::string, ExtensionObjectTemplate*>::iterator i = extension_objects.find(name);
-	if (i != extension_objects.end())
-	{
-		extension_objects.erase(i);
-	}
-	return true;
-}
-
-std::hash_map<std::string, v8::FunctionCallback> NSJSVirtualMachine::ExtensionObjectTemplate::GetFunctionCollection()
-{
-	return extension_functions;
-}
-
-std::hash_map<std::string, NSJSVirtualMachine::ExtensionObjectTemplate*> NSJSVirtualMachine::ExtensionObjectTemplate::GetObjectCollection()
-{
-	return extension_objects;
-}
-
-v8::Handle<v8::ObjectTemplate> NSJSVirtualMachine::ExtensionObjectTemplate::New(v8::Isolate* isolate, NSJSVirtualMachine::ExtensionObjectTemplate* value)
+v8::Handle<v8::ObjectTemplate> NSJSVirtualMachine::ExtensionObjectTemplate::New(v8::Isolate* isolate, NSJSVirtualMachine::ExtensionObjectTemplate* extension)
 {
 	if (isolate == NULL)
 	{
 		throw new ArgumentNullException("Parameter isolate can not be null");
 	}
-	if (isolate == NULL)
+	if (extension == NULL)
 	{
-		throw new ArgumentNullException("Parameter value can not be null");
+		throw new ArgumentNullException("Parameter extension can not be null");
 	}
-	Handle<ObjectTemplate> owner_template = ObjectTemplate::New(isolate);
-	std::hash_map<std::string, FunctionCallback> functions = value->GetFunctionCollection();
-	for (std::hash_map<std::string, FunctionCallback>::iterator i = functions.begin();
-		i != functions.end(); i++)
+	Handle<ObjectTemplate> owner;
+	if (extension->constructor == NULL)
 	{
-		if (i->second == NULL)
+		owner = ObjectTemplate::New(isolate);
+	}
+	else
+	{
+	 	v8::Local<v8::FunctionTemplate> constructor = v8::FunctionTemplate::New(isolate, extension->constructor);
+		owner = ObjectTemplate::New(isolate, constructor);
+	}
+	std::hash_map<std::string, Value*>& externs = extension->GetAll();
+	for (std::hash_map<std::string, Value*>::iterator i = externs.begin(); i != externs.end(); i++)
+	{
+		Value* data = i->second;
+		if (data == NULL)
 		{
 			continue;
 		}
-		Local<FunctionTemplate> function = FunctionTemplate::New(isolate, i->second);
-		owner_template->Set(isolate, i->first.data(), function);
-	}
-	std::hash_map<std::string, NSJSVirtualMachine::ExtensionObjectTemplate*> objects = value->GetObjectCollection();
-	for (std::hash_map<std::string, ExtensionObjectTemplate*>::iterator n = objects.begin(); n != objects.end(); n++)
-	{
-		ExtensionObjectTemplate* extension_template = n->second;
-		if (extension_template == NULL)
+		v8::Handle<v8::String> key = v8::String::NewFromUtf8(isolate, i->first.data());
+		v8::Handle<v8::Value> value;
+		if (data->kind == Value::kObject)
 		{
-			continue;
+			ExtensionObjectTemplate* object_template = (ExtensionObjectTemplate*)data->data;
+			if (object_template != NULL)
+			{
+				owner->Set(key, New(isolate, object_template), data->attr);
+				continue;
+			}
+			value = v8::Null(isolate);
 		}
-		Handle<ObjectTemplate> object_template = NSJSVirtualMachine::ExtensionObjectTemplate::New(isolate, extension_template);
-		owner_template->Set(isolate, n->first.data(), object_template);
+		else if (data->kind == Value::kFunction)
+		{
+			v8::FunctionCallback handler = (v8::FunctionCallback)data->data;
+			if (handler != NULL)
+			{
+				owner->Set(key, v8::FunctionTemplate::New(isolate, handler), data->attr);
+				continue;
+			}
+			value = v8::Null(isolate);
+		}
+		else if (data->kind == Value::kBoolean)
+		{
+			value = v8::Boolean::New(isolate, data->data != 0x00L);
+		}
+		else if (data->kind == Value::kNumber)
+		{
+			value = v8::Number::New(isolate, *(double*)&data->data);
+		}
+		else if (data->kind == data->kString)
+		{
+			const char* str = (const char*)data->data;
+			if (str == NULL)
+			{
+				value = v8::Null(isolate);
+			}
+			else
+			{
+				value = v8::String::NewFromUtf8(isolate, str);
+			}
+		}
+		else if (data->kind == data->kNull)
+		{
+			value = v8::Null(isolate);
+		}
+		else if (data->kind == data->kUndefined)
+		{
+			value = v8::Undefined(isolate);
+		}
+		owner->Set(key, value, data->attr);
 	}
-	return owner_template;
-}
-
-bool NSJSVirtualMachine::AddFunction(const char* name, FunctionCallback function)
-{
-	return extension_object_template.AddFunction(name, function);
-}
-
-bool NSJSVirtualMachine::RemoveFunction(const char* name)
-{
-	return extension_object_template.RemoveFunction(name);
-}
-
-bool NSJSVirtualMachine::AddObject(const char* name, ExtensionObjectTemplate* extension)
-{
-	return extension_object_template.AddObject(name, extension);
-}
-
-bool NSJSVirtualMachine::RemoveObject(const char* name)
-{
-	return extension_object_template.RemoveObject(name);
+	return owner;
 }
 
 void* NSJSVirtualMachine::ArrayBufferAllocator::Allocate(size_t length)

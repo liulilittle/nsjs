@@ -14,9 +14,9 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("Quick", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Quick));
-            owner.AddFunction("Select", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Select));
-            owner.AddFunction("Bubble", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Bubble));
+            owner.Set("Quick", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Quick));
+            owner.Set("Select", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Select));
+            owner.Set("Bubble", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Bubble));
         }
 
         private static void Sort(IntPtr info, Action<NSJSArray, int, int, Func<NSJSValue, NSJSValue, bool>> sorting)

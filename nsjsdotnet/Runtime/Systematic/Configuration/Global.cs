@@ -13,7 +13,7 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             GlobalTemplate = owner;
 
-            owner.AddObject("Ini", Ini.ClassTemplate);;
+            owner.Set("Ini", Ini.ClassTemplate);;
         }
     }
 }

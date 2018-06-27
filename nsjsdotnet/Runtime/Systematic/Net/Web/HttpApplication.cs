@@ -36,8 +36,8 @@
             g_RootProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Root);
             g_NameProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Name);
             g_CloseProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Close);
-            owner.AddFunction("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(New));
-            owner.AddFunction("Invalid", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Invalid));
+            owner.Set("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(New));
+            owner.Set("Invalid", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Invalid));
             g_EndProcessRequestProc = OnEndProcessRequest;
             g_BeginProcessRequestProc = OnBeginProcessRequest;
         }

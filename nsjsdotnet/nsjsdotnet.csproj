@@ -231,7 +231,7 @@
     <Compile Include="NSJSMemoryManagement.cs" />
     <Compile Include="NSJSString.cs" />
     <Compile Include="NSJSValueBuilder.cs" />
-    <Compile Include="NSJSValueType.cs" />
+    <Compile Include="NSJSDataType.cs" />
     <Compile Include="NSJSVirtualMachine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Runtime\Systematic\Net\Mail.cs" />

@@ -27,7 +27,7 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(New));
+            owner.Set("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(New));
         }
 
         public static NSJSObject New(NSJSVirtualMachine machine, WebSocket websocket)

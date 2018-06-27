@@ -21,33 +21,33 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
 
-            owner.AddFunction("Exists", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Exists));
-            owner.AddFunction("Delete", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Delete));
-            owner.AddFunction("Move", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Move));
-            owner.AddFunction("Copy", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Copy));
+            owner.Set("Exists", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Exists));
+            owner.Set("Delete", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Delete));
+            owner.Set("Move", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Move));
+            owner.Set("Copy", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Copy));
 
-            owner.AddFunction("WriteAllBytes", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(WriteAllBytes));
-            owner.AddFunction("WriteAllText", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(WriteAllText));
+            owner.Set("WriteAllBytes", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(WriteAllBytes));
+            owner.Set("WriteAllText", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(WriteAllText));
 
-            owner.AddFunction("GetFileLength", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetFileLength));
-            owner.AddFunction("ReadAllText", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ReadAllText));
-            owner.AddFunction("ReadAllBytes", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ReadAllBytes));
+            owner.Set("GetFileLength", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetFileLength));
+            owner.Set("ReadAllText", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ReadAllText));
+            owner.Set("ReadAllBytes", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(ReadAllBytes));
 
-            owner.AddFunction("GetCreationTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetCreationTime));
-            owner.AddFunction("GetCreationTimeUtc", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetCreationTimeUtc));
-            owner.AddFunction("GetLastAccessTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetLastAccessTime));
-            owner.AddFunction("GetLastAccessTimeUtc", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetLastAccessTimeUtc));
-            owner.AddFunction("GetLastWriteTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetLastWriteTime));
-            owner.AddFunction("GetLastWriteTimeUtc", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetLastWriteTimeUtc));
-            owner.AddFunction("GetAttributes", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetAttributes));
+            owner.Set("GetCreationTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetCreationTime));
+            owner.Set("GetCreationTimeUtc", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetCreationTimeUtc));
+            owner.Set("GetLastAccessTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetLastAccessTime));
+            owner.Set("GetLastAccessTimeUtc", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetLastAccessTimeUtc));
+            owner.Set("GetLastWriteTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetLastWriteTime));
+            owner.Set("GetLastWriteTimeUtc", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetLastWriteTimeUtc));
+            owner.Set("GetAttributes", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetAttributes));
 
-            owner.AddFunction("SetCreationTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetCreationTime));
-            owner.AddFunction("SetCreationTimeUtc", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetCreationTimeUtc));
-            owner.AddFunction("SetLastAccessTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetLastAccessTime));
-            owner.AddFunction("SetLastAccessTimeUtc", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetLastAccessTimeUtc));
-            owner.AddFunction("SetLastWriteTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetLastWriteTime));
-            owner.AddFunction("SetLastWriteTimeUtc", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetLastWriteTimeUtc));
-            owner.AddFunction("SetAttributes", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetAttributes));
+            owner.Set("SetCreationTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetCreationTime));
+            owner.Set("SetCreationTimeUtc", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetCreationTimeUtc));
+            owner.Set("SetLastAccessTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetLastAccessTime));
+            owner.Set("SetLastAccessTimeUtc", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetLastAccessTimeUtc));
+            owner.Set("SetLastWriteTime", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetLastWriteTime));
+            owner.Set("SetLastWriteTimeUtc", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetLastWriteTimeUtc));
+            owner.Set("SetAttributes", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetAttributes));
         }
 
         private static void SetCreationTime(IntPtr info)

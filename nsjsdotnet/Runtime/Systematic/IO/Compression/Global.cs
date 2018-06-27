@@ -15,7 +15,7 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             GlobalTemplate = owner;
 
-            owner.AddObject("LZ77", LZ77.Global.GlobalTemplate);
+            owner.Set("LZ77", LZ77.Global.GlobalTemplate);
         }
     }
 }

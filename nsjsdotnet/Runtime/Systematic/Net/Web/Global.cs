@@ -14,7 +14,7 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             GlobalTemplate = owner;
-            owner.AddObject("HttpApplication", HttpApplication.ClassTemplate);
+            owner.Set("HttpApplication", HttpApplication.ClassTemplate);
         }
     }
 }

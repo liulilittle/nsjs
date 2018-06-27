@@ -1,6 +1,6 @@
 ﻿namespace nsjsdotnet
 {
-    public enum NSJSValueType : uint
+    public enum NSJSDataType : uint
     {
         kUndefined = 0x000000,
         kString = 0x000001,

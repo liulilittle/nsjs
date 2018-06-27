@@ -19,14 +19,14 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
 
-            owner.AddFunction("Delete", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Delete));
-            owner.AddFunction("Move", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Move));
-            owner.AddFunction("Copy", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Copy));
-            owner.AddFunction("Exists", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Exists));
-            owner.AddFunction("CreateDirectory", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(CreateDirectory));
+            owner.Set("Delete", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Delete));
+            owner.Set("Move", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Move));
+            owner.Set("Copy", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Copy));
+            owner.Set("Exists", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Exists));
+            owner.Set("CreateDirectory", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(CreateDirectory));
 
-            owner.AddFunction("GetFiles", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetFiles));
-            owner.AddFunction("GetDirectories", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetDirectories));
+            owner.Set("GetFiles", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetFiles));
+            owner.Set("GetDirectories", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetDirectories));
         }
 
         private static void CreateDirectory(IntPtr info)

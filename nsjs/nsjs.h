@@ -42,17 +42,19 @@ DLLEXPORT void DLLEXPORTNSAPI nsjs_virtualmachine_set_data2(v8::Isolate* isolate
 DLLEXPORT const void* DLLEXPORTNSAPI nsjs_virtualmachine_get_data(NSJSVirtualMachine* machine, int solt);
 DLLEXPORT const void* DLLEXPORTNSAPI nsjs_virtualmachine_get_data2(v8::Isolate* isolate, int solt);
 DLLEXPORT v8::Isolate* DLLEXPORTNSAPI nsjs_virtualmachine_get_isolate(NSJSVirtualMachine* machine);
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_function_add(NSJSVirtualMachine* machine, const char* function_name, v8::FunctionCallback info);
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_function_remove(NSJSVirtualMachine* machine, const char* function_name);
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_object_add(NSJSVirtualMachine* machine, const char* object_name, NSJSVirtualMachine::ExtensionObjectTemplate* info);
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_object_remove(NSJSVirtualMachine* machine, const char* object_name);
-DLLEXPORT NSJSVirtualMachine::ExtensionObjectTemplate* DLLEXPORTNSAPI nsjs_virtualmachine_object_new();
-DLLEXPORT void DLLEXPORTNSAPI nsjs_virtualmachine_object_free(NSJSVirtualMachine::ExtensionObjectTemplate* object_template);
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_object_addfunction(NSJSVirtualMachine::ExtensionObjectTemplate* object_template, const char* function_name, v8::FunctionCallback callback);
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_object_removefunction(NSJSVirtualMachine::ExtensionObjectTemplate* object_template, const char* function_name);
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_object_addobject(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* object_name, NSJSVirtualMachine::ExtensionObjectTemplate* object_template);
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_object_removeobject(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* object_name);
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_virtualmachine_get_global(v8::Isolate* isolate);
+
+DLLEXPORT NSJSVirtualMachine::ExtensionObjectTemplate* DLLEXPORTNSAPI nsjs_virtualmachine_get_extension_object_template(NSJSVirtualMachine* machine);
+DLLEXPORT NSJSVirtualMachine::ExtensionObjectTemplate* DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_new(v8::FunctionCallback constructor);
+DLLEXPORT void DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_free(NSJSVirtualMachine::ExtensionObjectTemplate* object_template);
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_boolean(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, bool value, v8::PropertyAttribute attr);
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_number(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, double value, v8::PropertyAttribute attr);
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_string(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, const char* value, v8::PropertyAttribute attr);
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_object(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, NSJSVirtualMachine::ExtensionObjectTemplate* value, v8::PropertyAttribute attr);
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_function(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, v8::FunctionCallback value, v8::PropertyAttribute attr);
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_null(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, v8::PropertyAttribute attr);
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_undefined(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, v8::PropertyAttribute attr);
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_del_value(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name);
 
 DLLEXPORT void DLLEXPORTNSAPI nsjs_uninitialize();
 DLLEXPORT void DLLEXPORTNSAPI nsjs_idlelocalvalues_setcapacity(int capacity);
@@ -108,7 +110,7 @@ DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_json_parse(v8::Isolate*
 
 DLLEXPORT char* DLLEXPORTNSAPI nsjs_localvalue_typeof(v8::Isolate* isolate, NSJSLocalValue* value);
 DLLEXPORT int DLLEXPORTNSAPI nsjs_stacktrace_getcurrent(v8::Isolate* isolate, NSJSStackTrace* stacktrace);
-DLLEXPORT NSJSValueType DLLEXPORTNSAPI nsjs_localvalue_get_typeid(NSJSLocalValue* value);
+DLLEXPORT NSJSDataType DLLEXPORTNSAPI nsjs_localvalue_get_typeid(NSJSLocalValue* value);
 DLLEXPORT const char* DLLEXPORTNSAPI nsjs_localvalue_get_string(NSJSLocalValue* value, int& len);
 DLLEXPORT const int8_t* DLLEXPORTNSAPI nsjs_localvalue_get_int8array(NSJSLocalValue* value, int& len);
 DLLEXPORT const uint8_t* DLLEXPORTNSAPI nsjs_localvalue_get_uint8array(NSJSLocalValue* value, int& len);

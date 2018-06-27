@@ -22,7 +22,6 @@ using v8::Local;
 using v8::Object;
 using v8::ReturnValue;
 
-#ifndef LocalArrayToBufferValueEx
 #define LocalArrayToBufferValueEx(cchtype, assign, value, typetoken) \
 { \
 	const char* __xd_cc_offset__ = *String::Utf8Value(value); \
@@ -64,9 +63,7 @@ using v8::ReturnValue;
 		assign = __xd_cc_ch_buf_tt__; \
 	} \
 }
-#endif
 
-#ifndef LocalArrayToBufferValue
 #define LocalArrayToBufferValue(cchtype, assign, assignlen, value, valuetype, procgetvalue) \
 { \
 	v8::Local<valuetype> __xd_cc_ssarr__ = value.As<valuetype>(); \
@@ -79,7 +76,6 @@ using v8::ReturnValue;
 	assign = __xd_cc_cch__; \
 	assignlen = __xd_cc_len__; \
 }
-#endif
 
 #define NSJSGetLocalValue(plocalvalueprx) \
 	(plocalvalueprx->CrossThreading ? plocalvalueprx->PersistentValue.Get(plocalvalueprx->Isolate) : plocalvalueprx->LocalValue) \
@@ -191,6 +187,32 @@ using v8::ReturnValue;
 	v8::Local<arraytype> arrays = NSJSGetLocalValue(s).As<arraytype>(); \
 	v8::Isolate* isolate = arrays->GetIsolate(); \
 	return arrays->Set(index, elementtype::New(isolate, value)); \
+}
+
+#define NSJSExtensionSetValue(set) \
+{ \
+	if (owner == NULL) \
+	{ \
+		throw new ArgumentNullException("Parameter owner cannot be null"); \
+	} \
+	if (name == NULL) \
+	{ \
+		throw new ArgumentNullException("Parameter name cannot be null"); \
+	} \
+	return owner->set(name, value, attr); \
+}
+
+#define NSJSExtensionSetValue2(set) \
+{ \
+	if (owner == NULL) \
+	{ \
+		throw new ArgumentNullException("Parameter owner cannot be null"); \
+	} \
+	if (name == NULL) \
+	{ \
+		throw new ArgumentNullException("Parameter name cannot be null"); \
+	} \
+	return owner->set(name, attr); \
 }
 
 DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_free(NSJSLocalValue* value)
@@ -578,7 +600,7 @@ DLLEXPORT int DLLEXPORTNSAPI nsjs_stacktrace_getcurrent(v8::Isolate* isolate, NS
 	return DumpWriteStackTrace(&src, stacktrace);
 }
 
-DLLEXPORT NSJSValueType DLLEXPORTNSAPI nsjs_localvalue_get_typeid(NSJSLocalValue* localValue)
+DLLEXPORT NSJSDataType DLLEXPORTNSAPI nsjs_localvalue_get_typeid(NSJSLocalValue* localValue)
 {
 	if (localValue == NULL)
 	{
@@ -1140,9 +1162,10 @@ int main(int argc, char* argv[]) {
 		Extension::Initialize(*machine);
 		nsjs_virtualmachine_initialize(machine);
 		{
-			int characterset = 0;
-			size_t size = 0;
-			const char* src = File::ReadAllText(argv[1], size, characterset);
+			//int characterset = 0;
+			//size_t size = 0;
+			//const char* src = File::ReadAllText(argv[1], size, characterset);
+			const char* src = " Environment.GetApplicationStartupPath() ";
 			NSJSException exception;
 			const char* result = machine->Run(src, NULL, &exception);
 			if (result != NULL)
@@ -1351,69 +1374,12 @@ DLLEXPORT const void* DLLEXPORTNSAPI nsjs_virtualmachine_get_data2(v8::Isolate* 
 	return isolate->GetData((uint32_t)solt);
 }
 
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_function_add(NSJSVirtualMachine* machine, const char* function_name, v8::FunctionCallback info)
+DLLEXPORT NSJSVirtualMachine::ExtensionObjectTemplate* DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_new(v8::FunctionCallback constructor)
 {
-	if (machine == NULL)
-	{
-		throw new ArgumentNullException("Parameter machine cannot be null");
-	}
-	if (function_name == NULL)
-	{
-		throw new ArgumentNullException("Parameter function_name cannot be null");
-	}
-	return machine->AddFunction(function_name, info);
+	return new NSJSVirtualMachine::ExtensionObjectTemplate(constructor);
 }
 
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_function_remove(NSJSVirtualMachine* machine, const char* function_name)
-{
-	if (machine == NULL)
-	{
-		throw new ArgumentNullException("Parameter machine cannot be null");
-	}
-	if (function_name == NULL)
-	{
-		throw new ArgumentNullException("Parameter function_name cannot be null");
-	}
-	return machine->RemoveFunction(function_name);
-}
-
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_object_add(NSJSVirtualMachine* machine, const char* object_name, NSJSVirtualMachine::ExtensionObjectTemplate* info)
-{
-	if (machine == NULL)
-	{
-		throw new ArgumentNullException("Parameter machine cannot be null");
-	}
-	if (object_name == NULL)
-	{
-		throw new ArgumentNullException("Parameter object_name cannot be null");
-	}
-	if (info == NULL)
-	{
-		throw new ArgumentNullException("Parameter info cannot be null");
-	}
-	return machine->AddObject(object_name, info);
-}
-
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_object_remove(NSJSVirtualMachine* machine, const char* object_name)
-{
-	if (machine == NULL)
-	{
-		throw new ArgumentNullException("Parameter machine cannot be null");
-	}
-	if (object_name == NULL)
-	{
-		throw new ArgumentNullException("Parameter machine cannot be null");
-	}
-	return machine->RemoveObject(object_name);
-}
-
-DLLEXPORT NSJSVirtualMachine::ExtensionObjectTemplate* DLLEXPORTNSAPI nsjs_virtualmachine_object_new()
-{
-	NSJSVirtualMachine::ExtensionObjectTemplate* object_template = new NSJSVirtualMachine::ExtensionObjectTemplate;
-	return object_template;
-}
-
-DLLEXPORT void DLLEXPORTNSAPI nsjs_virtualmachine_object_free(NSJSVirtualMachine::ExtensionObjectTemplate* object_template)
+DLLEXPORT void DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_free(NSJSVirtualMachine::ExtensionObjectTemplate* object_template)
 {
 	if (object_template != NULL || !IsBadReadPtr(object_template, 0x01))
 	{
@@ -1421,64 +1387,61 @@ DLLEXPORT void DLLEXPORTNSAPI nsjs_virtualmachine_object_free(NSJSVirtualMachine
 	}
 }
 
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_object_addfunction(NSJSVirtualMachine::ExtensionObjectTemplate* object_template, const char* function_name, v8::FunctionCallback callback)
+DLLEXPORT NSJSVirtualMachine::ExtensionObjectTemplate* DLLEXPORTNSAPI nsjs_virtualmachine_get_extension_object_template(NSJSVirtualMachine* machine)
 {
-	if (object_template == NULL)
+	if (machine == NULL)
 	{
-		throw new ArgumentNullException("Parameter object_template cannot be null");
+		throw new ArgumentNullException("Parameter isolate cannot be null");
 	}
-	if (function_name == NULL)
-	{
-		throw new ArgumentNullException("Parameter function_name cannot be null");
-	}
-	if (callback == NULL)
-	{
-		throw new ArgumentNullException("Parameter callback cannot be null");
-	}
-	return object_template->AddFunction(function_name, callback);
+	return &machine->GetExtension();
 }
 
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_object_removefunction(NSJSVirtualMachine::ExtensionObjectTemplate* object_template, const char* function_name)
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_boolean(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, bool value, v8::PropertyAttribute attr)
 {
-	if (object_template == NULL)
-	{
-		throw new ArgumentNullException("Parameter object_template cannot be null");
-	}
-	if (function_name == NULL)
-	{
-		throw new ArgumentNullException("Parameter function_name cannot be null");
-	}
-	return object_template->RemoveFunction(function_name);
+	NSJSExtensionSetValue(SetBoolean);
 }
 
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_object_addobject(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* object_name, NSJSVirtualMachine::ExtensionObjectTemplate* object_template)
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_number(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, double value, v8::PropertyAttribute attr)
 {
-	if (object_template == NULL)
-	{
-		throw new ArgumentNullException("Parameter object_template cannot be null");
-	}
-	if (object_name == NULL)
-	{
-		throw new ArgumentNullException("Parameter object_name cannot be null");
-	}
+	NSJSExtensionSetValue(SetNumber);
+}
+
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_string(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, const char* value, v8::PropertyAttribute attr)
+{
+	NSJSExtensionSetValue(SetString);
+}
+
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_object(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, NSJSVirtualMachine::ExtensionObjectTemplate* value, v8::PropertyAttribute attr)
+{
+	NSJSExtensionSetValue(SetObject);
+}
+
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_function(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, v8::FunctionCallback value, v8::PropertyAttribute attr)
+{
+	NSJSExtensionSetValue(SetFunction);
+}
+
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_null(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, v8::PropertyAttribute attr)
+{
+	NSJSExtensionSetValue2(SetNull);
+}
+
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_set_undefined(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name, v8::PropertyAttribute attr)
+{
+	NSJSExtensionSetValue2(SetUndefined);
+}
+
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_extension_object_template_del_value(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* name)
+{
 	if (owner == NULL)
 	{
-		throw new ArgumentNullException("Parameter owner cannot be null");
+		throw new ArgumentNullException("Parameter owner cannot be null"); 
 	}
-	return owner->AddObject(object_name, object_template);
-}
-
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_virtualmachine_object_removeobject(NSJSVirtualMachine::ExtensionObjectTemplate* owner, const char* object_name)
-{
-	if (object_name == NULL)
+	if (name == NULL)
 	{
-		throw new ArgumentNullException("Parameter object_name cannot be null");
+		throw new ArgumentNullException("Parameter name cannot be null"); 
 	}
-	if (owner == NULL)
-	{
-		throw new ArgumentNullException("Parameter owner cannot be null");
-	}
-	return owner->RemoveObject(object_name);
+	return owner->RemoveValue(name);
 }
 
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_virtualmachine_get_global(v8::Isolate* isolate)

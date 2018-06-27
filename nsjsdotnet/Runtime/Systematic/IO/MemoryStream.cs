@@ -15,7 +15,7 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(New));
+            owner.Set("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(New));
         }
 
         private static void New(IntPtr info)

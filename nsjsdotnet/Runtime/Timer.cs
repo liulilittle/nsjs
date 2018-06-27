@@ -21,10 +21,11 @@
             {
                 throw new ArgumentNullException("machine");
             }
-            machine.AddFunction("setTimeout", g_setTimeoutProc);
-            machine.AddFunction("setInterval", g_setIntervalProc);
-            machine.AddFunction("clearTimeout", g_clearTimeoutProc);
-            machine.AddFunction("clearInterval", g_clearIntervalProc);
+            var extension = machine.GetExtension();
+            extension.Set("setTimeout", g_setTimeoutProc);
+            extension.Set("setInterval", g_setIntervalProc);
+            extension.Set("clearTimeout", g_clearTimeoutProc);
+            extension.Set("clearInterval", g_clearIntervalProc);
         }
 
         private static void CloseTimer(int handle)

@@ -20,7 +20,7 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(New));
+            owner.Set("New", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(New));
 
             m_EncryptProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Encrypt);
             m_DecryptProc = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Decrypt);

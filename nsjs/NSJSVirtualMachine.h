@@ -36,7 +36,7 @@ typedef enum {
 	kFloat32Array = 0x010000,
 	kFloat64Array = 0x020000,
 	kInt64 = 0x040000,
-} NSJSValueType;
+} NSJSDataType;
 
 typedef enum
 {
@@ -124,21 +124,56 @@ class NSJSVirtualMachine
 public:
 	class ExtensionObjectTemplate
 	{
+	public:
+		class Value {
+		public:
+			enum Kind {
+				kUndefined = 0,
+				kNull = 1,
+				kObject = 2,
+				kFunction = 3,
+				kNumber = 4,
+				kBoolean = 5,
+				kString = 6,
+			};
+			v8::PropertyAttribute attr;
+			Kind kind;
+			int64_t data;
+			Value() : kind(Kind::kUndefined), data(0), attr(v8::PropertyAttribute::None) { /*--default-init--*/ }
+		};
+		ExtensionObjectTemplate() : ExtensionObjectTemplate(NULL) { /*--default-init--*/ }
+		ExtensionObjectTemplate(v8::FunctionCallback constructor) 
+		{ 
+			this->constructor = constructor;
+		}
+
 	private:
-		std::hash_map<std::string, v8::FunctionCallback> extension_functions;
-		std::hash_map<std::string, NSJSVirtualMachine::ExtensionObjectTemplate*> extension_objects;
+#ifdef ENABLE_MONITOR_LOCK
+		Monitor locker;
+#else
+		SpinLock locker;
+#endif
+		v8::FunctionCallback constructor;
+		std::hash_map<std::string, Value*> extensions;
+		static void ReleaseValue(Value* value);
+		static Value* NewValue(Value::Kind kind, int64_t data = 0x00L, v8::PropertyAttribute attr = v8::PropertyAttribute::None);
 
 	public:
-		virtual bool AddFunction(const char* name, v8::FunctionCallback function);
-		virtual bool RemoveFunction(const char* name);
-		virtual bool AddObject(const char* name, NSJSVirtualMachine::ExtensionObjectTemplate* extension);
-		virtual bool RemoveObject(const char* name);
-		virtual std::hash_map<std::string, v8::FunctionCallback> GetFunctionCollection();
-		virtual std::hash_map<std::string, NSJSVirtualMachine::ExtensionObjectTemplate*> GetObjectCollection();
+		virtual bool Contains(const char* name);
+		virtual bool SetNull(const char* name, v8::PropertyAttribute attr = v8::PropertyAttribute::None);
+		virtual bool SetUndefined(const char* name, v8::PropertyAttribute attr = v8::PropertyAttribute::None);
+		virtual bool SetObject(const char* name, NSJSVirtualMachine::ExtensionObjectTemplate* value, v8::PropertyAttribute attr = v8::PropertyAttribute::None);
+		virtual bool SetFunction(const char* name, v8::FunctionCallback value, v8::PropertyAttribute attr = v8::PropertyAttribute::None);
+		virtual bool SetNumber(const char* name, double value, v8::PropertyAttribute attr = v8::PropertyAttribute::None);
+		virtual bool SetBoolean(const char* name, bool value, v8::PropertyAttribute attr = v8::PropertyAttribute::None);
+		virtual bool SetString(const char* name, const char* value, v8::PropertyAttribute attr = v8::PropertyAttribute::None);
+		virtual bool SetValue(const char* name, Value* value);
+		virtual bool RemoveValue(const char* name);
+		virtual std::hash_map<std::string, Value*>& GetAll();
 		static v8::Handle<v8::ObjectTemplate> New(v8::Isolate* isolate, NSJSVirtualMachine::ExtensionObjectTemplate* object_template);
 	};
 
-	class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator 
+	class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator
 	{
 	public:
 		virtual void* Allocate(size_t length);
@@ -147,10 +182,10 @@ public:
 	};
 
 private:
-	static v8::Platform* platform; 
+	static v8::Platform* platform;
 	v8::Isolate* isolate = NULL;
 	v8::ArrayBuffer::Allocator* array_buffer_allocator = NULL;
-	NSJSVirtualMachine::ExtensionObjectTemplate extension_object_template;
+	NSJSVirtualMachine::ExtensionObjectTemplate extensions;
 	v8::Global<v8::Context> context;
 	v8::Handle<v8::ObjectTemplate> GetTemplate(v8::Isolate* isolate);
 
@@ -158,10 +193,6 @@ public:
 	NSJSVirtualMachine();
 	virtual ~NSJSVirtualMachine();
 	virtual const char* Run(const char* expression, const char* alias, NSJSException* exception);
-	virtual bool AddFunction(const char* name, v8::FunctionCallback function);
-	virtual bool RemoveFunction(const char* name);
-	virtual bool AddObject(const char* name, NSJSVirtualMachine::ExtensionObjectTemplate* extension);
-	virtual bool RemoveObject(const char* name);
 	virtual const char* Call(const char* name, NSJSException* exception);
 	virtual const char* Call(const char* name, int argc, const char** argv, NSJSException* exception);
 	virtual const char* Call(const char* name, int argc, v8::Local<v8::Value>* argv, NSJSException* exception);
@@ -172,9 +203,10 @@ public:
 	virtual v8::Local<v8::Context> GetContext();
 	virtual void Initialize();
 	virtual void Dispose();
+	virtual NSJSVirtualMachine::ExtensionObjectTemplate& GetExtension();
 	static void Initialize(const char* exec_path);
 	static void Exit();
-	static NSJSValueType GetType(const v8::Local<v8::Value> value);
+	static NSJSDataType GetType(const v8::Local<v8::Value> value);
 };
 #endif
 

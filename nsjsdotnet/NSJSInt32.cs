@@ -27,7 +27,7 @@
             }
         }
 
-        internal NSJSInt32(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kInt32, machine)
+        internal NSJSInt32(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSDataType.kInt32, machine)
         {
 
         }

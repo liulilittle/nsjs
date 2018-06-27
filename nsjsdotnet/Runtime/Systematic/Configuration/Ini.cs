@@ -139,13 +139,13 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("GetKeyValue", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetKeyValue));
-            owner.AddFunction("SetKeyValue", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetKeyValue));
-            owner.AddFunction("GetAllValue", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetAllValue));
-            owner.AddFunction("GetAllKey", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetAllKey));
-            owner.AddFunction("GetAllSection", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetAllSection));
-            owner.AddFunction("GetAllKeyValue", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetAllKeyValue));
-            owner.AddFunction("GetConfigurationView", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetConfigurationView));
+            owner.Set("GetKeyValue", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetKeyValue));
+            owner.Set("SetKeyValue", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetKeyValue));
+            owner.Set("GetAllValue", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetAllValue));
+            owner.Set("GetAllKey", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetAllKey));
+            owner.Set("GetAllSection", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetAllSection));
+            owner.Set("GetAllKeyValue", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetAllKeyValue));
+            owner.Set("GetConfigurationView", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetConfigurationView));
         }
 
         private static string GetFullPath(string path)

@@ -30,7 +30,7 @@
             }
         }
 
-        internal NSJSUInt8Array(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kUInt8Array, machine)
+        internal NSJSUInt8Array(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSDataType.kUInt8Array, machine)
         {
 
         }

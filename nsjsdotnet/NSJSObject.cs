@@ -11,7 +11,7 @@
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_object_new(IntPtr isolate, int fieldcount);
 
-        internal NSJSObject(NSJSVirtualMachine machine, int fieldcount) : base(nsjs_localvalue_object_new(machine.Isolate, fieldcount), NSJSValueType.kObject, machine)
+        internal NSJSObject(NSJSVirtualMachine machine, int fieldcount) : base(nsjs_localvalue_object_new(machine.Isolate, fieldcount), NSJSDataType.kObject, machine)
         {
 
         }
@@ -34,12 +34,12 @@
             return new NSJSObject(machine, fieldcount);
         }
 
-        internal NSJSObject(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kObject, machine)
+        internal NSJSObject(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSDataType.kObject, machine)
         {
 
         }
 
-        internal NSJSObject(IntPtr handle, NSJSValueType datatype, NSJSVirtualMachine machine) : base(handle, datatype, machine)
+        internal NSJSObject(IntPtr handle, NSJSDataType datatype, NSJSVirtualMachine machine) : base(handle, datatype, machine)
         {
 
         }

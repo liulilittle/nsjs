@@ -19,7 +19,7 @@
         private extern static bool nsjs_localvalue_free(IntPtr h);
 
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-        private extern static NSJSValueType nsjs_localvalue_get_typeid(IntPtr localValue);
+        private extern static NSJSDataType nsjs_localvalue_get_typeid(IntPtr localValue);
 
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_equals(IntPtr x, IntPtr y);
@@ -47,7 +47,7 @@
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private int? hashcodeTokenId;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private NSJSValueType? metadataToken;
+        private NSJSDataType? metadataToken;
 
         private const string RUNTIME_INSTANCEOF_PROPERTYKEY = @"____nsjsdotnet_framework_instanceof";
 
@@ -56,7 +56,7 @@
 
         public static readonly NSJSValue[] EmptyValues = new NSJSValue[0];
 
-        public NSJSValueType MetadataToken
+        public NSJSDataType MetadataToken
         {
             get
             {
@@ -118,12 +118,12 @@
                     }
                     else
                     {
-                        if (DateType == NSJSValueType.kBoolean ||
-                            DateType == NSJSValueType.kDateTime ||
-                            DateType == NSJSValueType.kDouble ||
-                            DateType == NSJSValueType.kInt32 ||
-                            DateType == NSJSValueType.kUInt32 ||
-                            DateType == NSJSValueType.kString)
+                        if (DateType == NSJSDataType.kBoolean ||
+                            DateType == NSJSDataType.kDateTime ||
+                            DateType == NSJSDataType.kDouble ||
+                            DateType == NSJSDataType.kInt32 ||
+                            DateType == NSJSDataType.kUInt32 ||
+                            DateType == NSJSDataType.kString)
                         {
                             object value = this.GetValue();
                             if (value == null)
@@ -183,7 +183,7 @@
             return nsjs_localvalue_equals(x.Handle, y.Handle);
         }
 
-        internal NSJSValue(IntPtr handle, NSJSValueType datatype, NSJSVirtualMachine machine)
+        internal NSJSValue(IntPtr handle, NSJSDataType datatype, NSJSVirtualMachine machine)
         {
             if (machine == null)
             {
@@ -225,7 +225,7 @@
         {
             get
             {
-                return this.DateType == NSJSValueType.kUndefined;
+                return this.DateType == NSJSDataType.kUndefined;
             }
         }
 
@@ -233,7 +233,7 @@
         {
             get
             {
-                return (this.DateType & NSJSValueType.kNull) > 0;
+                return (this.DateType & NSJSDataType.kNull) > 0;
             }
         }
 
@@ -247,7 +247,7 @@
 
         public IntPtr Isolate { get; } = NULL;
 
-        public NSJSValueType DateType { get; }
+        public NSJSDataType DateType { get; }
 
         public NSJSVirtualMachine VirtualMachine { get; } = null;
 

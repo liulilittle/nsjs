@@ -12,8 +12,8 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             GlobalTemplate = owner;
-            owner.AddObject("WebSocketClient", WebSocketClient.ClassTemplate);
-            owner.AddObject("WebSocketServer", WebSocketServer.ClassTemplate);
+            owner.Set("WebSocketClient", WebSocketClient.ClassTemplate);
+            owner.Set("WebSocketServer", WebSocketServer.ClassTemplate);
         }
     }
 }

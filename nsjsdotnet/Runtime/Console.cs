@@ -25,17 +25,17 @@
             _assert = compliedassertbridging();
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("title", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(title));
-            owner.AddFunction("error", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(error));
-            owner.AddFunction("assert", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(assert));
-            owner.AddFunction("log", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(log));
-            owner.AddFunction("printf", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(printf));
-            owner.AddFunction("println", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(println));
-            owner.AddFunction("sprintf", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(sprintf));
-            owner.AddFunction("sprintln", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(sprintln));
-            owner.AddFunction("system", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(system));
-            owner.AddFunction("clear", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(clear));
-            owner.AddFunction("message", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(message));
+            owner.Set("title", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(title));
+            owner.Set("error", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(error));
+            owner.Set("assert", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(assert));
+            owner.Set("log", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(log));
+            owner.Set("printf", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(printf));
+            owner.Set("println", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(println));
+            owner.Set("sprintf", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(sprintf));
+            owner.Set("sprintln", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(sprintln));
+            owner.Set("system", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(system));
+            owner.Set("clear", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(clear));
+            owner.Set("message", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(message));
         }
 
         private static void title(IntPtr info)

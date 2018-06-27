@@ -13,8 +13,8 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.
                 ExtensionObjectTemplate();
             GlobalTemplate = owner;
-            owner.AddObject("SqlClient", SqlClient.Global.GlobalTemplate);
-            owner.AddObject("DataTableGateway", DataTableGateway.ClassTemplate);
+            owner.Set("SqlClient", SqlClient.Global.GlobalTemplate);
+            owner.Set("DataTableGateway", DataTableGateway.ClassTemplate);
         }
     }
 }

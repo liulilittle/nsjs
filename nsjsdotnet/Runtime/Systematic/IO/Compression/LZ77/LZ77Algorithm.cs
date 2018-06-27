@@ -19,8 +19,8 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
             this.algorithm = algorithm;
-            owner.AddFunction("Decompress", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Decompress));
-            owner.AddFunction("Compress", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Compress));
+            owner.Set("Decompress", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Decompress));
+            owner.Set("Compress", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Compress));
         }
 
         private void Compress(IntPtr info)

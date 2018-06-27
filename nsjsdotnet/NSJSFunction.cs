@@ -127,7 +127,7 @@
             }
         }
 
-        internal NSJSFunction(IntPtr handle, NSJSObject owner, NSJSVirtualMachine machine) : base(handle, NSJSValueType.kFunction, machine)
+        internal NSJSFunction(IntPtr handle, NSJSObject owner, NSJSVirtualMachine machine) : base(handle, NSJSDataType.kFunction, machine)
         {
             if (owner == null)
             {

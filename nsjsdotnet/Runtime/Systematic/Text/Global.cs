@@ -13,7 +13,7 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             GlobalTemplate = owner;
 
-            owner.AddObject("Encoding", Encoding.ClassTemplate);
+            owner.Set("Encoding", Encoding.ClassTemplate);
         }
     }
 }

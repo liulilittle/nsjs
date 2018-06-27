@@ -251,22 +251,22 @@ bool DumpWriteExceptionInfo(v8::TryCatch* try_catch, v8::Isolate* isolate, NSJSE
 	return true;
 }
 
-void Environment::Initialize(NSJSVirtualMachine & machine)
+void Environment::Initialize(NSJSVirtualMachine& machine)
 {
 	NSJSVirtualMachine::ExtensionObjectTemplate* environment = new NSJSVirtualMachine::ExtensionObjectTemplate;
-	if (!machine.AddObject("Environment", environment))
+	if (!machine.GetExtension().SetObject("Environment", environment))
 	{
 		delete environment;
 	}
 	else
 	{
-		environment->AddFunction("CurrentDirectory", &Environment::CurrentDirectory);
-		environment->AddFunction("GetVirtualMachineId", &Environment::GetVirtualMachineId);
-		environment->AddFunction("GetApplicationStartupPath", &Environment::GetApplicationStartupPath);
-		environment->AddFunction("GetProcessorCount", &Environment::GetProcessorCount);
-		environment->AddFunction("GetTickCount", &Environment::GetTickCount);
-		environment->AddFunction("GetApplicationFileName", &Environment::GetApplicationFileName);
-		environment->AddFunction("GetApplicationCommandLine", &Environment::GetApplicationCommandLine);
+		environment->SetFunction("CurrentDirectory", &Environment::CurrentDirectory);
+		environment->SetFunction("GetVirtualMachineId", &Environment::GetVirtualMachineId);
+		environment->SetFunction("GetApplicationStartupPath", &Environment::GetApplicationStartupPath);
+		environment->SetFunction("GetProcessorCount", &Environment::GetProcessorCount);
+		environment->SetFunction("GetTickCount", &Environment::GetTickCount);
+		environment->SetFunction("GetApplicationFileName", &Environment::GetApplicationFileName);
+		environment->SetFunction("GetApplicationCommandLine", &Environment::GetApplicationCommandLine);
 	}
 }
 
@@ -310,11 +310,7 @@ void GetCurrentApplicationPath(const FunctionCallbackInfo<Value>& info, int oper
 			Memory::Free(out);
 		}
 	}
-#ifdef ENABLE_MONITOR_LOCK
 	GlobalLocker.Exit();
-#else
-	GlobalLocker.Exit();
-#endif
 	if (data == NULL)
 	{
 		result.Set(v8::Null(isolate));

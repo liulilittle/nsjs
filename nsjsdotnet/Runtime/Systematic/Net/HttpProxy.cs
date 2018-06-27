@@ -21,9 +21,9 @@
         {
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
-            owner.AddFunction("Update", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Update));
-            owner.AddFunction("SetProxy", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetProxy));
-            owner.AddFunction("GetSystemProxyAddress", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetSystemProxyAddress));
+            owner.Set("Update", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Update));
+            owner.Set("SetProxy", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(SetProxy));
+            owner.Set("GetSystemProxyAddress", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetSystemProxyAddress));
         }
 
         private static class NativeMethods

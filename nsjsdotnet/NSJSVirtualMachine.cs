@@ -41,17 +41,6 @@
         private extern static void nsjs_uninitialize();
 
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private extern static bool nsjs_virtualmachine_function_add([In]IntPtr machine,
-            [MarshalAs(UnmanagedType.LPStr)]string function_name,
-            IntPtr function_callback);
-
-        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private extern static bool nsjs_virtualmachine_function_remove([In]IntPtr machine,
-            [MarshalAs(UnmanagedType.LPStr)]string function_name);
-
-        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private extern static sbyte* nsjs_virtualmachine_eval([In]IntPtr machine, void* expression, ref NSJSStructural.NSJSExceptionInfo exception);
 
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
@@ -76,13 +65,10 @@
         private extern static void nsjs_virtualmachine_join([In]IntPtr machine, [In]IntPtr callback, IntPtr state);
 
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-        private extern static bool nsjs_virtualmachine_object_add([In]IntPtr machine, void* function_name, IntPtr object_template);
-
-        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-        private extern static bool nsjs_virtualmachine_object_remove([In]IntPtr machine, void* function_name);
-
-        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_virtualmachine_get_global([In]IntPtr machine);
+
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
+        private extern static IntPtr nsjs_virtualmachine_get_extension_object_template([In]IntPtr machine);
 
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr nsjs_localvalue_null(IntPtr isolate);
@@ -93,84 +79,161 @@
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static void nsjs_virtualmachine_abort(IntPtr machine);
 
-        public sealed class ExtensionObjectTemplate : System.IDisposable
+        public class ExtensionObjectTemplate : System.IDisposable
         {
             [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-            private extern static void nsjs_virtualmachine_object_free([In]IntPtr object_template);
+            private extern static IntPtr nsjs_virtualmachine_extension_object_template_new(IntPtr constructor);
 
             [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-            private extern static IntPtr nsjs_virtualmachine_object_new();
+            private extern static void nsjs_virtualmachine_extension_object_template_free(IntPtr owner);
 
             [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-            private extern static bool nsjs_virtualmachine_object_addfunction([In]IntPtr object_template, IntPtr function_name, IntPtr callback);
+            private extern static bool nsjs_virtualmachine_extension_object_template_set_function(IntPtr owner, IntPtr name, IntPtr value, PropertyAttribute attributes);
 
             [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-            private extern static bool nsjs_virtualmachine_object_removefunction([In]IntPtr object_template, IntPtr function_name);
+            private extern static bool nsjs_virtualmachine_extension_object_template_set_object(IntPtr owner, IntPtr name, IntPtr value, PropertyAttribute attributes);
 
             [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-            private extern static bool nsjs_virtualmachine_object_addobject([In]IntPtr owner, IntPtr object_name, IntPtr object_template);
+            private extern static bool nsjs_virtualmachine_extension_object_template_del_value(IntPtr owner, IntPtr name);
 
             [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-            private extern static bool nsjs_virtualmachine_object_removeobject([In]IntPtr owner, IntPtr object_name);
+            private extern static bool nsjs_virtualmachine_extension_object_template_set_null(IntPtr owner, IntPtr name, PropertyAttribute attributes);
 
-            private IntPtr m_handle = NULL;
+            [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
+            private extern static bool nsjs_virtualmachine_extension_object_template_set_undefined(IntPtr owner, IntPtr name, PropertyAttribute attributes);
+
+            [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
+            private extern static bool nsjs_virtualmachine_extension_object_template_set_boolean(IntPtr owner, IntPtr name, bool value, PropertyAttribute attributes);
+
+            [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
+            private extern static bool nsjs_virtualmachine_extension_object_template_set_number(IntPtr owner, IntPtr name, double value, PropertyAttribute attributes);
+
+            [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
+            private extern static bool nsjs_virtualmachine_extension_object_template_set_string(IntPtr owner, IntPtr name, void* value, PropertyAttribute attributes);
+
+            public enum PropertyAttribute : int
+            {
+                /** None. **/
+                None = 0,
+                /** ReadOnly, i.e., not writable. **/
+                ReadOnly = 1 << 0,
+                /** DontEnum, i.e., not enumerable. **/
+                DontEnum = 1 << 1,
+                /** DontDelete, i.e., not configurable. **/
+                DontDelete = 1 << 2,
+            }
+
             private bool m_disposed = false;
 
             public IntPtr Handle
             {
-                get
-                {
-                    return m_handle;
-                }
+                get;
+                private set;
             }
 
-            public object Tag
+            public virtual object Tag
             {
                 get;
                 set;
             }
 
-            public ExtensionObjectTemplate()
+            public ExtensionObjectTemplate() : this((Delegate)null)
             {
-                this.m_handle = nsjs_virtualmachine_object_new();
-                if (this.m_handle == NULL)
+
+            }
+
+            public ExtensionObjectTemplate(NSJSFunctionCallback constructor) : this((Delegate)constructor)
+            {
+
+            }
+
+            public ExtensionObjectTemplate(NSJSFunctionCallback2 constructor) : this((Delegate)constructor)
+            {
+
+            }
+
+            private ExtensionObjectTemplate(Delegate constructor)
+            {
+                IntPtr address = NULL;
+                if (constructor != null)
+                {
+                    address = NSJSFunction.DelegateToFunctionPtr(constructor);
+                }
+                this.Handle = nsjs_virtualmachine_extension_object_template_new(address);
+                if (this.Handle == NULL)
+                {
+                    throw new InvalidOperationException("Unable to create handle");
+                }
+            }
+
+            public ExtensionObjectTemplate(IntPtr handle)
+            {
+                if (handle == NULL)
                 {
                     throw new InvalidOperationException("handle");
                 }
+                this.Handle = handle;
             }
 
-            public bool AddFunction(string name, NSJSFunctionCallback callback)
+            public virtual bool Set(string name, NSJSFunctionCallback value, PropertyAttribute attributes = PropertyAttribute.None)
             {
-                return InternalAddFunction(name, callback);
+                return InternalSet(name, value, attributes);
             }
 
-            public bool AddFunction(string name, NSJSFunctionCallback2 callback)
+            public virtual bool Set(string name, NSJSFunctionCallback2 value, PropertyAttribute attributes = PropertyAttribute.None)
             {
-                return InternalAddFunction(name, callback);
+                return InternalSet(name, value, attributes);
             }
 
-            private bool InternalAddFunction(string name, Delegate callback)
+            private bool InternalSet(string name, Delegate value, PropertyAttribute attributes)
             {
-                return Handling<bool>(name, (s) => nsjs_virtualmachine_object_addfunction(this.m_handle, s, NSJSFunction.DelegateToFunctionPtr(callback)));
+                return Handling<bool>(name, (s) => nsjs_virtualmachine_extension_object_template_set_function(this.Handle, s, NSJSFunction.DelegateToFunctionPtr(value), attributes));
             }
 
-            public bool RemoveFunction(string name)
+            public virtual bool Set(string name, ExtensionObjectTemplate value, PropertyAttribute attributes = PropertyAttribute.None)
             {
-                return Handling<bool>(name, (s) => nsjs_virtualmachine_object_removefunction(this.m_handle, s));
-            }
-
-            public bool AddObject(string name, ExtensionObjectTemplate object_template)
-            {
-                if (object_template == null)
+                if (value == null)
                 {
                     throw new ArgumentNullException("object_template");
                 }
-                return Handling<bool>(name, (s) => nsjs_virtualmachine_object_addobject(this.m_handle, s, object_template.m_handle));
+                return Handling<bool>(name, (s) => nsjs_virtualmachine_extension_object_template_set_object(this.Handle, s, value.Handle, attributes));
             }
 
-            public bool RemoveObject(string name)
+            public virtual bool SetNull(string name, PropertyAttribute attributes = PropertyAttribute.None)
             {
-                return Handling<bool>(name, (s) => nsjs_virtualmachine_object_removeobject(this.m_handle, s));
+                return Handling<bool>(name, (s) => nsjs_virtualmachine_extension_object_template_set_null(this.Handle, s, attributes));
+            }
+
+            public virtual bool SetUndefined(string name, PropertyAttribute attributes = PropertyAttribute.None)
+            {
+                return Handling<bool>(name, (s) => nsjs_virtualmachine_extension_object_template_set_undefined(this.Handle, s, attributes));
+            }
+
+            public virtual bool Set(string name, double value, PropertyAttribute attributes = PropertyAttribute.None)
+            {
+                return Handling<bool>(name, (s) => nsjs_virtualmachine_extension_object_template_set_number(this.Handle, s, value, attributes));
+            }
+
+            public virtual bool Set(string name, bool value, PropertyAttribute attributes = PropertyAttribute.None)
+            {
+                return Handling<bool>(name, (s) => nsjs_virtualmachine_extension_object_template_set_boolean(this.Handle, s, value, attributes));
+            }
+
+            public virtual bool Set(string name, string value, PropertyAttribute attributes = PropertyAttribute.None)
+            {
+                return Handling<bool>(name, (s) =>
+                {
+                    byte[] buffer = value != null ? Encoding.UTF8.GetBytes(value) : null;
+                    fixed (byte* pinned = buffer)
+                    {
+                        return nsjs_virtualmachine_extension_object_template_set_string(this.Handle, s, pinned, attributes);
+                    }
+                });
+            }
+
+            public virtual bool Remove(string name)
+            {
+                return Handling<bool>(name, (s) => nsjs_virtualmachine_extension_object_template_del_value(this.Handle, s));
             }
 
             private TResult Handling<TResult>(string name, Func<IntPtr, TResult> d)
@@ -193,14 +256,14 @@
                 }
             }
 
-            public void Dispose()
+            public virtual void Dispose()
             {
                 lock (this)
                 {
                     if (!this.m_disposed)
                     {
                         this.m_disposed = true;
-                        nsjs_virtualmachine_object_free(this.m_handle);
+                        nsjs_virtualmachine_extension_object_template_free(this.Handle);
                     }
                 }
             }
@@ -261,6 +324,8 @@
         internal NSJSStructural.NSJSExceptionInfo* exception = null;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         internal NSJSStructural.NSJSStackTrace* stacktrace = null;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private ExtensionObjectTemplate extension = null;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private IDictionary<string, RunContext> runings = new Dictionary<string, RunContext>();
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -349,6 +414,26 @@
             this.stacktrace = NSJSStructural.NSJSStackTrace.New();
         }
 
+        public virtual ExtensionObjectTemplate GetExtension()
+        {
+            lock (this)
+            {
+                if (extension == null)
+                {
+                    IntPtr owner = nsjs_virtualmachine_get_extension_object_template(this.Handle);
+                    if (owner != NULL)
+                    {
+                        extension = new ExtensionObjectTemplate(owner);
+                    }
+                }
+            }
+            if (extension == null)
+            {
+                throw new InvalidOperationException("There is currently no way to get the extension");
+            }
+            return extension;
+        }
+
         ~NSJSVirtualMachine()
         {
             this.Dispose();
@@ -401,82 +486,6 @@
                 throw new InvalidOperationException("isolate");
             }
             nsjs_virtualmachine_abort(this.Handle);
-        }
-
-        public virtual bool AddFunction(string name, NSJSFunctionCallback callback)
-        {
-            return InternalAddFunction(name, callback);
-        }
-
-        public virtual bool AddFunction(string name, NSJSFunctionCallback2 callback)
-        {
-            return InternalAddFunction(name, callback);
-        }
-
-        private bool InternalAddFunction(string name, Delegate callback)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
-            if (name.Length <= 0)
-            {
-                throw new ArgumentException("name");
-            }
-            if (callback == null)
-            {
-                throw new ArgumentNullException("callback");
-            }
-            return nsjs_virtualmachine_function_add(this.Handle, name, NSJSFunction.DelegateToFunctionPtr(callback));
-        }
-
-        public virtual bool RemoveFunction(string name)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
-            if (name.Length <= 0)
-            {
-                throw new ArgumentException("name");
-            }
-            return nsjs_virtualmachine_function_remove(this.Handle, name);
-        }
-
-        public virtual bool AddObject(string name, ExtensionObjectTemplate object_template)
-        {
-            if (object_template == null)
-            {
-                throw new ArgumentNullException("object_template");
-            }
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
-            if (name.Length <= 0)
-            {
-                throw new ArgumentException("name");
-            }
-            fixed (byte* s = Encoding.UTF8.GetBytes(name))
-            {
-                return nsjs_virtualmachine_object_add(Handle, s, object_template.Handle);
-            }
-        }
-
-        public virtual bool RemoveObject(string name)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
-            if (name.Length <= 0)
-            {
-                throw new ArgumentException("name");
-            }
-            fixed (byte* s = Encoding.UTF8.GetBytes(name))
-            {
-                return nsjs_virtualmachine_object_remove(Handle, s);
-            }
         }
 
         public virtual NSJSObject Global
@@ -917,8 +926,8 @@
                     this.InitializationLibrary();
                     nsjs_virtualmachine_initialize(this.Handle);
                     nsjs_virtualmachine_set_data(this.Handle, 0, (IntPtr)this.cookie);
-                    this.undefined = new NSJSValue(nsjs_localvalue_null(this.Isolate), NSJSValueType.kUndefined, this);
-                    this.nullable = new NSJSValue(nsjs_localvalue_null(this.Isolate), NSJSValueType.kNull, this);
+                    this.undefined = new NSJSValue(nsjs_localvalue_null(this.Isolate), NSJSDataType.kUndefined, this);
+                    this.nullable = new NSJSValue(nsjs_localvalue_null(this.Isolate), NSJSDataType.kNull, this);
                     this.nullable.CrossThreading = true;
                     this.undefined.CrossThreading = true;
                     this.InitializationFramework();
