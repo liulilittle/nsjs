@@ -170,6 +170,11 @@ public:
 		virtual bool SetValue(const char* name, Value* value);
 		virtual bool RemoveValue(const char* name);
 		virtual std::hash_map<std::string, Value*>& GetAll();
+#ifdef ENABLE_MONITOR_LOCK
+		virtual Monitor& GetLocker();
+#else
+		virtual SpinLock& GetLocker();
+#endif
 		static v8::Handle<v8::ObjectTemplate> New(v8::Isolate* isolate, NSJSVirtualMachine::ExtensionObjectTemplate* object_template);
 	};
 

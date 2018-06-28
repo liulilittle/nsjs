@@ -490,18 +490,38 @@ bool NSJSVirtualMachine::ExtensionObjectTemplate::RemoveValue(const char* name)
 	{
 		return false;
 	}
-	auto i = extensions.find(name);
-	if (i != extensions.end())
+#ifdef ENABLE_MONITOR_LOCK
+	locker.Enter();
+#else
+	bool localTaken = false;
+	locker.Enter(localTaken);
+#endif
+	bool success = false;
 	{
-		extensions.erase(i);
-		ReleaseValue(i->second);
+		auto i = extensions.find(name);
+		if (i != extensions.end())
+		{
+			extensions.erase(i);
+			ReleaseValue(i->second);
+			success = true;
+		}
 	}
-	return true;
+	locker.Exit();
+	return success;
 }
 
 std::hash_map<std::string, NSJSVirtualMachine::ExtensionObjectTemplate::Value*>& NSJSVirtualMachine::ExtensionObjectTemplate::GetAll()
 {
 	return extensions;
+}
+
+#ifdef ENABLE_MONITOR_LOCK
+Monitor& NSJSVirtualMachine::ExtensionObjectTemplate::GetLocker()
+#else
+SpinLock& NSJSVirtualMachine::ExtensionObjectTemplate::GetLocker()
+#endif
+{
+	return locker;
 }
 
 v8::Handle<v8::ObjectTemplate> NSJSVirtualMachine::ExtensionObjectTemplate::New(v8::Isolate* isolate, NSJSVirtualMachine::ExtensionObjectTemplate* extension)

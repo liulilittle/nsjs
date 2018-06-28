@@ -123,6 +123,7 @@
                 DontDelete = 1 << 2,
             }
 
+            [DebuggerBrowsable(DebuggerBrowsableState.Never)]
             private bool m_disposed = false;
 
             public IntPtr Handle
@@ -381,7 +382,7 @@
             set;
         }
 
-        internal bool HasUnhandledExceptionHandler()
+        protected internal bool HasUnhandledExceptionHandler()
         {
             return this.UnhandledException != null;
         }
