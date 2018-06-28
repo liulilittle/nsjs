@@ -3,10 +3,10 @@
     using System;
     using System.Runtime.InteropServices;
 
-    unsafe class NSJSStructural
+    unsafe static class NSJSStructural
     {
-        public const int MAXSTACKFRAMECOUNT = 100;
         public const string NSJSVMLINKLIBRARY = "nsjs.dll";
+        public const int MAXSTACKFRAMECOUNT = 100;
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public struct NSJSExceptionInfo

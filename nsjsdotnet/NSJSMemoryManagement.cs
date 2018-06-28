@@ -15,13 +15,13 @@
         [DllImport("kernel32.dll", SetLastError = false)]
         private static extern bool SetProcessWorkingSetSize(IntPtr hProcess, int dwMinimumWorkingSetSize, int dwMaximumWorkingSetSize);
 
-        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false, CallingConvention = CallingConvention.Cdecl)]
         private static extern int nsjs_idlelocalvalues_getcapacity();
 
-        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false, CallingConvention = CallingConvention.Cdecl)]
         private static extern void nsjs_idlelocalvalues_setcapacity(int capacity);
 
-        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false, CallingConvention = CallingConvention.Cdecl)]
         private static extern int nsjs_activelocalvalues_getcount();
 
         public static int IdleValueCapacity

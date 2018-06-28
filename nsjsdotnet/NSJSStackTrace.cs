@@ -15,7 +15,7 @@
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly NSJSStackFrame[] frames = null;
 
-        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false)]
+        [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false, CallingConvention = CallingConvention.Cdecl)]
         private static extern int nsjs_stacktrace_getcurrent(IntPtr isolate, 
             ref NSJSStructural.NSJSStackTrace stacktrace);
 

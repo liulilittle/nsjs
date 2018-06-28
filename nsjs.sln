@@ -9,18 +9,37 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nsjsdotnet", "nsjsdotnet\ns
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Win32 = Release|Win32
 		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BA41AC2D-E482-46A8-82E3-CA18C3011848}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BA41AC2D-E482-46A8-82E3-CA18C3011848}.Debug|Win32.Build.0 = Debug|Win32
 		{BA41AC2D-E482-46A8-82E3-CA18C3011848}.Debug|x64.ActiveCfg = Debug|x64
 		{BA41AC2D-E482-46A8-82E3-CA18C3011848}.Debug|x64.Build.0 = Debug|x64
+		{BA41AC2D-E482-46A8-82E3-CA18C3011848}.Debug|x86.ActiveCfg = Debug|Win32
+		{BA41AC2D-E482-46A8-82E3-CA18C3011848}.Debug|x86.Build.0 = Debug|Win32
+		{BA41AC2D-E482-46A8-82E3-CA18C3011848}.Release|Win32.ActiveCfg = Release|Win32
+		{BA41AC2D-E482-46A8-82E3-CA18C3011848}.Release|Win32.Build.0 = Release|Win32
 		{BA41AC2D-E482-46A8-82E3-CA18C3011848}.Release|x64.ActiveCfg = Release|x64
 		{BA41AC2D-E482-46A8-82E3-CA18C3011848}.Release|x64.Build.0 = Release|x64
+		{BA41AC2D-E482-46A8-82E3-CA18C3011848}.Release|x86.ActiveCfg = Release|Win32
+		{75447F79-CBB6-4F37-B6FE-8286B6AF1460}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{75447F79-CBB6-4F37-B6FE-8286B6AF1460}.Debug|Win32.Build.0 = Debug|Any CPU
 		{75447F79-CBB6-4F37-B6FE-8286B6AF1460}.Debug|x64.ActiveCfg = Debug|x64
 		{75447F79-CBB6-4F37-B6FE-8286B6AF1460}.Debug|x64.Build.0 = Debug|x64
+		{75447F79-CBB6-4F37-B6FE-8286B6AF1460}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{75447F79-CBB6-4F37-B6FE-8286B6AF1460}.Debug|x86.Build.0 = Debug|Any CPU
+		{75447F79-CBB6-4F37-B6FE-8286B6AF1460}.Release|Win32.ActiveCfg = Release|x86
+		{75447F79-CBB6-4F37-B6FE-8286B6AF1460}.Release|Win32.Build.0 = Release|x86
 		{75447F79-CBB6-4F37-B6FE-8286B6AF1460}.Release|x64.ActiveCfg = Release|x64
 		{75447F79-CBB6-4F37-B6FE-8286B6AF1460}.Release|x64.Build.0 = Release|x64
+		{75447F79-CBB6-4F37-B6FE-8286B6AF1460}.Release|x86.ActiveCfg = Release|x86
+		{75447F79-CBB6-4F37-B6FE-8286B6AF1460}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
