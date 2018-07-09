@@ -23,7 +23,7 @@
             int nFileSystemNameSize);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = false, CharSet = CharSet.Ansi)]
-        public delegate int __cpuid(ref int s1, ref int s2);
+        private delegate int __cpuid(ref int s1, ref int s2);
 
         private static string m_absoluteRealHardwareCode;
         private static string m_hdId;
