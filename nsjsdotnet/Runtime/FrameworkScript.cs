@@ -83,23 +83,27 @@
                             if (x1) {
                                 return 1;
                             }
-                            var x2 = false;
+                            var x2 = 0;
                             if (instance !== null && instance !== undefined) {
+                                var current = instance.constructor;
+                                if (current === type) {
+                                    return 1;
+                                }
                                 var __instproto__ = instance;
-                                var __typesource = null;
+                                var __typesource = type.toString();
+                                if (current && current.toString() === __typesource) {
+                                    return 1;
+                                }
                                 do {
                                     __instproto__ = __instproto__.__proto__;
                                     if (__instproto__) {
                                         x2 = __instproto__.constructor === type;
                                         if (x2) {
-                                            break;
-                                        }
-                                        if (__typesource === null) {
-                                            __typesource = type.toString();
+                                            return 1;
                                         }
                                         x2 = __typesource === __instproto__.constructor.toString();
                                         if (x2) {
-                                            break;
+                                            return 1;
                                         }
                                     }
                                 } while (__instproto__);
