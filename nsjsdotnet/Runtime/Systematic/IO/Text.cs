@@ -9,19 +9,6 @@
 
     static unsafe class Text
     {
-        public static NSJSVirtualMachine.ExtensionObjectTemplate ClassTemplate
-        {
-            get;
-            private set;
-        }
-
-        static Text()
-        {
-            NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
-            ClassTemplate = owner;
-            owner.Set("GetEncoding", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(GetEncoding));
-        }
-
         public static Encoding GetEncoding(string path)
         {
             if (!FILE.Exists(path))
@@ -60,7 +47,7 @@
 
         public static Encoding GetEncoding(byte[] buffer, int ofs)
         {
-            if (buffer == null || (buffer.Length - ofs) < 3)
+            if (buffer == null || ofs < 0 || (buffer.Length - ofs) < 3)
             {
                 return NSJSEncoding.DefaultEncoding;
             }
@@ -106,7 +93,7 @@
             }
         }
 
-        private static void GetEncoding(IntPtr info)
+        public static void GetEncoding(IntPtr info)
         {
             NSJSFunctionCallbackInfo arguments = NSJSFunctionCallbackInfo.From(info);
             Encoding encoding = NSJSEncoding.DefaultEncoding;
@@ -117,13 +104,14 @@
                 {
                     encoding = GetEncoding(path);
                 }
-                else if (arguments.Length > 1)
+                else
                 {
-                    byte[] buffer = (arguments[1] as NSJSUInt8Array)?.Buffer;
+                    byte[] buffer = (arguments[0] as NSJSUInt8Array)?.Buffer;
                     int offset = 0;
-                    if (arguments.Length > 2)
+                    if (buffer != null && arguments.Length > 1)
                     {
-                        offset = ((arguments[2] as NSJSInt32)?.Value).GetValueOrDefault();
+                        NSJSInt32 i = arguments[1] as NSJSInt32;
+                        offset = (i == null ? 0x00 : i.Value);
                     }
                     encoding = GetEncoding(buffer, offset);
                 }

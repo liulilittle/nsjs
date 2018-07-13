@@ -21,6 +21,8 @@
             NSJSVirtualMachine.ExtensionObjectTemplate owner = new NSJSVirtualMachine.ExtensionObjectTemplate();
             ClassTemplate = owner;
 
+            owner.Set("GetEncoding", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Text.GetEncoding));
+
             owner.Set("Exists", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Exists));
             owner.Set("Delete", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Delete));
             owner.Set("Move", NSJSPinnedCollection.Pinned<NSJSFunctionCallback>(Move));
