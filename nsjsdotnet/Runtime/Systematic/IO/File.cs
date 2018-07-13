@@ -364,7 +364,15 @@
                 {
                     if (copyMode)
                     {
-                        FILE.Copy(sourceFileName.Value, destFileName.Value);
+                        if (arguments.Length < 3)
+                        {
+                            FILE.Copy(sourceFileName.Value, destFileName.Value);
+                        }
+                        else
+                        {
+                            bool overwrite = ValueAuxiliary.ToBoolean(arguments[2]);
+                            FILE.Copy(sourceFileName.Value, destFileName.Value, overwrite);
+                        }
                     }
                     else
                     {
