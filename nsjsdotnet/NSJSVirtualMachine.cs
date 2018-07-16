@@ -2,6 +2,7 @@
 {
     using nsjsdotnet.Core;
     using nsjsdotnet.Core.IO;
+    using nsjsdotnet.Core.Utilits;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
@@ -10,10 +11,9 @@
     using System.Runtime.InteropServices;
     using System.Text;
     using System.Windows.Forms;
+    using FrameworkScript = nsjsdotnet.Runtime.FrameworkScript;
     using RuntimeLibrary = nsjsdotnet.Runtime.Global;
     using SystemLibrary = nsjsdotnet.Runtime.Systematic.Global;
-    using FrameworkScript = nsjsdotnet.Runtime.FrameworkScript;
-    using nsjsdotnet.Core.Utilits;
 
     public unsafe class NSJSVirtualMachine : EventArgs, IRelational
     {
@@ -341,7 +341,6 @@
         }
 
         public virtual event EventHandler<NSJSUnhandledExceptionEventArgs> UnhandledException = null;
-        public virtual event EventHandler<NSJSMessage> Message = null;
         public virtual event EventHandler Disposed = null;
 
         public bool IsDisposed
@@ -382,6 +381,12 @@
             set;
         }
 
+        public NSJSConsoleHandler ConsoleHandler
+        {
+            get;
+            private set;
+        }
+
         protected internal bool HasUnhandledExceptionHandler()
         {
             return this.UnhandledException != null;
@@ -400,8 +405,17 @@
             }
         }
 
-        public NSJSVirtualMachine()
+        public NSJSVirtualMachine() : this(NSJSConsoleHandler.DefaultHandler)
         {
+
+        }
+
+        public NSJSVirtualMachine(NSJSConsoleHandler handler)
+        {
+            if (handler == null)
+            {
+                throw new ArgumentNullException("handler");
+            }
             this.AutomaticallyPrintException = true;
             this.IntegerBoolean = false;
             this.Handle = nsjs_virtualmachine_new();
@@ -410,6 +424,7 @@
                 throw new InvalidOperationException("this");
             }
             machines.TryAdd(this.Handle, this);
+            this.ConsoleHandler = handler;
             this.cookie = GCHandle.Alloc(this);
             this.exception = NSJSStructural.NSJSExceptionInfo.New();
             this.stacktrace = NSJSStructural.NSJSStackTrace.New();
@@ -469,14 +484,6 @@
             fixed (byte* exce_path = Encoding.UTF8.GetBytes(Application.ExecutablePath))
             {
                 nsjs_initialize(exce_path);
-            }
-        }
-
-        protected virtual internal void OnMessage(NSJSMessage e)
-        {
-            if (e != null && this.Message != null)
-            {
-                this.Message(this, e);
             }
         }
 

@@ -166,9 +166,9 @@
     <Compile Include="Core\ValueAuxiliary.cs" />
     <Compile Include="Core\Utilits\TypeTool.cs" />
     <Compile Include="Core\Utilits\ValuetypeFormatter.cs" />
+    <Compile Include="NSJSConsoleHandler.cs" />
     <Compile Include="NSJSException.cs" />
     <Compile Include="Core\Utilits\MarshalAs.cs" />
-    <Compile Include="NSJSMessage.cs" />
     <Compile Include="NSJSInt64.cs" />
     <Compile Include="NSJSJson.cs" />
     <Compile Include="NSJSKeyValueCollection.cs" />
@@ -177,6 +177,7 @@
     <Compile Include="Core\Linq\Enumerable.cs" />
     <Compile Include="Core\IO\FileAuxiliary.cs" />
     <Compile Include="Core\IO\LZ77Auxiliary.cs" />
+    <Compile Include="NSJSMessage.cs" />
     <Compile Include="NSJSTimerScheduler.cs" />
     <Compile Include="NSJSStackFrame.cs" />
     <Compile Include="NSJSStackTrace.cs" />
