@@ -130,6 +130,7 @@
     <Compile Include="Core\Net\Web\HttpRequest.cs" />
     <Compile Include="Core\Net\Web\HttpResponse.cs" />
     <Compile Include="Core\Net\Web\IHttpHandler.cs" />
+    <Compile Include="Core\SimpleAgent.cs" />
     <Compile Include="Core\Sorting\Sortable.cs" />
     <Compile Include="Core\Text\RegularExpressions\Match.cs" />
     <Compile Include="Core\Text\RegularExpressions\MatchCollection.cs" />

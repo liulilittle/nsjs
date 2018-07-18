@@ -30,6 +30,11 @@
             return Convert.ToByte(ToDouble(value));
         }
 
+        public static decimal ToDecimal(NSJSValue value)
+        {
+            return Convert.ToDecimal(ToDouble(value));
+        }
+
         public static char ToChar(NSJSValue value)
         {
             return Convert.ToChar(ToDouble(value));
@@ -43,6 +48,11 @@
         public static long ToInt64(NSJSValue value)
         {
             return Convert.ToInt64(ToDouble(value));
+        }
+
+        public static ulong ToUInt64(NSJSValue value)
+        {
+            return unchecked((ulong)ToInt64(value));
         }
 
         public static DateTime ToDateTime(NSJSValue value)

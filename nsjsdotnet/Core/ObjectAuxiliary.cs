@@ -370,7 +370,6 @@
             Call<TThis>(info, (self, arguments, value) => doo(self, arguments, (value as NSJSFloat64Array)?.Buffer));
         }
 
-
         public static void Call<TThis>(IntPtr info, Action<TThis, NSJSFunctionCallbackInfo, int> doo)
         {
             Throwable.ArgumentNullException(info, doo);
@@ -870,7 +869,7 @@
                         }
                         Type clazz = pi.PropertyType;
                         Type element = TypeTool.GetArrayElement(clazz);
-                        if (element == null)
+                        if (element == null && value is IList)
                         {
                             result = ArrayAuxiliary.ToArray(machine, element, (IList)value);
                         }

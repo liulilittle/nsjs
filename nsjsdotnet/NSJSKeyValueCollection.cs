@@ -81,6 +81,20 @@
             return kvtables.Count;
         }
 
+        public static bool Contains(NSJSObject obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+            ConcurrentDictionary<int, object> d = GetTable(obj.VirtualMachine);
+            if (d == null)
+            {
+                return false;
+            }
+            return d.ContainsKey(GetObjectIdentity(obj));
+        }
+
         private static ConcurrentDictionary<int, object> GetTable(NSJSVirtualMachine machine)
         {
             if (machine == null)

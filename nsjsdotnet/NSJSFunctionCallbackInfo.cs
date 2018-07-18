@@ -212,6 +212,21 @@
             nsjs_argument_returnvalue_set_float64(this.Handle, value);
         }
 
+        public void SetReturnValue(long value)
+        {
+            this.SetReturnValue(unchecked((double)value));
+        }
+
+        public void SetReturnValue(ulong value)
+        {
+            this.SetReturnValue(unchecked((long)value));
+        }
+
+        public void SetReturnValue(decimal value)
+        {
+            this.SetReturnValue(unchecked((double)value));
+        }
+
         public void SetReturnValue(uint value)
         {
             nsjs_argument_returnvalue_set_uint32(this.Handle, value);

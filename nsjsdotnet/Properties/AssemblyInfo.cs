@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("nsjsdotnet")]
 [assembly: AssemblyDescription("nsjsdotnet framework")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("TECHMARS")]
+[assembly: AssemblyCompany("stillness")]
 [assembly: AssemblyProduct("nsjsdotnet")]
-[assembly: AssemblyCopyright("Copyright © stillness 2018")]
+[assembly: AssemblyCopyright("Copyright © stillness 2018(github.com/liulilittle/nsjs)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

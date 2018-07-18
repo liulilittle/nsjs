@@ -319,6 +319,21 @@
             }
         }
 
+        public void Set(string key, long value)
+        {
+            this.Set(key, unchecked((double)value));
+        }
+
+        public void Set(string key, ulong value)
+        {
+            this.Set(key, unchecked((long)value));
+        }
+
+        public void Set(string key, decimal value)
+        {
+            this.Set(key, unchecked((double)value));
+        }
+
         public virtual bool Set(string key, int value)
         {
             return this.Set(key, (name) => nsjs_localvalue_object_property_set_int32(this.Isolate, this.Handle, name, value));
