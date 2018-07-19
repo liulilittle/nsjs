@@ -8,9 +8,9 @@
 
     public static class NSJSPinnedCollection
     {
-        private static readonly IntPtr NULL = IntPtr.Zero;
         private static IDictionary<IntPtr, PinnedContext> contexts = new ConcurrentDictionary<IntPtr, PinnedContext>();
-        private static readonly Timer maintenanceTimer; 
+        private static readonly IntPtr NULL = IntPtr.Zero;
+        private static readonly Timer maintenanceTimer = null;
 
         private class PinnedContext
         {
@@ -88,14 +88,16 @@
 
         public static IEnumerable<Delegate> GetAllValue()
         {
+            IList<Delegate> s = new List<Delegate>();
             foreach (PinnedContext context in contexts.Values)
             {
                 if (context == null)
                 {
                     continue;
                 }
-                yield return context.Value;
+                s.Add(context.Value);
             }
+            return s;
         }
 
         public static bool IsPinned(Delegate d)
@@ -151,13 +153,21 @@
             {
                 throw new ArgumentNullException("d");
             }
-            PinnedContext context = new PinnedContext();
-            context.Handle = GCHandle.Alloc(d);
-            context.Address = GetCookie(d);
-            context.Value = d;
-            context.LifeCycle = lifeCycle;
-            contexts.Add(context.Address, context);
-            return d;
+            lock (contexts)
+            {
+                IntPtr cookie = GetCookie(d);
+                if (contexts.ContainsKey(cookie))
+                {
+                    return d;
+                }
+                PinnedContext context = new PinnedContext();
+                context.Handle = GCHandle.Alloc(d);
+                context.Address = cookie;
+                context.Value = d;
+                context.LifeCycle = lifeCycle;
+                contexts.Add(context.Address, context);
+                return d;
+            }
         }
 
         public static bool Release(IntPtr cookie)
@@ -166,28 +176,31 @@
             {
                 return true;
             }
-            PinnedContext context;
-            if (!contexts.TryGetValue(cookie, out context))
+            lock (contexts)
             {
-                return false;
-            }
-            if (!contexts.Remove(cookie))
-            {
-                return false;
-            }
-            GCHandle gch = context.Handle;
-            if (!gch.IsAllocated)
-            {
-                return false;
-            }
-            try
-            {
-                gch.Free();
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
+                PinnedContext context;
+                if (!contexts.TryGetValue(cookie, out context))
+                {
+                    return false;
+                }
+                if (!contexts.Remove(cookie))
+                {
+                    return false;
+                }
+                GCHandle gch = context.Handle;
+                if (!gch.IsAllocated)
+                {
+                    return false;
+                }
+                try
+                {
+                    gch.Free();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
             }
         }
 

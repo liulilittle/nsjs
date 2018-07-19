@@ -1,7 +1,9 @@
 ﻿namespace nsjsdotnet.Core
 {
     using nsjsdotnet;
+    using nsjsdotnet.Core.Utilits;
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
@@ -12,13 +14,6 @@
 
     public class SimpleAgent
     {
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly IDictionary<string, MemberInfo> miTable = new Dictionary<string, MemberInfo>()
-        {
-            { K(typeof(NSJSFunctionCallbackInfo), "From"), typeof(NSJSFunctionCallbackInfo).GetMethod("From", new[] { typeof(IntPtr) }) },
-            { K(typeof(NSJSKeyValueCollection), "Get"), typeof(NSJSKeyValueCollection).GetMethods().First(m => !m.IsGenericMethod && m.Name == "Get" && m.GetParameters().FirstOrDefault(i => i.ParameterType == typeof(NSJSObject)) != null) },
-        };
-
         private static string K<T>(string name)
         {
             return K(typeof(T), name);
@@ -34,24 +29,30 @@
             return key;
         }
 
-        private TResult Get<TType, TResult>(string name) where TResult : MemberInfo
+        private static TResult Get<TType, TResult>(string name) where TResult : MemberInfo
         {
             return Get<TResult>(typeof(TType), name);
         }
 
-        private TResult Get<TResult>(Type type, string name) where TResult : MemberInfo
+        private static TResult Get<TResult>(Type type, string name) where TResult : MemberInfo
         {
             string key = K(type, name);
             return miTable[key] as TResult;
         }
 
-        public SimpleAgent()
+        static SimpleAgent()
         {
-            miToValueTable.Keys.FirstOrDefault(i => InternalConverter(i) == null);
+            miToValueTable.Keys.FirstOrDefault(i => InternalCheckConverter(i) == null);
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly IDictionary<Type, object> miToValueTable = new Dictionary<Type, object>()
+        private static readonly IDictionary<string, MemberInfo> miTable = new Dictionary<string, MemberInfo>()
+        {
+            { K(typeof(NSJSFunctionCallbackInfo), "From"), typeof(NSJSFunctionCallbackInfo).GetMethod("From", new[] { typeof(IntPtr) }) },
+            { K(typeof(NSJSKeyValueCollection), "Get"), typeof(NSJSKeyValueCollection).GetMethods().First(m => !m.IsGenericMethod && m.Name == "Get" && m.GetParameters().FirstOrDefault(i => i.ParameterType == typeof(NSJSObject)) != null) },
+        };
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private static readonly IDictionary<Type, object> miToValueTable = new Dictionary<Type, object>()
         {
             { typeof(int),  GN2XV(typeof(ValueAuxiliary).GetMethod("ToInt32", new Type[] { typeof(NSJSValue) })) },
             { typeof(uint),  GN2XV(typeof(ValueAuxiliary).GetMethod("ToUInt32", new Type[] { typeof(NSJSValue) })) },
@@ -90,14 +91,17 @@
             { typeof(MailAddress), GN2XV(typeof(ObjectAuxiliary).GetMethod("ToMailAddress", new Type[] { typeof(NSJSValue) })) },
         };
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly IDictionary<Type, Func<NSJSValue, object>> miToValueConverterTable = new Dictionary<Type, Func<NSJSValue, object>>();
+        private static readonly IDictionary<Type, Func<NSJSValue, object>> miToValueConverterTable = new Dictionary<Type, Func<NSJSValue, object>>();
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly IDictionary<Type, Dictionary<string, MemberInfo>> miToValueKeyMemberTable = new Dictionary<Type, Dictionary<string, MemberInfo>>();
+        private static readonly IDictionary<CompilerCacheKey, NSJSFunctionCallback> fnCompilerCaches = new Dictionary<CompilerCacheKey, NSJSFunctionCallback>();
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly IDictionary<CompilerCacheKey, NSJSFunctionCallback> fnCompilerCaches = new Dictionary<CompilerCacheKey, NSJSFunctionCallback>();
-
+        private static readonly IDictionary<Type, IDictionary<string, MemberInfo>> miToValueKeyMemberTable = new Dictionary<Type, IDictionary<string, MemberInfo>>();
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly Func<NSJSFunctionCallbackInfo, int, NSJSValue> FCIGTITEM = (arguments, index) =>
+        private static readonly object syncobj = new object();
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private readonly static IDictionary<Type, NetToObjectCallables> netToObjectCallablesTable = new Dictionary<Type, NetToObjectCallables>();
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private static readonly Func<NSJSFunctionCallbackInfo, int, NSJSValue> FCIGTITEM = (arguments, index) =>
         {
             if (arguments == null)
             {
@@ -114,7 +118,7 @@
             }
         };
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly Action<NSJSFunctionCallbackInfo, Action<NSJSFunctionCallbackInfo>> JSINVKHANDLING = (arguments, e) =>
+        private static readonly Action<NSJSFunctionCallbackInfo, Action<NSJSFunctionCallbackInfo>> JSINVKHANDLING = (arguments, e) =>
         {
             if (arguments == null)
             {
@@ -129,6 +133,20 @@
                 Throwable.Exception(arguments.VirtualMachine, exception);
             }
         };
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private static readonly NSJSFunctionCallback FDEFAULTDISPOSE = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>((info) =>
+        {
+            NSJSFunctionCallbackInfo arguments = NSJSFunctionCallbackInfo.From(info);
+            if (arguments != null)
+            {
+                System.IDisposable disposable;
+                NSJSKeyValueCollection.Release(arguments.This, out disposable);
+                if (disposable != null)
+                {
+                    disposable.Dispose();
+                }
+            }
+        });
 
         private struct CompilerCacheKey
         {
@@ -142,17 +160,17 @@
             return ft.GetConstructors()[0].Invoke(new object[] { null, m.MethodHandle.GetFunctionPointer() });
         }
 
-        private Expression Throw(Exception exception)
+        private static Expression Throw(Exception exception)
         {
             return Throw(Expression.Constant(exception));
         }
 
-        private Expression Throw(Expression exception)
+        private static Expression Throw(Expression exception)
         {
             return Expression.Throw(exception);
         }
 
-        private IEnumerable<Expression> ComplierBlock(MethodInfo m, ParameterExpression arguments, ParameterExpression self,
+        private static IEnumerable<Expression> ComplierBlock(MethodInfo m, ParameterExpression arguments, ParameterExpression self,
             IList<ParameterExpression> localvar)
         {
             IList<Expression> expressions = new List<Expression>()
@@ -182,59 +200,81 @@
                     Expression get = Expression.Call(Expression.Constant(FCIGTITEM), "Invoke", null,
                         new Expression[] { arguments, Expression.Constant(slot) });
 
-                    Expression invk = Expression.Call(Expression.Constant(InternalConverter(type)), "Invoke",
+                    Expression invk = Expression.Call(Expression.Constant(InternalCheckConverter(type)), "Invoke",
                         null, new Expression[] { get });
                     expressions.Add(Expression.Assign(key, invk));
                 }
             }
             expressions.Add(ComplierCalleeDelegateTarget(m, self, arguments, localvar));
-            expressions.Add(Expression.Constant(null));
             return expressions;
         }
 
-        private object InternalConverter(Type type, int mode = 0)
+        private static object InternalCheckConverter(Type type, int mode = 0)
         {
             object converter = null;
-            if (!miToValueTable.TryGetValue(type, out converter))
+            lock (syncobj)
             {
-                if (mode == 1)
+                if (!miToValueTable.TryGetValue(type, out converter))
                 {
-                    return null;
-                }
-                ConstructorInfo constructor = type.GetConstructors().FirstOrDefault(i => i.GetParameters().Length <= 0);
-                if (constructor == null)
-                {
-                    throw new ArgumentException("Type does not have any constructor that does not have the parameter to be directly new");
-                }
-                Func<NSJSValue, object> SV2O = (Func<NSJSValue, object>)miToValueTable[typeof(object)];
-                Func<NSJSValue, object> FV2O = new Func<NSJSValue, object>((value) =>
-                {
-                    object r = SV2O(value);
-                    if (r != null && r != value &&
-                        type.IsInstanceOfType(r))
-                    {
-                        return r;
-                    }
-                    NSJSObject o = value as NSJSObject;
-                    if (o == null)
+                    if (mode == 1)
                     {
                         return null;
                     }
-                    return ConverterToObject(constructor, o);
-                });
-                converter = Expression.GetFuncType(typeof(NSJSValue), type).GetConstructors()[0].Invoke(new[] { FV2O.Target, FV2O.Method.MethodHandle.GetFunctionPointer() });
-                miToValueTable.Add(type, converter);
+                    ConstructorInfo constructor = type.GetConstructors().FirstOrDefault(i => i.GetParameters().Length <= 0);
+                    if (constructor == null)
+                    {
+                        throw new ArgumentException("Type does not have any constructor that does not have the parameter to be directly new");
+                    }
+                    Func<NSJSValue, object> SV2O = (Func<NSJSValue, object>)miToValueTable[typeof(object)];
+                    Func<NSJSValue, object> FV2O = new Func<NSJSValue, object>((value) =>
+                    {
+                        object r = SV2O(value);
+                        if (r != null && r != value &&
+                            type.IsInstanceOfType(r))
+                        {
+                            return r;
+                        }
+                        NSJSObject o = value as NSJSObject;
+                        if (o == null)
+                        {
+                            return null;
+                        }
+                        return ToObject(constructor, o);
+                    });
+                    converter = Expression.GetFuncType(typeof(NSJSValue), type).GetConstructors()[0].Invoke(new[] { FV2O.Target,
+                        FV2O.Method.MethodHandle.GetFunctionPointer() });
+                    miToValueTable.Add(type, converter);
+                }
+                if (!miToValueConverterTable.ContainsKey(type))
+                {
+                    ParameterExpression p_v = Expression.Parameter(typeof(NSJSValue));
+                    Func<NSJSValue, object> f_c = Expression.Lambda<Func<NSJSValue, object>>(Expression.Convert(Expression.Call(
+                        Expression.Constant(converter), "Invoke", null, new[] { p_v }), typeof(object)), p_v).Compile();
+                    miToValueConverterTable.Add(type, f_c);
+                }
+                InternalCheckKeyMembers(type);
+                InternalCheckNetToObjectCallables(type);
+                if (mode == 1)
+                {
+                    Func<NSJSValue, object> f_c;
+                    miToValueConverterTable.TryGetValue(type, out f_c);
+                    return f_c;
+                }
+                if (mode == 2)
+                {
+                    IDictionary<string, MemberInfo> d_mi;
+                    miToValueKeyMemberTable.TryGetValue(type, out d_mi);
+                    return d_mi;
+                }
             }
-            if (!miToValueConverterTable.ContainsKey(type))
+            return converter;
+        }
+
+        private static IDictionary<string, MemberInfo> InternalCheckKeyMembers(Type type)
+        {
+            IDictionary<string, MemberInfo> d;
+            lock (syncobj)
             {
-                ParameterExpression p_v = Expression.Parameter(typeof(NSJSValue));
-                Func<NSJSValue, object> f_c = Expression.Lambda<Func<NSJSValue, object>>(Expression.Convert(Expression.Call(
-                    Expression.Constant(converter), "Invoke", null, new[] { p_v }), typeof(object)), p_v).Compile();
-                miToValueConverterTable.Add(type, f_c);
-            }
-            if (!miToValueKeyMemberTable.ContainsKey(type))
-            {
-                Dictionary<string, MemberInfo> d;
                 if (miToValueKeyMemberTable.TryGetValue(type, out d))
                 {
                     return d;
@@ -252,29 +292,17 @@
                 type.GetFields().FirstOrDefault(predicate);
                 miToValueKeyMemberTable.Add(type, d);
             }
-            if (mode == 1)
-            {
-                Func<NSJSValue, object> f_c;
-                miToValueConverterTable.TryGetValue(type, out f_c);
-                return f_c;
-            }
-            if (mode == 2)
-            {
-                Dictionary<string, MemberInfo> d_mi;
-                miToValueKeyMemberTable.TryGetValue(type, out d_mi);
-                return d_mi;
-            }
-            return converter;
+            return d;
         }
 
-        private object ConverterToObject(ConstructorInfo constructor, NSJSObject obj)
+        private static object ToObject(ConstructorInfo constructor, NSJSObject obj)
         {
             if (constructor == null || obj == null)
             {
                 return null;
             }
             object o = constructor.Invoke(null);
-            IDictionary<string, MemberInfo> members = (IDictionary<string, MemberInfo>)InternalConverter(constructor.DeclaringType, 2);
+            IDictionary<string, MemberInfo> members = InternalCheckKeyMembers(constructor.DeclaringType);
             foreach (string key in obj.GetAllKeys())
             {
                 MemberInfo mi;
@@ -286,7 +314,7 @@
                 FieldInfo fi = mi as FieldInfo;
                 Type mt = pi != null ? pi.PropertyType : fi.FieldType;
 
-                Func<NSJSValue, object> converter = (Func<NSJSValue, object>)InternalConverter(mt, 1);
+                Func<NSJSValue, object> converter = (Func<NSJSValue, object>)InternalCheckConverter(mt, 1);
                 if (converter == null)
                 {
                     throw new InvalidOperationException(string.Format("Unable to find a valid JavaScript value To {0} type converter", mt.FullName));
@@ -304,7 +332,7 @@
             return o;
         }
 
-        private Expression ComplierCalleeDelegateTarget(MethodInfo m, Expression self, ParameterExpression arguments, IList<ParameterExpression> args)
+        private static Expression ComplierCalleeDelegateTarget(MethodInfo m, Expression self, ParameterExpression arguments, IList<ParameterExpression> args)
         {
             IList<ParameterExpression> pushs = args;
             if (m.GetParameters().Length != pushs.Count)
@@ -313,27 +341,179 @@
                 pushs.Insert(0, arguments);
             }
             Expression expression = Expression.Call(self, m, pushs);
-            MethodInfo miSetReturnValue = typeof(NSJSFunctionCallbackInfo).GetMethod("SetReturnValue", new[] { m.ReturnType });
-            if (miSetReturnValue != null)
+            if (m.ReturnType != typeof(void))
             {
-                expression = Expression.Call(self, miSetReturnValue, expression);
-            }
-            else
-            {
-                MethodInfo miToValue = typeof(SimpleAgent).GetMethod("ToValue", BindingFlags.NonPublic | BindingFlags.Instance, null,
-                    new[] { typeof(NSJSFunctionCallbackInfo), typeof(object) }, null).MakeGenericMethod(m.ReturnType);
-                expression = Expression.Call(Expression.Constant(this), miToValue, arguments, expression);
-                expression = Expression.Call(arguments, typeof(NSJSFunctionCallbackInfo).GetMethod("SetReturnValue", new[] { typeof(NSJSValue) }), expression);
+                MethodInfo miSetReturnValue = typeof(NSJSFunctionCallbackInfo).GetMethod("SetReturnValue", new[] { m.ReturnType });
+                if (miSetReturnValue != null)
+                {
+                    expression = Expression.Call(self, miSetReturnValue, expression);
+                }
+                else
+                {
+                    MethodInfo miToValue = typeof(SimpleAgent).GetMethod("ToValue", BindingFlags.NonPublic | BindingFlags.Static, null,
+                        new[] { typeof(NSJSFunctionCallbackInfo), typeof(object) }, null).MakeGenericMethod(m.ReturnType);
+                    expression = Expression.Call(miToValue, arguments, expression);
+                    expression = Expression.Call(arguments, typeof(NSJSFunctionCallbackInfo).GetMethod("SetReturnValue", new[] { typeof(NSJSValue) }), expression);
+                }
             }
             return expression;
         }
 
-        protected virtual NSJSValue ToValue<T>(NSJSFunctionCallbackInfo arguemnts, object value)
+        protected internal static NSJSValue ToValue<T>(NSJSFunctionCallbackInfo arguemnts, object value)
         {
-            return ObjectAuxiliary.ToObject(arguemnts.VirtualMachine, value);
+            return ToObject(arguemnts.VirtualMachine, value);
         }
 
-        private IList<ParameterExpression> GetLocalVar(MethodInfo m)
+        private class NetToObjectCallables
+        {
+            public Type disposable;
+            public ISet<MethodInfo> callables;
+        }
+
+        private static NetToObjectCallables InternalCheckNetToObjectCallables(Type owner)
+        {
+            lock (syncobj)
+            {
+                NetToObjectCallables callables;
+                if (!netToObjectCallablesTable.TryGetValue(owner, out callables))
+                {
+                    ISet<MethodInfo> props = new HashSet<MethodInfo>();
+                    foreach (PropertyInfo pi in owner.GetProperties())
+                    {
+                        MethodInfo mi = pi.GetGetMethod();
+                        if (mi != null)
+                        {
+                            props.Add(mi);
+                        }
+                        mi = pi.GetSetMethod();
+                        if (mi != null)
+                        {
+                            props.Add(mi);
+                        }
+                    }
+                    Type disposable = owner.GetInterface(typeof(System.IDisposable).FullName);
+                    ISet<MethodInfo> methods = new HashSet<MethodInfo>();
+                    foreach (MethodInfo m in owner.GetMethods())
+                    {
+                        if (m.DeclaringType == typeof(object))
+                        {
+                            continue;
+                        }
+                        if (disposable != null && m.Name == "Dispose")
+                        {
+                            continue;
+                        }
+                        if (props.Contains(m))
+                        {
+                            continue;
+                        }
+                        methods.Add(m);
+                    }
+                    callables = new NetToObjectCallables();
+                    if (methods.Count > 0)
+                    {
+                        callables.callables = methods;
+                    }
+                    callables.disposable = disposable;
+                    netToObjectCallablesTable.Add(owner, callables);
+                }
+                if (callables.callables == null && callables.disposable == null)
+                {
+                    return null;
+                }
+                return callables;
+            }
+        }
+
+        protected internal static NSJSValue ToObject(NSJSVirtualMachine machine, object obj)
+        {
+            if (machine == null)
+            {
+                return null;
+            }
+            if (obj == null)
+            {
+                return NSJSValue.Null(machine);
+            }
+            Type owner = obj.GetType();
+            NSJSObject objective = NSJSObject.New(machine);
+            foreach (MemberInfo mi in InternalCheckKeyMembers(owner).Values)
+            {
+                PropertyInfo pi = mi as PropertyInfo;
+                FieldInfo fi = mi as FieldInfo;
+                object value = null;
+                Type clazz = null;
+                string key = mi.Name;
+                if (pi != null)
+                {
+                    clazz = pi.PropertyType;
+                    value = pi.GetValue(obj, null);
+                }
+                else
+                {
+                    clazz = fi.FieldType;
+                    value = fi.GetValue(obj);
+                }
+                NSJSValue result = null;
+                do
+                {
+                    if (value == null)
+                    {
+                        break;
+                    }
+                    Type element = TypeTool.GetArrayElement(clazz);
+                    if (element == null && value is IList)
+                    {
+                        result = ArrayAuxiliary.ToArray(machine, element, (IList)value);
+                    }
+                    else if (TypeTool.IsBasicType(clazz) && !TypeTool.IsIPAddress(clazz))
+                    {
+                        result = value.As(machine);
+                    }
+                    else
+                    {
+                        result = ToObject(machine, value);
+                    }
+                } while (false);
+                if (result == null)
+                {
+                    result = NSJSValue.Null(machine);
+                }
+                objective.Set(key, result);
+            }
+            NetToObjectCallables callables = InternalCheckNetToObjectCallables(owner);
+            if (callables != null)
+            {
+                foreach (MethodInfo m in callables.callables)
+                {
+                    objective.Set(m.Name, NSJSPinnedCollection.Pinned(Complier(m)));
+                }
+                objective.Set("Dispose", FDEFAULTDISPOSE);
+                if (!objective.IsDefined("Close"))
+                {
+                    objective.Set("Close", FDEFAULTDISPOSE);
+                }
+                NSJSKeyValueCollection.Set(objective, obj);
+            }
+            return objective;
+        }
+
+        private static NSJSFunctionCallback GetCompilerCache(MethodInfo m)
+        {
+            CompilerCacheKey key = new CompilerCacheKey
+            {
+                method = m,
+                type = m.DeclaringType,
+            };
+            lock (syncobj)
+            {
+                NSJSFunctionCallback callback;
+                fnCompilerCaches.TryGetValue(key, out callback);
+                return callback;
+            }
+        }
+
+        private static IList<ParameterExpression> GetLocalVar(MethodInfo m)
         {
             IList<ParameterExpression> localvar = new List<ParameterExpression>();
             ParameterInfo[] s = m.GetParameters();
@@ -349,7 +529,7 @@
             return localvar;
         }
 
-        public virtual NSJSFunctionCallback Complier(MethodInfo m)
+        public static NSJSFunctionCallback Complier(MethodInfo m)
         {
             if (m == null)
             {
@@ -360,91 +540,100 @@
                 method = m,
                 type = m.DeclaringType,
             };
-            NSJSFunctionCallback callback;
-            if (fnCompilerCaches.TryGetValue(key, out callback))
+            lock (syncobj)
             {
-                return callback;
-            }
-            else
-            {
-                ParameterExpression arguments = Expression.Parameter(typeof(NSJSFunctionCallbackInfo), "arguments");
-                ParameterExpression self = Expression.Variable(m.DeclaringType, "this");
+                NSJSFunctionCallback callback;
+                if (fnCompilerCaches.TryGetValue(key, out callback))
+                {
+                    return callback;
+                }
+                else
+                {
+                    ParameterExpression arguments = Expression.Parameter(typeof(NSJSFunctionCallbackInfo), "arguments");
+                    ParameterExpression self = Expression.Variable(m.DeclaringType, "this");
 
-                IList<ParameterExpression> localvar = GetLocalVar(m);
-                Expression<Action<NSJSFunctionCallbackInfo>> expression = Expression.Lambda<Action<NSJSFunctionCallbackInfo>>(
-                    Expression.Block(
-                        new ParameterExpression[] { self },
-                        new Expression[]
-                        {
-                       Expression.Block(
-                            localvar,
-                            ComplierBlock(m, arguments, self, localvar)
+                    IList<ParameterExpression> localvar = GetLocalVar(m);
+                    Expression<Action<NSJSFunctionCallbackInfo>> expression = Expression.Lambda<Action<NSJSFunctionCallbackInfo>>(
+                        Expression.Block(
+                            new ParameterExpression[] { self },
+                            new Expression[]
+                            {
+                               Expression.Block(
+                                    localvar,
+                                    ComplierBlock(m, arguments, self, localvar)
+                                )
+                            }
                         )
-                        }
-                    )
-                , arguments);
+                    , arguments);
 
-                ParameterExpression info = Expression.Parameter(typeof(IntPtr), "info");
-                Expression<NSJSFunctionCallback> launcher = Expression.Lambda<NSJSFunctionCallback>(
-                    Expression.Block(new ParameterExpression[] { arguments },
-                        Expression.Assign(arguments, Expression.Call(Get<MethodInfo>(typeof(NSJSFunctionCallbackInfo), "From"), info)),
-                        Expression.Call(Expression.Constant(JSINVKHANDLING), "Invoke", null, arguments, Expression.Constant(expression.Compile()))
-                    ), info);
+                    ParameterExpression info = Expression.Parameter(typeof(IntPtr), "info");
+                    Expression<NSJSFunctionCallback> launcher = Expression.Lambda<NSJSFunctionCallback>(
+                        Expression.Block(new ParameterExpression[] { arguments },
+                            Expression.Assign(arguments, Expression.Call(Get<MethodInfo>(typeof(NSJSFunctionCallbackInfo), "From"), info)),
+                            Expression.Call(Expression.Constant(JSINVKHANDLING), "Invoke", null, arguments, Expression.Constant(expression.Compile()))
+                        ), info);
 
-                callback = launcher.Compile();
-                fnCompilerCaches.Add(key, callback);
-                return callback;
+                    callback = launcher.Compile();
+                    fnCompilerCaches.Add(key, callback);
+                    return callback;
+                }
             }
         }
 
-        public virtual Func<NSJSValue, TResult> GetConverter<TResult>()
+        public static Func<NSJSValue, TResult> GetConverter<TResult>()
         {
-            return (Func<NSJSValue, TResult>)InternalConverter(typeof(TResult));
+            return (Func<NSJSValue, TResult>)InternalCheckConverter(typeof(TResult));
         }
 
-        public virtual Func<NSJSValue, object> GetConverterBox(Type type)
+        public static Func<NSJSValue, object> GetConverterBox(Type type)
         {
             if (type == null)
             {
                 return null;
             }
-            return (Func<NSJSValue, object>)InternalConverter(type, 1);
+            return (Func<NSJSValue, object>)InternalCheckConverter(type, 1);
         }
 
-        public virtual IDictionary<Type, Delegate> GetAllConverter()
+        public static IDictionary<Type, Delegate> GetAllConverter()
         {
             IDictionary<Type, Delegate> d = new Dictionary<Type, Delegate>();
-            miToValueTable.FirstOrDefault(kv =>
+            lock (syncobj)
             {
-                d.Add(kv.Key, (Delegate)kv.Value);
-                return false;
-            });
+                miToValueTable.FirstOrDefault(kv =>
+                {
+                    d.Add(kv.Key, (Delegate)kv.Value);
+                    return false;
+                });
+            }
             return d;
         }
 
-        public virtual void SetConverter<TResult>(Func<NSJSValue, TResult> converter)
+        public static void SetConverter<TResult>(Func<NSJSValue, TResult> converter)
         {
-            Type type = typeof(TResult);
-            if (converter == null)
+            lock (syncobj)
             {
-                miToValueTable.Remove(type);
-                miToValueKeyMemberTable.Remove(type);
-                miToValueConverterTable.Remove(type);
-            }
-            else
-            {
-                object previous = null;
-                if (!miToValueTable.TryGetValue(type, out previous))
+                Type type = typeof(TResult);
+                if (converter == null)
                 {
-                    miToValueTable.Add(type, converter);
-                    previous = InternalConverter(type);
-                }
-                else if (!object.Equals(previous, converter))
-                {
-                    miToValueTable[type] = converter;
+                    miToValueTable.Remove(type);
                     miToValueKeyMemberTable.Remove(type);
                     miToValueConverterTable.Remove(type);
-                    previous = InternalConverter(type);
+                }
+                else
+                {
+                    object previous = null;
+                    if (!miToValueTable.TryGetValue(type, out previous))
+                    {
+                        miToValueTable.Add(type, converter);
+                        previous = InternalCheckConverter(type);
+                    }
+                    else if (!object.Equals(previous, converter))
+                    {
+                        miToValueTable[type] = converter;
+                        miToValueKeyMemberTable.Remove(type);
+                        miToValueConverterTable.Remove(type);
+                        previous = InternalCheckConverter(type);
+                    }
                 }
             }
         }

@@ -14,6 +14,7 @@
     using System.Net.Sockets;
     using System.Reflection;
     using System.Text;
+    using System.Linq;
     using NSJSStream = nsjsdotnet.Runtime.Systematic.IO.Stream;
 
     public static class ObjectAuxiliary
@@ -845,52 +846,7 @@
 
         public static NSJSValue ToObject(NSJSVirtualMachine machine, object obj)
         {
-            if (machine == null)
-            {
-                return null;
-            }
-            if (obj == null)
-            {
-                return NSJSValue.Null(machine);
-            }
-            Type owner = obj.GetType();
-            NSJSObject objective = NSJSObject.New(machine);
-            foreach (PropertyInfo pi in owner.GetProperties())
-            {
-                object value = pi.GetValue(obj, null);
-                NSJSValue result = null;
-                try
-                {
-                    do
-                    {
-                        if (value == null)
-                        {
-                            break;
-                        }
-                        Type clazz = pi.PropertyType;
-                        Type element = TypeTool.GetArrayElement(clazz);
-                        if (element == null && value is IList)
-                        {
-                            result = ArrayAuxiliary.ToArray(machine, element, (IList)value);
-                        }
-                        else if (TypeTool.IsBasicType(clazz) && !TypeTool.IsIPAddress(clazz))
-                        {
-                            result = value.As(machine);
-                        }
-                        else
-                        {
-                            result = ToObject(machine, value);
-                        }
-                    } while (false);
-                }
-                catch (Exception) { }
-                if (result == null)
-                {
-                    result = NSJSValue.Null(machine);
-                }
-                objective.Set(pi.Name, result);
-            }
-            return objective;
+            return SimpleAgent.ToObject(machine, obj);
         }
 
         public static int Fill(NSJSValue source, NSJSValue destination)
