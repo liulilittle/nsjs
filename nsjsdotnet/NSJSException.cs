@@ -100,25 +100,6 @@
             return new NSJSException(machine, exception);
         }
 
-        public NSJSException(NSJSVirtualMachine machine) : this(machine, (string)null)
-        {
-
-        }
-
-        public NSJSException(NSJSVirtualMachine machine, string message)
-        {
-            if (machine == null)
-            {
-                throw new ArgumentNullException("machine");
-            }
-            if (string.IsNullOrEmpty(message))
-            {
-                message = this.GetType().Name;
-            }
-            this.VirtualMachine = machine;
-            this.exception_message = message;
-        }
-
         private NSJSException(NSJSVirtualMachine machine, NSJSStructural.NSJSExceptionInfo* exception) 
         {
             if (exception == null)

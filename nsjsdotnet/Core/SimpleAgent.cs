@@ -11,8 +11,9 @@
     using System.Net;
     using System.Net.Mail;
     using System.Reflection;
+    using System.Threading;
 
-    public class SimpleAgent
+    public abstract class SimpleAgent
     {
         private static string K<T>(string name)
         {
@@ -98,6 +99,7 @@
         private static readonly IDictionary<Type, IDictionary<string, MemberInfo>> miToValueKeyMemberTable = new Dictionary<Type, IDictionary<string, MemberInfo>>();
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private static readonly object syncobj = new object();
+        private static readonly IDictionary<Thread, LocalDataStoreSlot> ldssThreadTable = new Dictionary<Thread, LocalDataStoreSlot>();
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly static IDictionary<Type, NetToObjectCallables> netToObjectCallablesTable = new Dictionary<Type, NetToObjectCallables>();
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -124,14 +126,19 @@
             {
                 throw new InvalidProgramException("The arguments parameter is one that cannot be null, but its value is null");
             }
-            try
+            SetCallingArguments(arguments);
+            do
             {
-                e(arguments);
-            }
-            catch (Exception exception)
-            {
-                Throwable.Exception(arguments.VirtualMachine, exception);
-            }
+                try
+                {
+                    e(arguments);
+                }
+                catch (Exception exception)
+                {
+                    Throwable.Exception(arguments.VirtualMachine, exception);
+                }
+            } while (false);
+            SetCallingArguments(null);
         };
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private static readonly NSJSFunctionCallback FDEFAULTDISPOSE = NSJSPinnedCollection.Pinned<NSJSFunctionCallback>((info) =>
@@ -139,12 +146,17 @@
             NSJSFunctionCallbackInfo arguments = NSJSFunctionCallbackInfo.From(info);
             if (arguments != null)
             {
-                System.IDisposable disposable;
-                NSJSKeyValueCollection.Release(arguments.This, out disposable);
-                if (disposable != null)
+                SetCallingArguments(arguments);
+                do
                 {
-                    disposable.Dispose();
-                }
+                    System.IDisposable disposable = NSJSKeyValueCollection.Get<System.IDisposable>(arguments.This);
+                    if (disposable != null)
+                    {
+                        disposable.Dispose();
+                    }
+                    ObjectAuxiliary.RemoveInKeyValueCollection(arguments.This);
+                } while (false);
+                SetCallingArguments(null);
             }
         });
 
@@ -577,6 +589,36 @@
                     fnCompilerCaches.Add(key, callback);
                     return callback;
                 }
+            }
+        }
+
+        public static NSJSFunctionCallbackInfo GetCallingArguments()
+        {
+            lock (ldssThreadTable)
+            {
+                Thread key = Thread.CurrentThread;
+                LocalDataStoreSlot slot;
+                if (!ldssThreadTable.TryGetValue(key, out slot))
+                {
+                    return null;
+                }
+                return Thread.GetData(slot) as NSJSFunctionCallbackInfo;
+            }
+        }
+
+        private static void SetCallingArguments(NSJSFunctionCallbackInfo arguemnts)
+        {
+            lock (ldssThreadTable)
+            {
+                Thread key = Thread.CurrentThread;
+                LocalDataStoreSlot slot;
+                if (!ldssThreadTable.TryGetValue(key, out slot))
+                {
+                    slot = Thread.AllocateDataSlot();
+                    ldssThreadTable.Add(key, slot);
+                }
+                ldssThreadTable[key] = slot;
+                Thread.SetData(slot, arguemnts);
             }
         }
 
