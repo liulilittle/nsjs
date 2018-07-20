@@ -435,7 +435,7 @@
                     }
                     netToObjectCallablesTable.Add(owner, callables);
                 }
-                if (callables == null ||  (callables.funcs == null && 
+                if (callables == null || (callables.funcs == null &&
                     callables.disposable == null && callables.props == null))
                 {
                     return null;
@@ -571,6 +571,55 @@
                 localvar.Add(Expression.Variable(p.ParameterType, p.Name));
             }
             return localvar;
+        }
+
+        public static IDictionary<MethodInfo, NSJSFunctionCallback> Complier<T>()
+        {
+            return Complier(typeof(T));
+        }
+
+        public static IDictionary<MethodInfo, NSJSFunctionCallback> Complier(Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type does not allow null values to be entered");
+            }
+            if (!typeof(IInvocationHandler).IsAssignableFrom(type))
+            {
+                throw new ArgumentOutOfRangeException("type is not derived from the IInvocationHandler interface");
+            }
+            IDictionary<MethodInfo, NSJSFunctionCallback> s = new Dictionary<MethodInfo, NSJSFunctionCallback>();
+            NetToObjectCallables callables = InternalCheckNetToObjectCallables(type);
+            if (callables == null || (callables.funcs == null &&
+                    callables.disposable == null && callables.props == null))
+            {
+                return s;
+            }
+            if (callables.funcs != null)
+            {
+                foreach (MethodInfo m in callables.funcs)
+                {
+                    s.Add(m, NSJSPinnedCollection.Pinned(Complier(m)));
+                }
+            }
+            if (callables.props != null)
+            {
+                foreach (PropertyInfo p in callables.props)
+                {
+                    MethodInfo gm = p.GetGetMethod();
+                    if (gm != null)
+                    {
+                        s.Add(gm, NSJSPinnedCollection.Pinned(Complier(gm)));
+                    }
+                    MethodInfo sm = p.GetSetMethod();
+                    if (sm != null)
+                    {
+                        s.Add(sm, NSJSPinnedCollection.Pinned(Complier(sm)));
+                    }
+                }
+            }
+            s.Add(typeof(System.IDisposable).GetMethod("Dispose"), FDEFAULTDISPOSE);
+            return s;
         }
 
         public static NSJSFunctionCallback Complier(MethodInfo m)
