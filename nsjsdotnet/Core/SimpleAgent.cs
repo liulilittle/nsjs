@@ -358,7 +358,7 @@
                 MethodInfo miSetReturnValue = typeof(NSJSFunctionCallbackInfo).GetMethod("SetReturnValue", new[] { m.ReturnType });
                 if (miSetReturnValue != null)
                 {
-                    expression = Expression.Call(self, miSetReturnValue, expression);
+                    expression = Expression.Call(arguments, miSetReturnValue, expression);
                 }
                 else
                 {
@@ -379,7 +379,8 @@
         private class NetToObjectCallables
         {
             public Type disposable;
-            public ISet<MethodInfo> callables;
+            public ISet<MethodInfo> funcs;
+            public ISet<PropertyInfo> props;
         }
 
         private static NetToObjectCallables InternalCheckNetToObjectCallables(Type owner)
@@ -389,47 +390,53 @@
                 NetToObjectCallables callables;
                 if (!netToObjectCallablesTable.TryGetValue(owner, out callables))
                 {
-                    ISet<MethodInfo> props = new HashSet<MethodInfo>();
-                    foreach (PropertyInfo pi in owner.GetProperties())
-                    {
-                        MethodInfo mi = pi.GetGetMethod();
-                        if (mi != null)
-                        {
-                            props.Add(mi);
-                        }
-                        mi = pi.GetSetMethod();
-                        if (mi != null)
-                        {
-                            props.Add(mi);
-                        }
-                    }
-                    Type disposable = owner.GetInterface(typeof(System.IDisposable).FullName);
-                    ISet<MethodInfo> methods = new HashSet<MethodInfo>();
-                    foreach (MethodInfo m in owner.GetMethods())
-                    {
-                        if (m.DeclaringType == typeof(object))
-                        {
-                            continue;
-                        }
-                        if (disposable != null && m.Name == "Dispose")
-                        {
-                            continue;
-                        }
-                        if (props.Contains(m))
-                        {
-                            continue;
-                        }
-                        methods.Add(m);
-                    }
                     callables = new NetToObjectCallables();
-                    if (methods.Count > 0)
+                    if (typeof(IInvocationHandler).IsAssignableFrom(owner))
                     {
-                        callables.callables = methods;
+                        ISet<MethodInfo> filterprops = new HashSet<MethodInfo>();
+                        ISet<PropertyInfo> props = new HashSet<PropertyInfo>();
+                        foreach (PropertyInfo pi in owner.GetProperties())
+                        {
+                            MethodInfo mi = pi.GetGetMethod();
+                            if (mi != null)
+                            {
+                                filterprops.Add(mi);
+                            }
+                            mi = pi.GetSetMethod();
+                            if (mi != null)
+                            {
+                                filterprops.Add(mi);
+                            }
+                            props.Add(pi);
+                        }
+                        Type disposable = owner.GetInterface(typeof(System.IDisposable).FullName);
+                        ISet<MethodInfo> methods = new HashSet<MethodInfo>();
+                        foreach (MethodInfo m in owner.GetMethods())
+                        {
+                            if (disposable != null && m.Name == "Dispose")
+                            {
+                                continue;
+                            }
+                            if (filterprops.Contains(m))
+                            {
+                                continue;
+                            }
+                            methods.Add(m);
+                        }
+                        if (methods.Count > 0)
+                        {
+                            callables.funcs = methods;
+                        }
+                        if (props.Count > 0)
+                        {
+                            callables.props = props;
+                        }
+                        callables.disposable = disposable;
                     }
-                    callables.disposable = disposable;
                     netToObjectCallablesTable.Add(owner, callables);
                 }
-                if (callables.callables == null && callables.disposable == null)
+                if (callables == null ||  (callables.funcs == null && 
+                    callables.disposable == null && callables.props == null))
                 {
                     return null;
                 }
@@ -496,9 +503,34 @@
             NetToObjectCallables callables = InternalCheckNetToObjectCallables(owner);
             if (callables != null)
             {
-                foreach (MethodInfo m in callables.callables)
+                if (callables.funcs != null)
                 {
-                    objective.Set(m.Name, NSJSPinnedCollection.Pinned(Complier(m)));
+                    foreach (MethodInfo m in callables.funcs)
+                    {
+                        objective.Set(m.Name, NSJSPinnedCollection.Pinned(Complier(m)));
+                    }
+                }
+                if (callables.props != null)
+                {
+                    foreach (PropertyInfo p in callables.props)
+                    {
+                        MethodInfo gm = p.GetGetMethod();
+                        NSJSFunctionCallback get = null;
+                        NSJSFunctionCallback set = null;
+                        if (gm != null)
+                        {
+                            get = NSJSPinnedCollection.Pinned(Complier(gm));
+                        }
+                        MethodInfo sm = p.GetSetMethod();
+                        if (sm != null)
+                        {
+                            set = NSJSPinnedCollection.Pinned(Complier(sm));
+                        }
+                        if (set != null || get != null)
+                        {
+                            objective.DefineProperty(p.Name, get, set);
+                        }
+                    }
                 }
                 objective.Set("Dispose", FDEFAULTDISPOSE);
                 if (!objective.IsDefined("Close"))

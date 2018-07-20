@@ -103,6 +103,7 @@
     <Compile Include="Core\Hooking\VirtualProxyHooker.cs" />
     <Compile Include="Core\Hooking\VirtualProxyInvoker.cs" />
     <Compile Include="Core\IDisposable.cs" />
+    <Compile Include="Core\IInvocationHandler.cs" />
     <Compile Include="Core\IRelational.cs" />
     <Compile Include="Core\Net\MailClient.cs" />
     <Compile Include="Core\Net\WebSocket\CloseEventArgs.cs" />
@@ -153,6 +154,7 @@
     <Compile Include="Core\Threading\Waitable.cs" />
     <Compile Include="Core\Throwable.cs" />
     <Compile Include="Core\Utilits\Attributes.cs" />
+    <Compile Include="Core\Utilits\MSIL.cs" />
     <Compile Include="Core\Utilits\ModelConverter.cs" />
     <Compile Include="Core\Utilits\ModelConverterAttribute.cs" />
     <Compile Include="Core\Utilits\Hash32.cs" />

@@ -32,7 +32,7 @@
                 {
                     key = GetObjectIdentity(dd);
                     dd.TryAdd(key, value);
-                    SetObjectIdentity(obj, key);
+                    obj.Set(RUNTIME_OBJECTID_PROPERTYKEY, key);
                 }
                 return true;
             }
@@ -60,15 +60,6 @@
                 key = Interlocked.Increment(ref seedofobjectid);
             } while (key == 0 || objects.ContainsKey(key));
             return key;
-        }
-
-        protected static bool SetObjectIdentity(NSJSObject obj, int key)
-        {
-            if (obj == null)
-            {
-                throw new ArgumentNullException("obj");
-            }
-            return obj.Set(RUNTIME_OBJECTID_PROPERTYKEY, key);
         }
 
         public static IEnumerable<NSJSVirtualMachine> GetAllVirtualMachine()
