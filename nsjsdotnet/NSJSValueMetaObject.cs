@@ -58,6 +58,16 @@
                 BindingRestrictions.GetTypeRestriction(base.Expression, base.LimitType));
         }
 
+        public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value)
+        {
+            return new DynamicMetaObject(Expression.Call(Expression.Constant(this.f_SetValue),
+                "Invoke", null,
+                Expression.Constant(value.LimitType),
+                Expression.Constant(binder.Name),
+                Expression.Convert(Expression.Constant(value.Value), typeof(object))),
+                BindingRestrictions.GetTypeRestriction(base.Expression, base.LimitType));
+        }
+
         public override IEnumerable<string> GetDynamicMemberNames()
         {
             NSJSObject owner = this.Value as NSJSObject;
@@ -65,7 +75,7 @@
             {
                 return new string[0];
             }
-            return owner.GetAllKeys();
+            return owner.GetPropertyNames();
         }
 
         public virtual object GetValue(Type type, string key)
