@@ -1,10 +1,12 @@
 ﻿namespace nsjsdotnet
 {
     using System;
-    using System.Runtime.InteropServices;
     using System.Diagnostics;
+    using System.Dynamic;
+    using System.Linq.Expressions;
+    using System.Runtime.InteropServices;
 
-    public unsafe class NSJSValue : IDisposable
+    public unsafe class NSJSValue : System.IDisposable, IDynamicMetaObjectProvider
     {
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static sbyte* nsjs_localvalue_get_string(IntPtr localValue, ref int len);
@@ -341,6 +343,11 @@
                 throw new InvalidOperationException("machine");
             }
             return undefined ? machine.Undefined() : machine.Null();
+        }
+
+        public virtual DynamicMetaObject GetMetaObject(Expression expression)
+        {
+            return new NSJSValueMetaObject(this, expression); 
         }
     }
 }

@@ -286,13 +286,11 @@
             {
                 return null;
             }
-            if ((value.DateType & NSJSDataType.kFunction) > 0)
+            if ((value.DateType & NSJSDataType.kFunction) > 0 ||
+                (value.DateType & NSJSDataType.kArray) > 0 ||
+                (value.DateType & NSJSDataType.kObject) > 0)
             {
-                return null;
-            }
-            if ((value.DateType & NSJSDataType.kArray) > 0)
-            {
-                return ArrayAuxiliary.ToArray(value as NSJSArray);
+                return value;
             }
             return value.GetValue();
         }
@@ -306,6 +304,10 @@
             if (value == null)
             {
                 return NSJSValue.Null(machine);
+            }
+            if (value is NSJSValue)
+            {
+                return value as NSJSValue;
             }
             Type typeid = value.GetType();
             if (typeid == typeof(int) ||

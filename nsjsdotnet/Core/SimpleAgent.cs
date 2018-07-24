@@ -15,6 +15,11 @@
 
     public abstract class SimpleAgent
     {
+        public interface IInvocationHandler
+        {
+
+        }
+
         private static string K<T>(string name)
         {
             return K(typeof(T), name);
@@ -362,8 +367,8 @@
                 }
                 else
                 {
-                    MethodInfo miToValue = typeof(SimpleAgent).GetMethod("ToValue", BindingFlags.NonPublic | BindingFlags.Static, null,
-                        new[] { typeof(NSJSFunctionCallbackInfo), typeof(object) }, null).MakeGenericMethod(m.ReturnType);
+                    MethodInfo miToValue = typeof(SimpleAgent).GetMethod("ToObject", BindingFlags.NonPublic | BindingFlags.Static, null,
+                        new[] { typeof(NSJSFunctionCallbackInfo), typeof(object) }, null);
                     expression = Expression.Call(miToValue, arguments, expression);
                     expression = Expression.Call(arguments, typeof(NSJSFunctionCallbackInfo).GetMethod("SetReturnValue", new[] { typeof(NSJSValue) }), expression);
                 }
@@ -371,9 +376,13 @@
             return expression;
         }
 
-        protected internal static NSJSValue ToValue<T>(NSJSFunctionCallbackInfo arguemnts, object value)
+        protected internal static NSJSValue ToObject(NSJSFunctionCallbackInfo arguemnts, object obj)
         {
-            return ToObject(arguemnts.VirtualMachine, value);
+            if (arguemnts == null)
+            {
+                throw new ArgumentNullException("arguemnts");
+            }
+            return ToObject(arguemnts.VirtualMachine, obj);
         }
 
         private class NetToObjectCallables

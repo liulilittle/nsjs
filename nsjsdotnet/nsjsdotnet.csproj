@@ -103,7 +103,6 @@
     <Compile Include="Core\Hooking\VirtualProxyHooker.cs" />
     <Compile Include="Core\Hooking\VirtualProxyInvoker.cs" />
     <Compile Include="Core\IDisposable.cs" />
-    <Compile Include="Core\IInvocationHandler.cs" />
     <Compile Include="Core\IRelational.cs" />
     <Compile Include="Core\Net\MailClient.cs" />
     <Compile Include="Core\Net\WebSocket\CloseEventArgs.cs" />
@@ -185,6 +184,7 @@
     <Compile Include="NSJSStackFrame.cs" />
     <Compile Include="NSJSStackTrace.cs" />
     <Compile Include="NSJSStructural.cs" />
+    <Compile Include="NSJSValueMetaObject.cs" />
     <Compile Include="Runtime\FrameworkScript.cs" />
     <Compile Include="Runtime\Global.cs" />
     <Compile Include="Runtime\Systematic\BitConverter.cs" />
