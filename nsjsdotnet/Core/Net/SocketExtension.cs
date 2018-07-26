@@ -356,7 +356,7 @@
 
         public static bool Send(Socket s, byte[] buffer, int ofs, int size)
         {
-            return SocketExtension.Send(s, buffer, ofs, size);
+            return SocketExtension.Send(s, buffer, ofs, size, 0);
         }
 
         public static bool Send(Socket s, byte[] buffer, int ofs, int size, SocketFlags flags)
@@ -393,7 +393,7 @@
 
         public static bool SendTo(Socket s, byte[] buffer, int ofs, int size, EndPoint remoteEP)
         {
-            return SocketExtension.SendTo(s, buffer, ofs, size, remoteEP);
+            return SocketExtension.SendTo(s, buffer, ofs, size, 0, remoteEP);
         }
 
         public static bool SendTo(Socket s, byte[] buffer, int ofs, int size, SocketFlags flags, EndPoint remoteEP)
