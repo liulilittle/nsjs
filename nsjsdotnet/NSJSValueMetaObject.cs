@@ -5,11 +5,13 @@
     using System.Collections.Generic;
     using System.Dynamic;
     using System.Linq.Expressions;
+    using Converter = System.Convert;
 
     public class NSJSValueMetaObject : DynamicMetaObject
     {
         private readonly Func<Type, string, object, object> f_SetValue = null;
         private readonly Func<Type, string, object> f_GetValue = null;
+        private readonly Func<Type, object> f_Convert = null;
 
         public NSJSValueMetaObject(NSJSValue value, Expression expression) :
             base(expression, BindingRestrictions.Empty, value)
@@ -20,6 +22,97 @@
                 this.SetValue(a1, a2, a3);
                 return this.Value;
             };
+            this.f_Convert = this.Convert;
+        }
+
+        private object Convert(Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+            object value = this.GetValue(type, (NSJSValue)this.Value);
+            if (type == typeof(int))
+            {
+                value = Converter.ToInt32(value ?? 0);
+            }
+            else if (type == typeof(uint))
+            {
+                value = Converter.ToUInt32(value ?? 0);
+            }
+            else if (type == typeof(short))
+            {
+                value = Converter.ToInt16(value ?? 0);
+            }
+            else if (type == typeof(ushort))
+            {
+                value = Converter.ToUInt16(value ?? 0);
+            }
+            else if (type == typeof(sbyte))
+            {
+                value = Converter.ToSByte(value ?? 0);
+            }
+            else if (type == typeof(byte))
+            {
+                value = Converter.ToByte(value ?? 0);
+            }
+            else if (type == typeof(long))
+            {
+                value = Converter.ToInt64(value ?? 0);
+            }
+            else if (type == typeof(ulong))
+            {
+                value = Converter.ToUInt64(value ?? 0);
+            }
+            else if (type == typeof(float))
+            {
+                value = Converter.ToSingle(value ?? 0);
+            }
+            else if (type == typeof(double))
+            {
+                value = Converter.ToDouble(value ?? 0);
+            }
+            else if (type == typeof(decimal))
+            {
+                value = Converter.ToDecimal(value ?? 0);
+            }
+            else if (type == typeof(char))
+            {
+                value = Converter.ToChar(value ?? 0);
+            }
+            else if (type == typeof(DateTime))
+            {
+                long ticks = 0;
+                if (value is long)
+                {
+                    ticks = (long)value;
+                }
+                else if (value != null)
+                {
+                    ticks = Converter.ToInt64(value);
+                }
+                value = NSJSDateTime.LocalDateToDateTime(ticks);
+            }
+            else if (type == typeof(string))
+            {
+                if (value == null)
+                {
+                    value = null;
+                }
+                else if (!(value is string))
+                {
+                    value = value.ToString();
+                }
+            }
+            return value;
+        }
+
+        public override DynamicMetaObject BindConvert(ConvertBinder binder)
+        {
+            Expression expression = Expression.Convert(Expression.Call(Expression.Constant(this.f_Convert),
+                "Invoke", null, new[] { Expression.Constant(binder.Type) }), binder.Type);
+            return new DynamicMetaObject(expression,
+                BindingRestrictions.GetTypeRestriction(base.Expression, base.LimitType));
         }
 
         public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
@@ -98,7 +191,12 @@
             {
                 value = owner.Get(key);
             }
-            if (value == null || value.IsNullOrUndfined)
+            return this.GetValue(type, value);
+        }
+
+        protected virtual object GetValue(Type type, NSJSValue value)
+        {
+            if (type == null || value == null || value.IsNullOrUndfined)
             {
                 return null;
             }
