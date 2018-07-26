@@ -34,51 +34,51 @@
             object value = this.GetValue(type, (NSJSValue)this.Value);
             if (type == typeof(int))
             {
-                value = Converter.ToInt32(value ?? 0);
+                value = (value == null ? 0 : Converter.ToInt32(value));
             }
             else if (type == typeof(uint))
             {
-                value = Converter.ToUInt32(value ?? 0);
+                value = (value == null ? 0u : Converter.ToUInt32(value));
             }
             else if (type == typeof(short))
             {
-                value = Converter.ToInt16(value ?? 0);
+                value = (value == null ? (short)0 : Converter.ToInt16(value));
             }
             else if (type == typeof(ushort))
             {
-                value = Converter.ToUInt16(value ?? 0);
+                value = (value == null ? (ushort)0 : Converter.ToUInt16(value));
             }
             else if (type == typeof(sbyte))
             {
-                value = Converter.ToSByte(value ?? 0);
+                value = (value == null ? (sbyte)0 : Converter.ToSByte(value));
             }
             else if (type == typeof(byte))
             {
-                value = Converter.ToByte(value ?? 0);
+                value = (value == null ? (byte)0 : Converter.ToByte(value));
             }
             else if (type == typeof(long))
             {
-                value = Converter.ToInt64(value ?? 0);
+                value = (value == null ? 0L : Converter.ToInt64(value));
             }
             else if (type == typeof(ulong))
             {
-                value = Converter.ToUInt64(value ?? 0);
+                value = (value == null ? 0ul : Converter.ToUInt64(value));
             }
             else if (type == typeof(float))
             {
-                value = Converter.ToSingle(value ?? 0);
+                value = (value == null ? 0f : Converter.ToSingle(value));
             }
             else if (type == typeof(double))
             {
-                value = Converter.ToDouble(value ?? 0);
+                value = (value == null ? 0d : Converter.ToDouble(value));
             }
             else if (type == typeof(decimal))
             {
-                value = Converter.ToDecimal(value ?? 0);
+                value = (value == null ? 0m : Converter.ToDecimal(value));
             }
             else if (type == typeof(char))
             {
-                value = Converter.ToChar(value ?? 0);
+                value = (value == null ? '\0' : Converter.ToChar(value));
             }
             else if (type == typeof(DateTime))
             {
