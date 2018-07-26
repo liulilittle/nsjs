@@ -25,7 +25,7 @@
             this.f_Convert = this.Convert;
         }
 
-        private object Convert(Type type)
+        protected virtual object Convert(Type type)
         {
             if (type == null)
             {
