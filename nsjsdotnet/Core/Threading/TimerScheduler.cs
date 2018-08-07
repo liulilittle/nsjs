@@ -71,7 +71,7 @@
                             {
                                 break;
                             }
-                            DateTime? lt = t._lasttime;
+                            DateTime? lt = t.lasttime;
                             if (lt == null)
                             {
                                 break;
@@ -81,7 +81,7 @@
                             {
                                 break;
                             }
-                            t._lasttime = DateTime.Now;
+                            t.lasttime = DateTime.Now;
                             t.DoTickEvent();
                         } while (false);
                         Waitable.usleep(25);

@@ -4,11 +4,10 @@
 
     public class Timer : IDisposable
     {
-        private TimerScheduler _scheduler;
-        private bool _enabled;
-        private bool _disposed;
-        public DateTime? _lasttime;
-        private int _interval;
+        private TimerScheduler scheduler;
+        private bool enabled;
+        public DateTime? lasttime;
+        private int interval;
 
         public event EventHandler Tick;
 
@@ -29,7 +28,7 @@
         {
             get
             {
-                return _scheduler;
+                return scheduler;
             }
         }
 
@@ -54,7 +53,7 @@
             {
                 throw new ArgumentNullException("scheduler");
             }
-            _scheduler = scheduler;
+            this.scheduler = scheduler;
         }
 
         ~Timer()
@@ -62,28 +61,14 @@
             this.Dispose();
         }
 
-        private void RequereOrThrowObjectDisposedException()
-        {
-            bool disposed = false;
-            lock (this)
-            {
-                disposed = _disposed;
-            }
-            if (disposed)
-            {
-                throw new ObjectDisposedException(typeof(Timer).Name);
-            }
-        }
-
         public int Interval
         {
             get
             {
-                return _interval;
+                return interval;
             }
             set
             {
-                RequereOrThrowObjectDisposedException();
                 if (value < 0)
                 {
                     throw new ArgumentOutOfRangeException("value");
@@ -91,7 +76,7 @@
                 lock (this)
                 {
                     int original = value;
-                    _interval = value;
+                    interval = value;
                     if (original != value)
                     {
                         this.Enabled = (value > 0);
@@ -104,30 +89,28 @@
         {
             get
             {
-                RequereOrThrowObjectDisposedException();
                 lock (this)
                 {
-                    return _enabled;
+                    return enabled;
                 }
             }
             set
             {
-                RequereOrThrowObjectDisposedException();
                 lock (this)
                 {
-                    bool original = _enabled;
-                    _enabled = value;
+                    bool original = enabled;
+                    enabled = value;
                     if (original != value)
                     {
                         if (value)
                         {
-                            _lasttime = DateTime.Now;
-                            _scheduler.Start(this);
+                            lasttime = DateTime.Now;
+                            scheduler.Start(this);
                         }
                         else
                         {
-                            _lasttime = null;
-                            _scheduler.Stop(this);
+                            lasttime = null;
+                            scheduler.Stop(this);
                         }
                     }
                 }
@@ -137,10 +120,6 @@
         public void Dispose()
         {
             this.Enabled = false;
-            lock (this)
-            {
-                _disposed = true;
-            }
             GC.SuppressFinalize(this);
         }
 
