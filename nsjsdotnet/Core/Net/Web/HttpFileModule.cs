@@ -85,7 +85,7 @@
             }
             try
             {
-                response.ContentType = HttpContentTypes.Get(ext = ext.ToLower());
+                response.ContentType = HttpContentTypeTable.Get(ext = ext.ToLower());
                 if (string.IsNullOrEmpty(response.ContentType))
                 {
                     response.ContentType = "application/octet-stream";

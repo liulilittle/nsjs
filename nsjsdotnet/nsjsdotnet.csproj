@@ -120,7 +120,7 @@
     <Compile Include="Core\Net\WebSocket\WebSocketSessionHandshake.cs" />
     <Compile Include="Core\Net\Web\HttpApplication.cs" />
     <Compile Include="Core\Net\Web\HttpCommunication.cs" />
-    <Compile Include="Core\Net\Web\HttpContentTypes.cs" />
+    <Compile Include="Core\Net\Web\HttpContentTypeTable.cs" />
     <Compile Include="Core\Net\Web\HttpContext.cs" />
     <Compile Include="Core\Net\Web\HttpFileCollection.cs" />
     <Compile Include="Core\Net\Web\HttpFileModule.cs" />

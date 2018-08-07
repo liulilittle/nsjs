@@ -1,13 +1,13 @@
 ﻿namespace nsjsdotnet.Core.Net.Web
 {
     using System.Collections.Generic;
+    using System.Collections.Concurrent;
 
-    public static class HttpContentTypes
+    public static class HttpContentTypeTable
     {
-        private static IDictionary<string, string> g_ContentTypeTables = new Dictionary<string, string>()
+        private static IDictionary<string, string> g_ContentTypeTables = new ConcurrentDictionary<string, string>(new Dictionary<string, string>()
         {
             { ".*", "application/octet-stream" },
-            { ".tif", "image/tiff" },
             { ".001", "application/x-001" },
             { ".301", "application/x-301" },
             { ".323", "text/h323" },
@@ -270,9 +270,12 @@
             { ".tdf", "application/x-tdf" },
             { ".tg4", "application/x-tg4" },
             { ".tga", "application/x-tga" },
-            //{ ".tif", "image/tiff" },
+            { ".tif", "image/tiff" },
             //{ ".tif", "application/x-tif" },
             { ".tiff", "image/tiff" },
+            { ".ttf", "application/x-font-ttf" },
+            { ".ttc", "application/x-font-ttf" },
+            { ".ttx", "application/x-font-ttx" },
             { ".tld", "text/xml" },
             { ".top", "drawing/x-top" },
             { ".torrent", "application/x-bittorrent" },
@@ -321,7 +324,7 @@
             { ".wr1", "application/x-wr1" },
             { ".wri", "application/x-wri" },
             { ".wrk", "application/x-wrk" },
-        };
+        });
 
         public static IEnumerable<KeyValuePair<string, string>> GetAllKeyValue()
         {
@@ -353,7 +356,12 @@
             }
             lock (g_ContentTypeTables)
             {
-                return g_ContentTypeTables[extension] as string;
+                string szContentType;
+                if (!g_ContentTypeTables.TryGetValue(extension, out szContentType))
+                {
+                    return null;
+                }
+                return szContentType;
             }
         }
     }
