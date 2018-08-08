@@ -7,7 +7,8 @@
 
     public class TimerScheduler : IDisposable
     {
-        private static readonly TimerScheduler _default = new TimerScheduler();
+        private static readonly object _syncobj = new object();
+        private static TimerScheduler _default = null;
 
         private Thread _mta;
         private bool _disposed;
@@ -19,7 +20,14 @@
         {
             get
             {
-                return _default;
+                lock (_syncobj)
+                {
+                    if (_default == null)
+                    {
+                        _default = new TimerScheduler();
+                    }
+                    return _default;
+                }
             }
         }
 
