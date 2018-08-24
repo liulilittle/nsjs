@@ -295,6 +295,26 @@
             return value.GetValue();
         }
 
+        public static T FetchValue<T>(this NSJSValue value)
+        {
+            return (T)FetchValue(value, typeof(T));
+        }
+
+        public static object FetchValue(this NSJSValue value, Type type)
+        {
+            return NSJSValueMetaObject.FetchValue(type, value);
+        }
+
+        public static T ConvertValue<T>(this NSJSValue value)
+        {
+            return (T)ConvertValue(value, typeof(T));
+        }
+
+        public static object ConvertValue(this NSJSValue value, Type type)
+        {
+            return NSJSValueMetaObject.ConvertValue(type, value);
+        }
+
         public static NSJSValue As(this object value, NSJSVirtualMachine machine)
         {
             if (machine == null)

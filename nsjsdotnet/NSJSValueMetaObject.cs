@@ -27,84 +27,89 @@
 
         protected virtual object Convert(Type type)
         {
+            return ConvertValue(type, this.Value as NSJSValue);
+        }
+
+        protected static internal object ConvertValue(Type type, NSJSValue value)
+        {
             if (type == null)
             {
                 throw new ArgumentNullException("type");
             }
-            object value = this.GetValue(type, (NSJSValue)this.Value);
+            object o = FetchValue(type, value);
             if (type == typeof(int))
             {
-                value = (value == null ? 0 : Converter.ToInt32(value));
+                o = (o == null ? 0 : Converter.ToInt32(o));
             }
             else if (type == typeof(uint))
             {
-                value = (value == null ? 0u : Converter.ToUInt32(value));
+                o = (o == null ? 0u : Converter.ToUInt32(o));
             }
             else if (type == typeof(short))
             {
-                value = (value == null ? (short)0 : Converter.ToInt16(value));
+                o = (o == null ? (short)0 : Converter.ToInt16(o));
             }
             else if (type == typeof(ushort))
             {
-                value = (value == null ? (ushort)0 : Converter.ToUInt16(value));
+                o = (o == null ? (ushort)0 : Converter.ToUInt16(o));
             }
             else if (type == typeof(sbyte))
             {
-                value = (value == null ? (sbyte)0 : Converter.ToSByte(value));
+                o = (o == null ? (sbyte)0 : Converter.ToSByte(o));
             }
             else if (type == typeof(byte))
             {
-                value = (value == null ? (byte)0 : Converter.ToByte(value));
+                o = (o == null ? (byte)0 : Converter.ToByte(o));
             }
             else if (type == typeof(long))
             {
-                value = (value == null ? 0L : Converter.ToInt64(value));
+                o = (o == null ? 0L : Converter.ToInt64(o));
             }
             else if (type == typeof(ulong))
             {
-                value = (value == null ? 0ul : Converter.ToUInt64(value));
+                o = (o == null ? 0ul : Converter.ToUInt64(o));
             }
             else if (type == typeof(float))
             {
-                value = (value == null ? 0f : Converter.ToSingle(value));
+                o = (o == null ? 0f : Converter.ToSingle(o));
             }
             else if (type == typeof(double))
             {
-                value = (value == null ? 0d : Converter.ToDouble(value));
+                o = (o == null ? 0d : Converter.ToDouble(o));
             }
             else if (type == typeof(decimal))
             {
-                value = (value == null ? 0m : Converter.ToDecimal(value));
+                o = (o == null ? 0m : Converter.ToDecimal(o));
             }
             else if (type == typeof(char))
             {
-                value = (value == null ? '\0' : Converter.ToChar(value));
+                o = (o == null ? '\0' : Converter.ToChar(o));
             }
             else if (type == typeof(DateTime))
             {
                 long ticks = 0;
-                if (value is long)
+                if (o is long)
                 {
-                    ticks = (long)value;
+                    ticks = (long)o;
                 }
-                else if (value != null)
+                else if (o != null)
                 {
-                    ticks = Converter.ToInt64(value);
+                    ticks = Converter.ToInt64(o);
                 }
-                value = NSJSDateTime.LocalDateToDateTime(ticks);
+                o = NSJSDateTime.LocalDateToDateTime(ticks);
             }
             else if (type == typeof(string))
             {
-                if (value == null)
+                if (o == null)
                 {
-                    value = null;
+                    o = null;
                 }
-                else if (!(value is string))
+                else if (!(o is string))
                 {
-                    value = value.ToString();
+                    o = o.ToString();
                 }
             }
-            return value;
+            return o;
         }
 
         public override DynamicMetaObject BindConvert(ConvertBinder binder)
@@ -195,6 +200,11 @@
         }
 
         protected virtual object GetValue(Type type, NSJSValue value)
+        {
+            return FetchValue(type, value);
+        }
+
+        protected internal static object FetchValue(Type type, NSJSValue value)
         {
             if (type == null || value == null || value.IsNullOrUndfined)
             {
