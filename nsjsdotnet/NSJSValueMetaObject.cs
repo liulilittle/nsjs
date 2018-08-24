@@ -1,4 +1,4 @@
-﻿namespace nsjsdotnet
+namespace nsjsdotnet
 {
     using nsjsdotnet.Core;
     using System;
@@ -221,7 +221,7 @@
             if ((value.DateType & NSJSDataType.kArray) > 0 ||
                 (value.DateType & NSJSDataType.kObject) > 0)
             {
-                Func<NSJSValue, object> converter = SimpleAgent.GetConverterBox(type);
+                Func<NSJSValue, object> converter = SimpleAgent.GetConverterBox(type, true);
                 return converter(value);
             }
             return value.GetValue();
