@@ -1,4 +1,4 @@
-﻿namespace nsjsdotnet.Core
+namespace nsjsdotnet.Core
 {
     using nsjsdotnet;
     using nsjsdotnet.Core.Utilits;
@@ -226,14 +226,14 @@
             return expressions;
         }
 
-        private static object InternalCheckConverter(Type type, int mode = 0)
+        private static object InternalCheckConverter(Type type, int mode = 0, bool ngen = true)
         {
             object converter = null;
             lock (syncobj)
             {
                 if (!miToValueTable.TryGetValue(type, out converter))
                 {
-                    if (mode == 1)
+                    if (!ngen && mode == 1)
                     {
                         return null;
                     }
@@ -719,11 +719,16 @@
 
         public static Func<NSJSValue, object> GetConverterBox(Type type)
         {
+            return GetConverterBox(type, false);
+        }
+
+        public static Func<NSJSValue, object> GetConverterBox(Type type, bool ngen)
+        {
             if (type == null)
             {
                 return null;
             }
-            return (Func<NSJSValue, object>)InternalCheckConverter(type, 1);
+            return (Func<NSJSValue, object>)InternalCheckConverter(type, 1, ngen);
         }
 
         public static IDictionary<Type, Delegate> GetAllConverter()
