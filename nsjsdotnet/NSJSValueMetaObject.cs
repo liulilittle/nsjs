@@ -206,7 +206,11 @@
 
         protected internal static object FetchValue(Type type, NSJSValue value)
         {
-            if (type == null || value == null || value.IsNullOrUndfined)
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+            if (value == null || value.IsNullOrUndfined)
             {
                 return null;
             }
