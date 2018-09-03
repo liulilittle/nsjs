@@ -315,6 +315,11 @@
             return NSJSValueMetaObject.ConvertValue(type, value);
         }
 
+        public static NSJSValue ToValue(this object obj, NSJSVirtualMachine machine)
+        {
+            return NSJSValueMetaObject.ConvertValue(machine, obj);
+        }
+
         public static NSJSValue As(this object value, NSJSVirtualMachine machine)
         {
             if (machine == null)

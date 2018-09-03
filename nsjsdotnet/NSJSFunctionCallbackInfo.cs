@@ -3,8 +3,10 @@
     using System;
     using System.Runtime.InteropServices;
     using System.Diagnostics;
+    using System.Collections.Generic;
+    using System.Collections;
 
-    public unsafe class NSJSFunctionCallbackInfo : EventArgs
+    public unsafe class NSJSFunctionCallbackInfo : EventArgs, IEnumerable<NSJSValue>
     {
         private static readonly IntPtr NULL = IntPtr.Zero;
 
@@ -638,6 +640,19 @@
                 return null;
             }
             return new NSJSFunctionCallbackInfo(handle);
+        }
+
+        public virtual IEnumerator<NSJSValue> GetEnumerator()
+        {
+            for (int i = 0; i < this.Length; i++)
+            {
+                yield return this[i];
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
         }
 
         public NSJSVirtualMachine VirtualMachine
