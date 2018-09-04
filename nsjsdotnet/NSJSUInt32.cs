@@ -172,19 +172,29 @@
             return New(x.VirtualMachine, ~x.Value);
         }
 
+        public static implicit operator uint(NSJSUInt32 x)
+        {
+            return x == null ? 0 : x.Value;
+        }
+
+        public static implicit operator long(NSJSUInt32 x)
+        {
+            return x == null ? 0 : x.Value;
+        }
+
+        public static implicit operator double(NSJSUInt32 x)
+        {
+            return x == null ? 0 : x.Value;
+        }
+
+        public static implicit operator decimal(NSJSUInt32 x)
+        {
+            return x == null ? 0 : x.Value;
+        }
+
         public static explicit operator int(NSJSUInt32 x)
         {
             return x == null ? 0 : Convert.ToInt32(x.Value);
-        }
-
-        public static implicit operator uint(NSJSUInt32 x)
-        {
-            uint r = 0;
-            if (x != null)
-            {
-                r = unchecked((uint)x.Value);
-            }
-            return r;
         }
 
         public static implicit operator bool(NSJSUInt32 x)

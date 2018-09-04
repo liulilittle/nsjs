@@ -62,21 +62,6 @@
             return base.Equals(obj);
         }
 
-        public static implicit operator double(NSJSInt64 x)
-        {
-            return x == null ? double.NaN : x.Value;
-        }
-
-        public static implicit operator long(NSJSInt64 x)
-        {
-            return x == null ? 0 : x.Value;
-        }
-
-        public static implicit operator decimal(NSJSInt64 x)
-        {
-            return x == null ? 0 : x.Value;
-        }
-
         public static bool operator ==(NSJSInt64 x, string y)
         {
             object ox = x;
@@ -202,6 +187,21 @@
                 return null;
             }
             return New(x.VirtualMachine, ~x.Value);
+        }
+
+        public static implicit operator double(NSJSInt64 x)
+        {
+            return x == null ? double.NaN : x.Value;
+        }
+
+        public static implicit operator long(NSJSInt64 x)
+        {
+            return x == null ? 0 : x.Value;
+        }
+
+        public static implicit operator decimal(NSJSInt64 x)
+        {
+            return x == null ? 0 : x.Value;
         }
 
         public static explicit operator int(NSJSInt64 x)

@@ -72,7 +72,7 @@
 
         public static implicit operator bool(NSJSBoolean x)
         {
-            return x ?? x.Value;
+            return x == null ? false : x.Value;
         }
 
         public static explicit operator ulong(NSJSBoolean x)

@@ -68,5 +68,200 @@
         {
             return this.Value.ToString();
         }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public static bool operator ==(NSJSDouble x, string y)
+        {
+            object ox = x;
+            if (ox == null && y == null)
+            {
+                return true;
+            }
+            else if (ox != null && y == null || ox == null && y != null)
+            {
+                return false;
+            }
+            return unchecked(x.ToString() == y);
+        }
+
+        public static bool operator !=(NSJSDouble x, string y)
+        {
+            return !(x == y);
+        }
+
+        public static NSJSDouble operator +(NSJSDouble x, double y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return New(x.VirtualMachine, x.Value + y);
+        }
+
+        public static NSJSDouble operator -(NSJSDouble x, double y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return New(x.VirtualMachine, x.Value - y);
+        }
+
+        public static NSJSDouble operator /(NSJSDouble x, double y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            var n = x.Value;
+            if (n != 0 && y != 0)
+            {
+                n /= y;
+            }
+            else
+            {
+                n = 0;
+            }
+            return New(x.VirtualMachine, n);
+        }
+
+        public static NSJSDouble operator *(NSJSDouble x, double y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return New(x.VirtualMachine, x.Value * y);
+        }
+
+        public static NSJSDouble operator %(NSJSDouble x, double y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return New(x.VirtualMachine, x.Value % y);
+        }
+
+        public static implicit operator double(NSJSDouble x)
+        {
+            return x == null ? double.NaN : x.Value;
+        }
+
+        public static explicit operator int(NSJSDouble x)
+        {
+            return x == null ? 0 : Convert.ToInt32(x.Value);
+        }
+
+        public static explicit operator long(NSJSDouble x)
+        {
+            return x == null ? 0 : Convert.ToInt64(x.Value);
+        }
+
+        public static explicit operator decimal(NSJSDouble x)
+        {
+            return x == null ? 0 : Convert.ToDecimal(x.Value);
+        }
+
+        public static explicit operator uint(NSJSDouble x)
+        {
+            uint r = 0;
+            if (x != null)
+            {
+                r = unchecked((uint)x.Value);
+            }
+            return r;
+        }
+
+        public static explicit operator ulong(NSJSDouble x)
+        {
+            ulong r = 0;
+            if (x != null)
+            {
+                r = unchecked((ulong)x.Value);
+            }
+            return r;
+        }
+
+        public static explicit operator byte(NSJSDouble x)
+        {
+            byte r = 0;
+            if (x != null)
+            {
+                r = Convert.ToByte(x.Value);
+            }
+            return r;
+        }
+
+        public static explicit operator sbyte(NSJSDouble x)
+        {
+            sbyte r = 0;
+            if (x != null)
+            {
+                r = Convert.ToSByte(x.Value);
+            }
+            return r;
+        }
+
+        public static explicit operator short(NSJSDouble x)
+        {
+            short r = 0;
+            if (x != null)
+            {
+                r = Convert.ToInt16(x.Value);
+            }
+            return r;
+        }
+
+        public static explicit operator ushort(NSJSDouble x)
+        {
+            ushort r = 0;
+            if (x != null)
+            {
+                r = Convert.ToUInt16(x.Value);
+            }
+            return r;
+        }
+
+        public static explicit operator float(NSJSDouble x)
+        {
+            return x == null ? float.NaN : Convert.ToSingle(x.Value);
+        }
+
+        public static implicit operator bool(NSJSDouble x)
+        {
+            if (x == null)
+            {
+                return false;
+            }
+            return x.Value != 0;
+        }
+
+        public static explicit operator string(NSJSDouble x)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return x.ToString();
+        }
+
+        public static explicit operator char(NSJSDouble x)
+        {
+            if (x == null)
+            {
+                return '\0';
+            }
+            return Convert.ToChar(x.Value);
+        }
     }
 }
