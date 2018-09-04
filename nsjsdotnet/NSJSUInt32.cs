@@ -163,6 +163,89 @@
             return New(x.VirtualMachine, x.Value | y);
         }
 
+        public static NSJSUInt32 operator +(NSJSUInt32 x, int y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return New(x.VirtualMachine, unchecked((uint)(x.Value + y)));
+        }
+
+        public static NSJSUInt32 operator -(NSJSUInt32 x, int y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return New(x.VirtualMachine, unchecked((uint)(x.Value - y)));
+        }
+
+        public static NSJSUInt32 operator /(NSJSUInt32 x, int y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            long n = x.Value;
+            if (n != 0 && y != 0)
+            {
+                n /= y;
+            }
+            else
+            {
+                n = 0;
+            }
+            return New(x.VirtualMachine, Convert.ToUInt32(n));
+        }
+
+        public static NSJSUInt32 operator *(NSJSUInt32 x, int y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return New(x.VirtualMachine, unchecked((uint)(x.Value * y)));
+        }
+
+        public static NSJSUInt32 operator %(NSJSUInt32 x, int y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return New(x.VirtualMachine, unchecked((uint)(x.Value % y)));
+        }
+
+        public static NSJSUInt32 operator &(NSJSUInt32 x, int y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return New(x.VirtualMachine, unchecked((uint)(x.Value & y)));
+        }
+
+        public static NSJSUInt32 operator ^(NSJSUInt32 x, int y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return New(x.VirtualMachine, unchecked((uint)(x.Value ^ y)));
+        }
+
+        public static NSJSUInt32 operator |(NSJSUInt32 x, int y)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+#pragma warning disable CS0675 // 对进行了带符号扩展的操作数使用了按位或运算符
+            return New(x.VirtualMachine, Convert.ToUInt32(x.Value | y));
+#pragma warning restore CS0675 // 对进行了带符号扩展的操作数使用了按位或运算符
+        }
+
         public static NSJSUInt32 operator ~(NSJSUInt32 x)
         {
             if (x == null)
