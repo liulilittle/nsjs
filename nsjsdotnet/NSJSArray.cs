@@ -149,7 +149,7 @@
             }
             else
             {
-                this.Add(NSJSBoolean.New(this.VirtualMachine, value));
+                this.Add((NSJSValue)NSJSBoolean.New(this.VirtualMachine, value));
             }
         }
 
@@ -160,12 +160,12 @@
 
         public void Add(double value)
         {
-            this.Add(NSJSDouble.New(this.VirtualMachine, value));
+            this.Add((NSJSValue)NSJSDouble.New(this.VirtualMachine, value));
         }
 
         public void Add(uint value)
         {
-            this.Add(NSJSUInt32.New(this.VirtualMachine, value));
+            this.Add((NSJSValue)NSJSUInt32.New(this.VirtualMachine, value));
         }
 
         public void Add(DateTime value)

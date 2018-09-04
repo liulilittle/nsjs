@@ -14,7 +14,7 @@
         private extern static bool nsjs_localvalue_get_boolean(IntPtr localValue);
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private object value;
+        private object value = default(object);
 
         public override object GetValue()
         {
@@ -72,11 +72,52 @@
 
         public static implicit operator bool(NSJSBoolean x)
         {
-            if (x == null)
-            {
-                return false;
-            }
-            return x.Value;
+            return x ?? x.Value;
+        }
+
+        public static explicit operator ulong(NSJSBoolean x)
+        {
+            return x == null ? 0 : x.Value ? 1ul : 0;
+        }
+
+        public static explicit operator long(NSJSBoolean x)
+        {
+            return x == null ? 0 : x.Value ? 1L : 0;
+        }
+
+        public static explicit operator uint(NSJSBoolean x)
+        {
+            return x == null ? 0 : x.Value ? 1u : 0;
+        }
+
+        public static explicit operator int(NSJSBoolean x)
+        {
+            return x == null ? 0 : x.Value ? 1 : 0;
+        }
+
+        public static explicit operator short(NSJSBoolean x)
+        {
+            return unchecked((short)(x == null ? 0 : x.Value ? 1 : 0));
+        }
+
+        public static explicit operator ushort(NSJSBoolean x)
+        {
+            return unchecked((ushort)(x == null ? 0 : x.Value ? 1 : 0));
+        }
+
+        public static explicit operator sbyte(NSJSBoolean x)
+        {
+            return unchecked((sbyte)(x == null ? 0 : x.Value ? 1 : 0));
+        }
+
+        public static explicit operator byte(NSJSBoolean x)
+        {
+            return unchecked((byte)(x == null ? 0 : x.Value ? 1 : 0));
+        }
+
+        public static explicit operator char(NSJSBoolean x)
+        {
+            return unchecked((char)(x == null ? '\0' : x.Value ? 1 : '\0'));
         }
     }
 }

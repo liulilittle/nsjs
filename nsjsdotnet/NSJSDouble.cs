@@ -13,7 +13,7 @@
         private extern static double nsjs_localvalue_get_float64(IntPtr localValue);
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private object value;
+        private object value = default(object);
 
         public override object GetValue()
         {

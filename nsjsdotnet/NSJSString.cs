@@ -133,9 +133,9 @@
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private object value;
+        private object value = default(object);
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private bool initialized;
+        private bool initialized = false;
 
         internal NSJSString(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSDataType.kString, machine)
         {

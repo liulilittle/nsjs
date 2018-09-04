@@ -3,7 +3,8 @@
     using System;
     using System.Runtime.InteropServices;
 
-    static class NSJSValueBuilder
+    [TypeLibType(TypeLibTypeFlags.FRestricted | TypeLibTypeFlags.FHidden)]
+    internal static class NSJSValueBuilder
     {
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static NSJSDataType nsjs_localvalue_get_typeid(IntPtr localValue);

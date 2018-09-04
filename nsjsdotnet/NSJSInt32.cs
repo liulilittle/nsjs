@@ -13,7 +13,7 @@
         private extern static int nsjs_localvalue_get_int32(IntPtr localValue);
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private object value;
+        private object value = default(object);
 
         public override object GetValue()
         {
@@ -104,7 +104,7 @@
             {
                 return null;
             }
-            return NSJSInt32.New(x.VirtualMachine, x.Value + y);
+            return New(x.VirtualMachine, x.Value + y);
         }
 
         public static NSJSInt32 operator -(NSJSInt32 x, int y)
@@ -113,7 +113,7 @@
             {
                 return null;
             }
-            return NSJSInt32.New(x.VirtualMachine, x.Value - y);
+            return New(x.VirtualMachine, x.Value - y);
         }
 
         public static NSJSInt32 operator /(NSJSInt32 x, int y)
@@ -122,7 +122,7 @@
             {
                 return null;
             }
-            int n = x.Value;
+            var n = x.Value;
             if (n != 0 && y != 0)
             {
                 n /= y;
@@ -131,7 +131,7 @@
             {
                 n = 0;
             }
-            return NSJSInt32.New(x.VirtualMachine, n);
+            return New(x.VirtualMachine, n);
         }
 
         public static NSJSInt32 operator *(NSJSInt32 x, int y)
@@ -140,7 +140,7 @@
             {
                 return null;
             }
-            return NSJSInt32.New(x.VirtualMachine, x.Value * y);
+            return New(x.VirtualMachine, x.Value * y);
         }
 
         public static NSJSInt32 operator %(NSJSInt32 x, int y)
@@ -149,7 +149,7 @@
             {
                 return null;
             }
-            return NSJSInt32.New(x.VirtualMachine, x.Value % y);
+            return New(x.VirtualMachine, x.Value % y);
         }
 
         public static NSJSInt32 operator >>(NSJSInt32 x, int y)
@@ -158,7 +158,7 @@
             {
                 return null;
             }
-            return NSJSInt32.New(x.VirtualMachine, x.Value >> y);
+            return New(x.VirtualMachine, x.Value >> y);
         }
 
         public static NSJSInt32 operator <<(NSJSInt32 x, int y)
@@ -167,7 +167,7 @@
             {
                 return null;
             }
-            return NSJSInt32.New(x.VirtualMachine, x.Value << y);
+            return New(x.VirtualMachine, x.Value << y);
         }
 
         public static NSJSInt32 operator &(NSJSInt32 x, int y)
@@ -176,7 +176,7 @@
             {
                 return null;
             }
-            return NSJSInt32.New(x.VirtualMachine, x.Value & y);
+            return New(x.VirtualMachine, x.Value & y);
         }
 
         public static NSJSInt32 operator ^(NSJSInt32 x, int y)
@@ -185,7 +185,7 @@
             {
                 return null;
             }
-            return NSJSInt32.New(x.VirtualMachine, x.Value ^ y);
+            return New(x.VirtualMachine, x.Value ^ y);
         }
 
         public static NSJSInt32 operator |(NSJSInt32 x, int y)
@@ -194,7 +194,7 @@
             {
                 return null;
             }
-            return NSJSInt32.New(x.VirtualMachine, x.Value | y);
+            return New(x.VirtualMachine, x.Value | y);
         }
 
         public static NSJSInt32 operator ~(NSJSInt32 x)
@@ -203,36 +203,27 @@
             {
                 return null;
             }
-            return NSJSInt32.New(x.VirtualMachine, ~x.Value);
+            return New(x.VirtualMachine, ~x.Value);
         }
 
         public static implicit operator int(NSJSInt32 x)
         {
-            return x == null ? default(int) : x.Value;
+            return x == null ? 0 : x.Value;
         }
 
         public static implicit operator long(NSJSInt32 x)
         {
-            return x == null ? default(long) : x.Value;
+            return x == null ? 0 : x.Value;
         }
 
         public static implicit operator decimal(NSJSInt32 x)
         {
-            decimal r = 0;
-            if (x != null)
-            {
-                r = x.Value;
-            }
-            return r;
+            return x == null ? 0 : x.Value;
         }
 
         public static implicit operator double(NSJSInt32 x)
         {
-            if (x == null)
-            {
-                return double.NaN;
-            }
-            return x.Value;
+            return x == null ? double.NaN : x.Value;
         }
 
         public static explicit operator uint(NSJSInt32 x)
@@ -297,11 +288,7 @@
 
         public static explicit operator float(NSJSInt32 x)
         {
-            if (x == null)
-            {
-                return float.NaN;
-            }
-            return x.Value;
+            return x == null ? float.NaN : x.Value;
         }
 
         public static implicit operator bool(NSJSInt32 x)
@@ -365,6 +352,33 @@
                 return null;
             }
             return NSJSUInt32.New(x.VirtualMachine, unchecked((uint)x.Value));
+        }
+
+        public static explicit operator NSJSInt64(NSJSInt32 x)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return NSJSInt64.New(x.VirtualMachine, x.Value);
+        }
+
+        public static explicit operator NSJSBoolean(NSJSInt32 x)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return NSJSBoolean.New(x.VirtualMachine, x.Value != 0);
+        }
+
+        public static explicit operator NSJSString(NSJSInt32 x)
+        {
+            if (x == null)
+            {
+                return null;
+            }
+            return NSJSString.New(x.VirtualMachine, x.ToString());
         }
     }
 }
