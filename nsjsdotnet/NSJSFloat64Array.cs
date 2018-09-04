@@ -35,6 +35,11 @@
 
         }
 
+        public static new NSJSFloat64Array Cast(NSJSValue value)
+        {
+            return Cast(value, (handle, machine) => new NSJSFloat64Array(value.Handle, value.VirtualMachine));
+        }
+
         public double[] Buffer
         {
             get

@@ -144,11 +144,7 @@
 
         public static NSJSString Cast(NSJSValue value)
         {
-            if (value == null)
-            {
-                return null;
-            }
-            return new NSJSString(value.Handle, value.VirtualMachine);
+            return Cast(value, (handle, machine) => new NSJSString(value.Handle, value.VirtualMachine));
         }
 
         public override object GetValue()
@@ -287,6 +283,16 @@
         public override string ToString()
         {
             return this.Value.ToString();
+        }
+
+        public static implicit operator bool(NSJSString x)
+        {
+            if (x == null || x.IsNullOrUndfined)
+            {
+                return false;
+            }
+            string s = x.Value;
+            return unchecked(s != null && s.Length > 0);
         }
     }
 }

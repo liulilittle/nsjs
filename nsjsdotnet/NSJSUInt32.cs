@@ -58,5 +58,10 @@
             }
             return new NSJSUInt32(handle, machine);
         }
+
+        public static NSJSUInt32 Cast(NSJSValue value)
+        {
+            return Cast(value, (handle, machine) => new NSJSUInt32(value.Handle, value.VirtualMachine));
+        }
     }
 }

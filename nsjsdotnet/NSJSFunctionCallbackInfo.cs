@@ -236,7 +236,7 @@
 
         public void SetReturnValue(DateTime value)
         {
-            this.SetReturnValue(NSJSDateTime.New(this.VirtualMachine, value));
+            this.SetReturnValue((NSJSValue)NSJSDateTime.New(this.VirtualMachine, value));
         }
 
         public void SetReturnValue(string value)

@@ -35,6 +35,11 @@
 
         }
 
+        public static new NSJSInt8Array Cast(NSJSValue value)
+        {
+            return Cast(value, (handle, machine) => new NSJSInt8Array(value.Handle, value.VirtualMachine));
+        }
+
         public sbyte[] Buffer
         {
             get

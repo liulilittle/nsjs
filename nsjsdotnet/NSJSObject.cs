@@ -34,6 +34,11 @@
             return new NSJSObject(machine, fieldcount);
         }
 
+        public static NSJSObject Cast(NSJSValue value)
+        {
+            return Cast(value, (handle, machine) => new NSJSObject(handle, machine));
+        }
+
         internal NSJSObject(IntPtr handle, NSJSVirtualMachine machine) : base(handle, NSJSDataType.kObject, machine)
         {
 

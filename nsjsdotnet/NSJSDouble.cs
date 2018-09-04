@@ -32,6 +32,11 @@
 
         }
 
+        public static NSJSDouble Cast(NSJSValue value)
+        {
+            return Cast(value, (handle, machine) => new NSJSDouble(value.Handle, value.VirtualMachine));
+        }
+
         public double Value
         {
             get

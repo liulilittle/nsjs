@@ -60,6 +60,11 @@
             return new NSJSArray(handle, machine);
         }
 
+        public static new NSJSArray Cast(NSJSValue value)
+        {
+            return Cast(value, (handle, machine) => new NSJSArray(handle, machine));
+        }
+
         public virtual NSJSValue this[int index]
         {
             get
@@ -150,7 +155,7 @@
 
         public void Add(int value)
         {
-            this.Add(NSJSInt32.New(this.VirtualMachine, value));
+            this.Add((NSJSValue)NSJSInt32.New(this.VirtualMachine, value));
         }
 
         public void Add(double value)
@@ -165,7 +170,7 @@
 
         public void Add(DateTime value)
         {
-            this.Add(NSJSDateTime.New(this.VirtualMachine, value));
+            this.Add((NSJSValue)NSJSDateTime.New(this.VirtualMachine, value));
         }
 
         public void Add(string value)

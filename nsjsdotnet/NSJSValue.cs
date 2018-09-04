@@ -347,7 +347,31 @@
 
         public virtual DynamicMetaObject GetMetaObject(Expression expression)
         {
-            return new NSJSValueMetaObject(this, expression); 
+            return new NSJSValueMetaObject(this, expression);
+        }
+
+        internal static T Cast<T>(NSJSValue value, Func<IntPtr, NSJSVirtualMachine, T> constructor)
+            where T : NSJSValue
+        {
+            if (value == null)
+            {
+                return null;
+            }
+            T o = value as T;
+            if (o != null)
+            {
+                return o;
+            }
+            return constructor(value.Handle, value.VirtualMachine);
+        }
+
+        public static implicit operator bool(NSJSValue x)
+        {
+            if (x == null)
+            {
+                return false;
+            }
+            return !x.IsNullOrUndfined;
         }
     }
 }

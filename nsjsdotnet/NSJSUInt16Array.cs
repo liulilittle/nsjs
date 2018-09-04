@@ -35,6 +35,11 @@
 
         }
 
+        public static new NSJSUInt16Array Cast(NSJSValue value)
+        {
+            return Cast(value, (handle, machine) => new NSJSUInt16Array(value.Handle, value.VirtualMachine));
+        }
+
         public ushort[] Buffer
         {
             get

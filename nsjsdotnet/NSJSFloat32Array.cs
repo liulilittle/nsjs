@@ -35,6 +35,11 @@
 
         }
 
+        public static new NSJSFloat32Array Cast(NSJSValue value)
+        {
+            return Cast(value, (handle, machine) => new NSJSFloat32Array(value.Handle, value.VirtualMachine));
+        }
+
         public float[] Buffer
         {
             get

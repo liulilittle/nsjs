@@ -33,6 +33,11 @@
 
         }
 
+        public static NSJSBoolean Cast(NSJSValue value)
+        {
+            return Cast(value, (handle, machine) => new NSJSBoolean(value.Handle, value.VirtualMachine));
+        }
+
         public bool Value
         {
             get
@@ -63,6 +68,15 @@
         public override string ToString()
         {
             return this.Value.ToString();
+        }
+
+        public static implicit operator bool(NSJSBoolean x)
+        {
+            if (x == null)
+            {
+                return false;
+            }
+            return x.Value;
         }
     }
 }

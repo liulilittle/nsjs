@@ -35,6 +35,11 @@
 
         }
 
+        public static new NSJSUInt32Array Cast(NSJSValue value)
+        {
+            return Cast(value, (handle, machine) => new NSJSUInt32Array(value.Handle, value.VirtualMachine));
+        }
+
         public uint[] Buffer
         {
             get

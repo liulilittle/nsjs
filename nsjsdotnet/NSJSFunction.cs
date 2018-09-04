@@ -136,6 +136,16 @@
             this.This = owner;
         }
 
+        public static NSJSFunction Cast(NSJSValue value)
+        {
+            return Cast(value, default(NSJSObject));
+        }
+
+        public static NSJSFunction Cast(NSJSValue value, NSJSObject owner)
+        {
+            return Cast(value, (handle, machine) => new NSJSFunction(value.Handle, owner, value.VirtualMachine));
+        }
+
         public static IntPtr DelegateToFunctionPtr(Delegate d)
         {
             return MarshalAs.DelegateToFunctionPtr(d);

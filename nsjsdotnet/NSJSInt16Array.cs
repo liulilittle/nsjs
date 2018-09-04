@@ -35,6 +35,11 @@
 
         }
 
+        public static new NSJSInt16Array Cast(NSJSValue value)
+        {
+            return Cast(value, (handle, machine) => new NSJSInt16Array(value.Handle, value.VirtualMachine));
+        }
+
         public short[] Buffer
         {
             get
