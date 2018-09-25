@@ -74,7 +74,11 @@
                             'use strict'
 
                             if (typeof type === 'string') {
-                                type = eval(type);
+                                try {
+                                    type = eval(type);
+                                } catch (e) {
+                                    return false;
+                                }
                             }
                             if (typeof type !== 'function') {
                                 return 0;
