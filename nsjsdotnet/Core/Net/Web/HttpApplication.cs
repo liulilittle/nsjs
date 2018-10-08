@@ -93,6 +93,10 @@
                         context.Handler = currentHandler;
                         response.ContentType = "text/html";
                         response.StatusCode = 200;
+                        if (response.ContentEncoding == null)
+                        {
+                            response.ContentEncoding = Encoding.UTF8;
+                        }
                         currentHandler.ProcessRequest(context);
                     }
                 }
