@@ -6,10 +6,18 @@
 
     public static class FileAuxiliary
     {
-        public static Encoding GetEncoding(byte[] s)
+        public unsafe static Encoding GetEncoding(byte[] s)
+        {
+            fixed (byte* p = s)
+            {
+                return GetEncoding(p, s != null ? s.Length : 0);
+            }
+        }
+
+        public static unsafe Encoding GetEncoding(byte* s, int datalen)
         {
             Encoding encoding = Encoding.Default;
-            if (s == null || s.Length < 3)
+            if (s == null || datalen < 3)
             {
                 return encoding;
             }
@@ -34,6 +42,35 @@
         public static bool TryReadAllText(string path, out string value)
         {
             return TryReadAllText(path, null, out value);
+        }
+
+        public static unsafe Encoding GetEncoding(string path)
+        {
+            if (!File.Exists(path))
+            {
+                return GetEncoding(null, 0);
+            }
+            FileStream stream = null;
+            Encoding encoding = null;
+            try
+            {
+                stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+                byte[] data = new byte[5];
+                int datalen = stream.Read(data, 0, data.Length);
+                fixed (byte* p = data)
+                {
+                    encoding = GetEncoding(p, datalen);
+                }
+            }
+            catch(Exception)
+            {
+                encoding = GetEncoding(null, 0);
+            }
+            if (stream != null)
+            {
+                stream.Dispose();
+            }
+            return encoding;
         }
 
         public static bool TryReadAllText(string path, Encoding encoding, out string value)

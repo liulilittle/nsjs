@@ -90,6 +90,7 @@
                 {
                     response.ContentType = "application/octet-stream";
                 }
+                response.ContentEncoding = FileAuxiliary.GetEncoding(path);
                 this.ProcessRequest(methodid, path);
             }
             catch (Exception)
