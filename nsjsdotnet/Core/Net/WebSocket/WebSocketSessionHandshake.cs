@@ -122,36 +122,40 @@
                     }
                 };
                 bool containsSecWebSocketLocation = false;
-                bool containsSecWebSocketOrigin = false;
                 while (!s.EndOfStream)
                 {
                     KeyValuePair<string, string>? pair = readkv(s.ReadLine());
                     if (pair == null)
+                    {
                         return false;
+                    }
                     KeyValuePair<string, string> kv = pair.Value;
                     switch (kv.Key)
                     {
                         case "Connection":
                             if (kv.Value != "Upgrade")
+                            {
                                 return false;
+                            }
                             break;
                         case "Upgrade":
                             if (kv.Value != "websocket")
+                            {
                                 return false;
-                            break;
-                        case "Sec-WebSocket-Origin":
-                            containsSecWebSocketOrigin = true;
+                            }
                             break;
                         case "Sec-WebSocket-Location":
                             containsSecWebSocketLocation = true;
                             break;
                         case "Sec-WebSocket-Accept":
                             if (string.IsNullOrEmpty(kv.Value) || !checkacceptkey(kv.Value))
+                            {
                                 return false;
+                            }
                             break;
                     }
                 }
-                return containsSecWebSocketLocation && containsSecWebSocketOrigin;
+                return containsSecWebSocketLocation; 
             });
         }
 

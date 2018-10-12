@@ -223,18 +223,21 @@
             bool containsSecWebSocketKey = false;
             bool containsUpgrade = false;
             bool containsConnection = false;
-            bool containsOrigin = false;
             while (!stream.EndOfStream)
             {
                 KeyValuePair<string, string>? pair = readkv(stream.ReadLine());
                 if (pair == null)
+                {
                     return false;
+                }
                 KeyValuePair<string, string> kv = pair.Value;
                 switch (kv.Key)
                 {
                     case "Sec-WebSocket-Key":
                         if (string.IsNullOrEmpty(kv.Value))
+                        {
                             return false;
+                        }
                         _secWebSocketKey = kv.Value;
                         containsSecWebSocketKey = true;
                         break;
@@ -243,26 +246,33 @@
                         break;
                     case "Origin":
                         if (string.IsNullOrEmpty(kv.Value))
+                        {
                             return false;
+                        }
                         _origin = kv.Value;
-                        containsOrigin = true;
                         break;
                     case "User-Agent":
                         _userAgent = kv.Value;
                         break;
                     case "Connection":
                         if (!kv.Value.Contains("Upgrade"))
+                        {
                             return false;
+                        }
                         containsConnection = true;
                         break;
                     case "Upgrade":
                         if (kv.Value != "websocket")
+                        {
                             return false;
+                        }
                         containsUpgrade = true;
                         break;
                     case "Sec-WebSocket-Version":
                         if (!int.TryParse(kv.Value, out _secWebSocketVersion))
+                        {
                             return false;
+                        }
                         break;
                     case "Sec-WebSocket-Extensions":
                         _secWebSocketExtensions = kv.Value;
@@ -276,15 +286,19 @@
                 }
                 _headers.Add(kv.Key, kv.Value);
             };
-            return containsSecWebSocketKey && containsOrigin && containsConnection && containsUpgrade;
+            return containsSecWebSocketKey && containsConnection && containsUpgrade;
         }
 
         private bool HandleWebSocketUpgrade(StreamReader stream)
         {
             if (!FillRawUriToModel(stream))
+            {
                 return false;
+            }
             if (!FillHeaderToModel(stream))
+            {
                 return false;
+            }
             return HandleUpgradeResponse();
         }
 
@@ -311,7 +325,9 @@
             lock (_signal)
             {
                 if (!_socket.Connected || SocketExtension.CleanedUp(_socket))
+                {
                     return false;
+                }
                 return SocketExtension.BeginSend(_socket, response, 0, response.Length, null);
             }
         }
