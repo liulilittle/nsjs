@@ -12,6 +12,7 @@ namespace nsjsdotnet
         private readonly Func<Type, string, object, object> f_SetValue = null;
         private readonly Func<Type, string, object> f_GetValue = null;
         private readonly Func<Type, object> f_Convert = null;
+        private readonly Func<InvokeBinder, DynamicMetaObject[], object> f_Invoke = null;
         private readonly Func<InvokeMemberBinder, DynamicMetaObject[], object> f_InvokeMember = null;
 
         public NSJSValueMetaObject(NSJSValue value, Expression expression) :
@@ -24,6 +25,7 @@ namespace nsjsdotnet
                 return this.Value;
             };
             this.f_InvokeMember = this.InvokeMember;
+            this.f_Invoke = this.Invoke;
             this.f_Convert = (a1) => this.Convert(a1, this.Value as NSJSValue);
         }
 
@@ -37,6 +39,10 @@ namespace nsjsdotnet
             if (type == null)
             {
                 throw new ArgumentNullException("type");
+            }
+            if (typeof(NSJSValue).IsAssignableFrom(type))
+            {
+                return type.IsInstanceOfType(value) ? value : null;
             }
             object o = FetchValue(type, value);
             if (type == typeof(int))
@@ -177,11 +183,56 @@ namespace nsjsdotnet
                 BindingRestrictions.GetTypeRestriction(base.Expression, base.LimitType));
         }
 
+        public override DynamicMetaObject BindInvoke(InvokeBinder binder, DynamicMetaObject[] args)
+        {
+            return new DynamicMetaObject(Expression.Call(Expression.Constant(this.f_Invoke),
+               "Invoke", null,
+               Expression.Constant(binder),
+               Expression.Constant(args)),
+               BindingRestrictions.GetTypeRestriction(base.Expression, base.LimitType));
+        }
+
+        private object InternalInvokeTarget(NSJSFunction function, DynamicMetaObject[] args, Type returnType, ref Exception exception)
+        {
+            object results = null;
+            do
+            {
+                if (function == null)
+                {
+                    exception = new InvalidOperationException("The called method is not defined correctly");
+                    break;
+                }
+                if (returnType == null)
+                {
+                    returnType = typeof(object);
+                }
+                NSJSVirtualMachine machine = GetVirtualMachine(this.Value);
+                IList<NSJSValue> s = new List<NSJSValue>();
+                for (int i = 0; i < args.Length; i++)
+                {
+                    DynamicMetaObject mo = args[i];
+                    s.Add(this.ToValue(machine, mo.Value));
+                }
+                results = this.Convert(returnType, function.Call(s));
+            } while (false);
+            return results;
+        }
+
+        private static NSJSVirtualMachine GetVirtualMachine(object o)
+        {
+            NSJSValue value = o as NSJSValue;
+            if (value != null)
+            {
+                return value.VirtualMachine;
+            }
+            return null;
+        }
+
         private object InvokeMember(InvokeMemberBinder binder, DynamicMetaObject[] args)
         {
             NSJSObject global = this.Value as NSJSObject;
             Exception exception = null;
-            object results = default(object);
+            object result = default(object);
             do
             {
                 if (global == null)
@@ -189,32 +240,30 @@ namespace nsjsdotnet
                     exception = new InvalidOperationException("The current call is missing an instance of the object");
                     break;
                 }
-                NSJSVirtualMachine machine = global.VirtualMachine;
-                machine.Join(delegate
+                else
                 {
+                    NSJSVirtualMachine machine = global.VirtualMachine;
                     NSJSFunction function = global.Get(binder.Name) as NSJSFunction;
-                    do
-                    {
-                        if (function == null)
-                        {
-                            exception = new InvalidOperationException("The called method is not defined correctly");
-                            break;
-                        }
-                        IList<NSJSValue> s = new List<NSJSValue>();
-                        for (int i = 0; i < args.Length; i++)
-                        {
-                            DynamicMetaObject mo = args[i];
-                            s.Add(this.ToValue(machine, mo.Value));
-                        }
-                        results = this.Convert(binder.ReturnType, function.Call(s));
-                    } while (false);
-                });
+                    result = InternalInvokeTarget(function, args, binder.ReturnType, ref exception);
+                }
                 if (exception != null)
                 {
                     throw exception;
                 }
             } while (false);
-            return results;
+            return result;
+        }
+
+        private object Invoke(InvokeBinder binder, DynamicMetaObject[] args)
+        {
+            Exception exception = null;
+            NSJSFunction function = this.Value as NSJSFunction;
+            object result = InternalInvokeTarget(function, args, binder.ReturnType, ref exception);
+            if (exception != null)
+            {
+                throw exception;
+            }
+            return result;
         }
 
         protected virtual NSJSValue ToValue(NSJSVirtualMachine machine, object obj)
@@ -266,6 +315,10 @@ namespace nsjsdotnet
             {
                 throw new ArgumentNullException("type");
             }
+            if (typeof(NSJSValue).IsAssignableFrom(type))
+            {
+                return type.IsInstanceOfType(value) ? value : null;
+            }
             if (value == null || value.IsNullOrUndfined)
             {
                 return null;
@@ -278,6 +331,10 @@ namespace nsjsdotnet
                 (value.DateType & NSJSDataType.kObject) > 0)
             {
                 Func<NSJSValue, object> converter = SimpleAgent.GetConverterBox(type, true);
+                if (converter == null)
+                {
+                    return null;
+                }
                 return converter(value);
             }
             return value.GetValue();

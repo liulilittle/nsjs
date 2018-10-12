@@ -184,6 +184,10 @@
                 return default(T);
             }
             Type typeid = typeof(T);
+            if (typeid.IsInstanceOfType(value))
+            {
+                return (T)((object)value);
+            }
             object result = null;
             if (typeid == typeof(object))
             {

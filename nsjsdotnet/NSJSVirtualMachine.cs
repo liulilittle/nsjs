@@ -513,10 +513,11 @@
                         {
                             throw new InvalidOperationException("handle");
                         }
-                        this.global = new NSJSObject(handle, this)
+                        this.global = new NSJSObject(handle, this);
+                        if (!this.global.CrossThreading)
                         {
-                            CrossThreading = true
-                        };
+                            this.global.CrossThreading = true;
+                        }
                     }
                     return this.global;
                 }
@@ -664,7 +665,9 @@
             {
                 throw new ArgumentNullException("callback");
             }
-            nsjs_virtualmachine_join(this.Handle, NSJSFunction.DelegateToFunctionPtr(callback), state);
+            IntPtr machine = this.Handle;
+            IntPtr function = NSJSFunction.DelegateToFunctionPtr(callback);
+            nsjs_virtualmachine_join(machine, function, state);
         }
 
         public virtual void Join(NSJSJoinCallback callback, object state)

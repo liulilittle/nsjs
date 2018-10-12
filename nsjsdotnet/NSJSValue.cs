@@ -249,7 +249,7 @@
 
         public IntPtr Isolate { get; } = NULL;
 
-        public NSJSDataType DateType { get; }
+        public NSJSDataType DateType { get; } = NSJSDataType.kUndefined;
 
         public NSJSVirtualMachine VirtualMachine { get; } = null;
 

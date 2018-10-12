@@ -279,9 +279,18 @@
             {
                 throw new ArgumentException("key");
             }
-            fixed (byte* s = Encoding.UTF8.GetBytes(key))
+            byte[] buffer = Encoding.UTF8.GetBytes(key);
+            if (buffer == null || buffer.Length <= 0)
             {
-                return nsjs_localvalue_object_property_get(this.Isolate, this.Handle, s);
+                return NULL;
+            }
+            fixed (byte* sz = buffer)
+            {
+                if (*sz == '\x0')
+                {
+                    return NULL;
+                }
+                return nsjs_localvalue_object_property_get(this.Isolate, this.Handle, sz);
             }
         }
 

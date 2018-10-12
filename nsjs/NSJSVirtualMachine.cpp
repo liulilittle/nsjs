@@ -661,8 +661,7 @@ NSJSLocalValue* NSJSLocalValueAllocator::Alloc(void)
 		}
 		else
 		{
-			chunk = new NSJSLocalValue;
-			NSJSLocalValueAllocator::Clear(chunk);
+			chunk = new NSJSLocalValue();
 			node = (LinkedListNode<NSJSLocalValue*>*)Memory::Alloc(sizeof(LinkedListNode<NSJSLocalValue*>));
 			node->Value = chunk;
 			chunk->LinkedListNode = node;
@@ -670,6 +669,10 @@ NSJSLocalValue* NSJSLocalValueAllocator::Alloc(void)
 		this->actives.AddLast(node);
 	}
 	this->locker.Exit();
+	if (chunk != NULL)
+	{
+		NSJSLocalValueAllocator::Clear(chunk);
+	}
 	return chunk;
 }
 

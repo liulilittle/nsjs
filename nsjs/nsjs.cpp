@@ -1072,12 +1072,31 @@ DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_object_property_get(v8:
 	{
 		throw new ArgumentNullException("Parameter key cannot be null");
 	}
-	v8::Local<v8::Value> rcx = NSJSGetLocalValue(value);
-	v8::Local<v8::String> rdx = String::NewFromUtf8(isolate, key, v8::NewStringType::kNormal).ToLocalChecked();
-	rcx = rcx.As<v8::Object>()->Get(isolate->GetCurrentContext(), rdx).ToLocalChecked();
+	v8::Local<v8::Value> o = NSJSGetLocalValue(value);
+	if (o.IsEmpty())
+	{
+		return NULL;
+	}
+	v8::Local<v8::String> localkey;
+	if (!String::NewFromUtf8(isolate, key, v8::NewStringType::kNormal).ToLocal(&localkey))
+	{
+		return NULL;
+	}
+	v8::Local<v8::Object> self = v8::Local<v8::Object>::Cast(o);
+	if (self.IsEmpty())
+	{
+		return NULL;
+	}
 	NSJSLocalValue* result;
 	NSJSNewLocalValue(result);
-	result->LocalValue = rcx;
+	do
+	{
+		v8::MaybeLocal<v8::Value> localval = self->Get(isolate->GetCurrentContext(), localkey);
+		if (localval.IsEmpty() || !localval.ToLocal(&result->LocalValue))
+		{
+			result->LocalValue = v8::Undefined(isolate);
+		}
+	} while (false);
 	return result;
 }
 
