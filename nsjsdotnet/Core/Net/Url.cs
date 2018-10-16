@@ -3,23 +3,34 @@
     using System;
     using System.Collections;
     using System.Runtime.InteropServices;
-    using System.Text;
+    using Encoding_ = System.Text.Encoding;
 
     public static class Url
     {
         [DllImport("kernel32.dll", SetLastError = true)]
         private unsafe static extern sbyte* SetHandleCount(byte[] value);
 
-        private unsafe static int strlen(sbyte* ptr)
+        private unsafe static int strlen(sbyte* p)
         {
             int i = 0;
-            while (*(ptr++) != 0) i++;
+            if (p != null)
+            {
+                while (*p++ != 0)
+                {
+                    i++;
+                }
+            }
             return i;
         }
 
-        public unsafe static string Encoding(string value, Encoding encoding)
+        public unsafe static string Encoding(string value, Encoding_ encoding)
         {
-            string eax, str = string.Empty;
+            if (encoding == null)
+            {
+                encoding = Encoding_.UTF8;
+            }
+            string eax;
+            string str = string.Empty;
             byte[] buffer = encoding.GetBytes(value);
             fixed (byte* pinned = buffer)
             {
@@ -41,8 +52,12 @@
             }
         }
 
-        public static string Decoding(string URIstring, Encoding encoding)
+        public static string Decoding(string URIstring, Encoding_ encoding)
         {
+            if (encoding == null)
+            {
+                encoding = Encoding_.UTF8;
+            }
             ArrayList str = new ArrayList();
             for (int i = 0; i < URIstring.Length; i++)
             {

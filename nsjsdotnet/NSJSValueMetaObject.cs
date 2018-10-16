@@ -40,10 +40,6 @@ namespace nsjsdotnet
             {
                 throw new ArgumentNullException("type");
             }
-            if (typeof(NSJSValue).IsAssignableFrom(type))
-            {
-                return type.IsInstanceOfType(value) ? value : null;
-            }
             object o = FetchValue(type, value);
             if (type == typeof(int))
             {
@@ -116,6 +112,10 @@ namespace nsjsdotnet
                 {
                     o = o.ToString();
                 }
+            }
+            else if (typeof(NSJSValue).IsAssignableFrom(type))
+            {
+                return type.IsInstanceOfType(value) ? value : null;
             }
             return o;
         }
@@ -346,7 +346,7 @@ namespace nsjsdotnet
             {
                 return default(NSJSValue);
             }
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
             {
                 return NSJSValue.Null(machine);
             }

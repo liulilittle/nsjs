@@ -851,13 +851,13 @@ DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_function_new(v8::Isolat
 	return result;
 }
 
-DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_string_new(v8::Isolate* isolate, const char* value)
+DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_string_new(v8::Isolate* isolate, const char* data, int datalen)
 {
 	if (isolate == NULL)
 	{
 		throw new ArgumentNullException("Parameter isolate cannot be null");
 	}
-	v8::Local<v8::Value> rax = v8::String::NewFromUtf8(isolate, value, v8::NewStringType::kNormal).ToLocalChecked();
+	v8::Local<v8::Value> rax = v8::String::NewFromUtf8(isolate, data, v8::NewStringType::kNormal, datalen).ToLocalChecked();
 	NSJSLocalValue* result;
 	NSJSNewLocalValue(result);
 	result->LocalValue = rax;
@@ -909,9 +909,9 @@ DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_object_property_set(v8::Isolate* i
 	NSJSObjectSetPropertyBaseValue(NSJSGetLocalValue(value));
 }
 
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_object_property_set_string(v8::Isolate* isolate, NSJSLocalValue* obj, const char* key, const char* value)
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_object_property_set_string(v8::Isolate* isolate, NSJSLocalValue* obj, const char* key, const char* value, int valuelen)
 {
-	NSJSObjectSetPropertyBaseValue(String::NewFromUtf8(isolate, value, v8::NewStringType::kNormal).ToLocalChecked());
+	NSJSObjectSetPropertyBaseValue(String::NewFromUtf8(isolate, value, v8::NewStringType::kNormal, valuelen).ToLocalChecked());
 }
 
 DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_object_property_set_int32(v8::Isolate* isolate, NSJSLocalValue* obj, const char* key, int32_t value)

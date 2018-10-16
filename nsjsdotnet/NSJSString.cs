@@ -4,11 +4,12 @@
     using System.Runtime.InteropServices;
     using System.Text;
     using System.Diagnostics;
+    using System.IO;
 
     public unsafe class NSJSString : NSJSValue
     {
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-        private extern static IntPtr nsjs_localvalue_string_new(IntPtr isolate, void* value);
+        private extern static IntPtr nsjs_localvalue_string_new(IntPtr isolate, void* data, int datalen);
 
         [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall)]
         private extern static bool IsBadReadPtr(void* lp, uint ucb);
@@ -20,6 +21,12 @@
         private const byte kThirdBitMask = 32; // 0010000
         private const byte kFourthBitMask = 16; // 0001000
         private const byte kFifthBitMask = 8; // 0000100
+
+        public static bool DefaultCStyleString
+        {
+            get;
+            set;
+        } = false;
 
         public static int GetUtf8Alignment(byte character)
         {
@@ -130,6 +137,35 @@
                 }
             }
             return !(counter > 1);
+        }
+
+        public static byte[] GetUTF8StringBuffer(string s)
+        {
+            return GetUTF8StringBuffer(s, DefaultCStyleString);
+        }
+
+        public static byte[] GetUTF8StringBuffer(string s, bool cStyle)
+        {
+            if (s == null)
+            {
+                throw new ArgumentNullException("s");
+            }
+            byte[] contents = Encoding.UTF8.GetBytes(s);
+            if (!cStyle)
+            {
+                return contents;
+            }
+            int count = contents.Length;
+            if (count > 0 && (contents[count - 1] == '\x0'))
+            {
+                return contents;
+            }
+            using (MemoryStream ms = new MemoryStream())
+            {
+                ms.Write(contents, 0, contents.Length);
+                ms.WriteByte(0); // \x0
+                return ms.GetBuffer();
+            }
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -259,18 +295,18 @@
             IntPtr handle = NULL;
             if (value == null)
             {
-                handle = nsjs_localvalue_string_new(isolate, null);
+                handle = nsjs_localvalue_string_new(isolate, null, 0);
             }
             else
             {
-                byte[] cch = Encoding.UTF8.GetBytes(value);
+                byte[] cch = NSJSString.GetUTF8StringBuffer(value);
                 if (cch.Length <= 0)
                 {
                     cch = new byte[] { 0 };
                 }
                 fixed (byte* p = cch)
                 {
-                    handle = nsjs_localvalue_string_new(isolate, p);
+                    handle = nsjs_localvalue_string_new(isolate, p, cch.Length);
                 }
             }
             if (handle == NULL)
@@ -282,16 +318,21 @@
 
         public override string ToString()
         {
-            return this.Value.ToString();
+            return this.Value;
         }
 
-        public static implicit operator bool(NSJSString x)
+        public static explicit operator string(NSJSString value)
         {
-            if (x == null || x.IsNullOrUndfined)
+            return value == null ? null : value.ToString();
+        }
+
+        public static implicit operator bool(NSJSString value)
+        {
+            if (value == null || value.IsNullOrUndfined)
             {
                 return false;
             }
-            string s = x.Value;
+            string s = value.Value;
             return unchecked(s != null && s.Length > 0);
         }
     }

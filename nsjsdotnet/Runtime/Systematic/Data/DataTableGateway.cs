@@ -3,6 +3,7 @@
     using nsjsdotnet.Core;
     using System;
     using System.Data;
+    using System.Windows.Forms;
     using DatabaseAccessAdapter = nsjsdotnet.Core.Data.Database.DatabaseAccessAdapter;
     using DATATableGateway = nsjsdotnet.Core.Data.Database.DataTableGateway;
 

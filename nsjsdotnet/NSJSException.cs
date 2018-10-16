@@ -213,7 +213,7 @@
             {
                 throw new NotSupportedException("kind");
             }
-            byte[] cch = Encoding.UTF8.GetBytes(message);
+            byte[] cch = NSJSString.GetUTF8StringBuffer(message);
             if (cch.Length <= 0)
             {
                 cch = new byte[] { 0 };

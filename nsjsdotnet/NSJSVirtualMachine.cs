@@ -224,7 +224,7 @@
             {
                 return Handling<bool>(name, (s) =>
                 {
-                    byte[] buffer = value != null ? Encoding.UTF8.GetBytes(value) : null;
+                    byte[] buffer = value != null ? NSJSString.GetUTF8StringBuffer(value) : null;
                     fixed (byte* pinned = buffer)
                     {
                         return nsjs_virtualmachine_extension_object_template_set_string(this.Handle, s, pinned, attributes);
@@ -251,7 +251,7 @@
                 {
                     throw new ArgumentException("name");
                 }
-                fixed (byte* p = Encoding.UTF8.GetBytes(name))
+                fixed (byte* p = NSJSString.GetUTF8StringBuffer(name))
                 {
                     return d((IntPtr)p);
                 }
@@ -481,7 +481,7 @@
 
         static NSJSVirtualMachine()
         {
-            fixed (byte* exce_path = Encoding.UTF8.GetBytes(Application.ExecutablePath))
+            fixed (byte* exce_path = NSJSString.GetUTF8StringBuffer(Application.ExecutablePath))
             {
                 nsjs_initialize(exce_path);
             }
@@ -565,13 +565,12 @@
                 }
                 result = this.Executing((() =>
                 {
-                    Encoding encoding = Encoding.UTF8;
                     byte[] alias_buffer = null;
                     if (alias != null)
                     {
-                        alias_buffer = encoding.GetBytes(alias);
+                        alias_buffer = NSJSString.GetUTF8StringBuffer(alias);
                     }
-                    byte[] source_buffer = encoding.GetBytes(source);
+                    byte[] source_buffer = NSJSString.GetUTF8StringBuffer(source);
                     fixed (byte* pstr_source = source_buffer)
                     {
                         fixed (byte* pstr_alias = alias_buffer)
@@ -716,7 +715,7 @@
             string result = null;
             this.Executing(() =>
             {
-                byte[] ch = Encoding.UTF8.GetBytes(expression);
+                byte[] ch = NSJSString.GetUTF8StringBuffer(expression);
                 fixed (byte* s = ch)
                 {
                     sbyte* p = nsjs_virtualmachine_eval(this.Handle, s, ref *this.exception);
@@ -758,8 +757,7 @@
             {
                 IList<GCHandle?> cookies = new List<GCHandle?>(256);
                 IList<IntPtr> arguments = new List<IntPtr>(256);
-                Encoding encoding = Encoding.UTF8;
-                cookies.Add(GCHandle.Alloc(encoding.GetBytes(name), GCHandleType.Pinned));
+                cookies.Add(GCHandle.Alloc(NSJSString.GetUTF8StringBuffer(name), GCHandleType.Pinned));
                 int argc = 0;
                 if (args != null)
                 {
@@ -768,7 +766,7 @@
                         byte[] ch = null;
                         if (s != null)
                         {
-                            ch = encoding.GetBytes(s);
+                            ch = NSJSString.GetUTF8StringBuffer(s);
                         }
                         if (s == null || ch.Length <= 0)
                         {
@@ -864,7 +862,7 @@
             string result = null;
             this.InternalCall(name, args, (List<IntPtr> argc) =>
             {
-                fixed (byte* key = Encoding.UTF8.GetBytes(name))
+                fixed (byte* key = NSJSString.GetUTF8StringBuffer(name))
                 {
                     fixed (IntPtr* argv = argc.ToArray())
                     {
@@ -892,7 +890,7 @@
             NSJSException exception_info = null;
             NSJSValue result = this.InternalCall(name, args, (List<IntPtr> argc) =>
             {
-                fixed (byte* key = Encoding.UTF8.GetBytes(name))
+                fixed (byte* key = NSJSString.GetUTF8StringBuffer(name))
                 {
                     fixed (IntPtr* argv = argc.ToArray())
                     {

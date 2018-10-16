@@ -105,9 +105,9 @@
 
             public void ProcessRequest(HTTPContext context)
             {
-                if (string.IsNullOrEmpty(Thread.CurrentThread.Name))
+                if (context == null)
                 {
-                    Thread.CurrentThread.Name = "http-handler";
+                    return /*undefined*/;
                 }
                 NSJSVirtualMachine machine = this.GetVirtualMachine();
                 machine.Join((sender, state) =>

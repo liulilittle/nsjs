@@ -8,15 +8,35 @@
     {
         public unsafe static Encoding GetEncoding(byte[] s)
         {
+            return GetEncoding(s, null);
+        }
+
+        public unsafe static Encoding GetEncoding(byte[] s, Encoding defaultEncoding)
+        {
             fixed (byte* p = s)
             {
-                return GetEncoding(p, s != null ? s.Length : 0);
+                return GetEncoding(p, unchecked(s != null ? s.Length : 0), defaultEncoding);
             }
         }
 
         public static unsafe Encoding GetEncoding(byte* s, int datalen)
         {
-            Encoding encoding = Encoding.Default;
+            return GetEncoding(s, datalen, null);
+        }
+
+        public static unsafe Encoding GetDefaultEncoding()
+        {
+            return GetDefaultEncoding(null);
+        }
+
+        public static unsafe Encoding GetDefaultEncoding(Encoding defaultEncoding)
+        {
+            return GetEncoding(null, 0, defaultEncoding);
+        }
+
+        public static unsafe Encoding GetEncoding(byte* s, int datalen, Encoding defaultEncoding)
+        {
+            Encoding encoding = defaultEncoding ?? Encoding.Default;
             if (s == null || datalen < 3)
             {
                 return encoding;
@@ -44,11 +64,16 @@
             return TryReadAllText(path, null, out value);
         }
 
-        public static unsafe Encoding GetEncoding(string path)
+        public static Encoding GetEncoding(string path)
+        {
+            return GetEncoding(path, null);
+        }
+
+        public static unsafe Encoding GetEncoding(string path, Encoding defaultEncoding)
         {
             if (!File.Exists(path))
             {
-                return GetEncoding(null, 0);
+                return GetDefaultEncoding(defaultEncoding);
             }
             FileStream stream = null;
             Encoding encoding = null;
@@ -59,12 +84,12 @@
                 int datalen = stream.Read(data, 0, data.Length);
                 fixed (byte* p = data)
                 {
-                    encoding = GetEncoding(p, datalen);
+                    encoding = GetEncoding(p, datalen, defaultEncoding);
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
-                encoding = GetEncoding(null, 0);
+                encoding = GetDefaultEncoding(defaultEncoding);
             }
             if (stream != null)
             {

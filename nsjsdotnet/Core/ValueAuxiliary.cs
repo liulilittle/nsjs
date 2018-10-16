@@ -183,105 +183,101 @@
             {
                 return default(T);
             }
-            Type typeid = typeof(T);
-            if (typeid.IsInstanceOfType(value))
-            {
-                return (T)((object)value);
-            }
-            object result = null;
-            if (typeid == typeof(object))
+            Type type = typeof(T);
+            object out_ = null;
+            if (type == typeof(object))
             {
                 if (value.IsNullOrUndfined)
                 {
-                    return (T)result;
+                    return (T)out_;
                 }
                 return (T)value.GetValue();
             }
-            else if (typeid == typeof(string))
+            else if (type == typeof(string))
             {
-                result = ToString(value);
+                out_ = ToString(value);
             }
-            else if (typeid == typeof(int))
+            else if (type == typeof(int))
             {
-                result = ToInt32(value);
+                out_ = ToInt32(value);
             }
-            else if (typeid == typeof(uint))
+            else if (type == typeof(uint))
             {
-                result = ToUInt32(value);
+                out_ = ToUInt32(value);
             }
-            else if (typeid == typeof(DateTime))
+            else if (type == typeof(DateTime))
             {
-                result = ToDateTime(value);
+                out_ = ToDateTime(value);
             }
-            else if (typeid == typeof(bool))
+            else if (type == typeof(bool))
             {
-                result = ToBoolean(value);
+                out_ = ToBoolean(value);
             }
-            else if (typeid == typeof(float))
+            else if (type == typeof(float))
             {
-                result = ToSingle(value);
+                out_ = ToSingle(value);
             }
-            else if (typeid == typeof(char))
+            else if (type == typeof(char))
             {
-                result = ToChar(value);
+                out_ = ToChar(value);
             }
-            else if (typeid == typeof(double))
+            else if (type == typeof(double))
             {
-                result = ToDouble(value);
+                out_ = ToDouble(value);
             }
-            else if (typeid == typeof(byte))
+            else if (type == typeof(byte))
             {
-                result = ToByte(value);
+                out_ = ToByte(value);
             }
-            else if (typeid == typeof(sbyte))
+            else if (type == typeof(sbyte))
             {
-                result = ToSByte(value);
+                out_ = ToSByte(value);
             }
-            else if (typeid == typeof(short))
+            else if (type == typeof(short))
             {
-                result = ToInt16(value);
+                out_ = ToInt16(value);
             }
-            else if (typeid == typeof(ushort))
+            else if (type == typeof(ushort))
             {
-                result = ToUInt16(value);
+                out_ = ToUInt16(value);
             }
-            else if (typeid == typeof(byte[]))
+            else if (type == typeof(byte[]))
             {
-                result = (value as NSJSUInt8Array)?.Buffer;
+                out_ = (value as NSJSUInt8Array)?.Buffer;
             }
-            else if (typeid == typeof(sbyte[]))
+            else if (type == typeof(sbyte[]))
             {
-                result = (value as NSJSInt8Array)?.Buffer;
+                out_ = (value as NSJSInt8Array)?.Buffer;
             }
-            else if (typeid == typeof(ushort[]))
+            else if (type == typeof(ushort[]))
             {
-                result = (value as NSJSUInt16Array)?.Buffer;
+                out_ = (value as NSJSUInt16Array)?.Buffer;
             }
-            else if (typeid == typeof(short[]))
+            else if (type == typeof(short[]))
             {
-                result = (value as NSJSInt16Array)?.Buffer;
+                out_ = (value as NSJSInt16Array)?.Buffer;
             }
-            else if (typeid == typeof(uint[]))
+            else if (type == typeof(uint[]))
             {
-                result = (value as NSJSUInt32Array)?.Buffer;
+                out_ = (value as NSJSUInt32Array)?.Buffer;
             }
-            else if (typeid == typeof(int[]))
+            else if (type == typeof(int[]))
             {
-                result = (value as NSJSInt32Array)?.Buffer;
+                out_ = (value as NSJSInt32Array)?.Buffer;
             }
-            else if (typeid == typeof(float[]))
+            else if (type == typeof(float[]))
             {
-                result = (value as NSJSFloat32Array)?.Buffer;
+                out_ = (value as NSJSFloat32Array)?.Buffer;
             }
-            else if (typeid == typeof(double[]))
+            else if (type == typeof(double[]))
             {
-                result = (value as NSJSFloat64Array)?.Buffer;
+                out_ = (value as NSJSFloat64Array)?.Buffer;
             }
-            if (result == null)
+            else if (type.IsInstanceOfType(value))
             {
-                return default(T);
+                return (T)((object)value);
             }
-            return (T)result;
+            return out_ == null ? default(T) : (T)out_;
         }
 
         public static object Value(this NSJSValue value)
@@ -330,7 +326,7 @@
             {
                 return null;
             }
-            if (value == null)
+            if (value == null || value == DBNull.Value)
             {
                 return NSJSValue.Null(machine);
             }

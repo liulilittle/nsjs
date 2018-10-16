@@ -147,7 +147,7 @@ DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_float64_new(v8::Isolate
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_datetime_new(v8::Isolate* isolate, int64_t value);
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_boolean_new(v8::Isolate* isolate, bool value);
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_function_new(v8::Isolate* isolate, v8::FunctionCallback value);
-DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_string_new(v8::Isolate* isolate, const char* value);
+DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_string_new(v8::Isolate* isolate, const char* data, int datalen);
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_int32array_new(v8::Isolate* isolate, const int32_t* buffer, uint32_t count);
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_uint32array_new(v8::Isolate* isolate, const uint32_t* buffer, uint32_t count);
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_int16array_new(v8::Isolate* isolate, const int16_t* buffer, uint32_t count);
@@ -158,7 +158,7 @@ DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_float32array_new(v8::Is
 DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_float64array_new(v8::Isolate* isolate, const double_t* buffer, uint32_t count);
 
 DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_object_property_set(v8::Isolate* isolate, NSJSLocalValue* obj, const char* key, NSJSLocalValue* value);
-DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_object_property_set_string(v8::Isolate* isolate, NSJSLocalValue* obj, const char* key, const char* value);
+DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_object_property_set_string(v8::Isolate* isolate, NSJSLocalValue* obj, const char* key, const char* value, int valuelen);
 DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_object_property_set_int32(v8::Isolate* isolate, NSJSLocalValue* obj, const char* key, int32_t value);
 DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_object_property_set_uint32(v8::Isolate* isolate, NSJSLocalValue* obj, const char* key, uint32_t value);
 DLLEXPORT bool DLLEXPORTNSAPI nsjs_localvalue_object_property_set_boolean(v8::Isolate* isolate, NSJSLocalValue* obj, const char* key, bool value);

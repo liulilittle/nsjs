@@ -68,7 +68,7 @@
         private extern static bool nsjs_localvalue_object_property_set_boolean(IntPtr isolate, IntPtr obj, IntPtr key, bool value);
 
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-        private extern static bool nsjs_localvalue_object_property_set_string(IntPtr isolate, IntPtr obj, IntPtr key, void* value);
+        private extern static bool nsjs_localvalue_object_property_set_string(IntPtr isolate, IntPtr obj, IntPtr key, void* value, int valuelen);
 
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
         private extern static bool nsjs_localvalue_object_property_set_float64(IntPtr isolate, IntPtr obj, IntPtr key, double value);
@@ -279,7 +279,7 @@
             {
                 throw new ArgumentException("key");
             }
-            byte[] buffer = Encoding.UTF8.GetBytes(key);
+            byte[] buffer = NSJSString.GetUTF8StringBuffer(key);
             if (buffer == null || buffer.Length <= 0)
             {
                 return NULL;
@@ -327,7 +327,7 @@
             {
                 throw new ArgumentNullException("func");
             }
-            fixed (byte* s = Encoding.UTF8.GetBytes(key))
+            fixed (byte* s = NSJSString.GetUTF8StringBuffer(key))
             {
                 return func((IntPtr)s);
             }
@@ -377,16 +377,16 @@
             {
                 if (value == null)
                 {
-                    return nsjs_localvalue_object_property_set_string(this.Isolate, this.Handle, name, null);
+                    return nsjs_localvalue_object_property_set_string(this.Isolate, this.Handle, name, null, 0);
                 }
-                byte[] cch = Encoding.UTF8.GetBytes(value);
+                byte[] cch = NSJSString.GetUTF8StringBuffer(value);
                 if (cch.Length <= 0)
                 {
                     cch = new byte[] { 0 };
                 }
                 fixed (byte* s = cch)
                 {
-                    return nsjs_localvalue_object_property_set_string(this.Isolate, this.Handle, name, s);
+                    return nsjs_localvalue_object_property_set_string(this.Isolate, this.Handle, name, s, cch.Length);
                 }
             });
         }
@@ -936,7 +936,7 @@
             {
                 throw new ArgumentException("key");
             }
-            fixed (byte* s = Encoding.UTF8.GetBytes(key))
+            fixed (byte* s = NSJSString.GetUTF8StringBuffer(key))
             {
                 return nsjs_localvalue_object_property_delete(this.Isolate, this.Handle, s);
             }
