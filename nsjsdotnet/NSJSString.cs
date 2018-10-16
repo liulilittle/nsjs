@@ -16,17 +16,11 @@
 
         private const uint CP_UTF8 = 65001;
 
-        private const byte kFirstBitMask = 128; // 1000000
-        private const byte kSecondBitMask = 64; // 0100000
-        private const byte kThirdBitMask = 32; // 0010000
-        private const byte kFourthBitMask = 16; // 0001000
-        private const byte kFifthBitMask = 8; // 0000100
-
-        public static bool DefaultCStyleString
-        {
-            get;
-            set;
-        } = false;
+        private const byte kFirstBitMask = 0x80; // 1000000
+        private const byte kSecondBitMask = 0x40; // 0100000
+        private const byte kThirdBitMask = 0x20; // 0010000
+        private const byte kFourthBitMask = 0x10; // 0001000
+        private const byte kFifthBitMask = 0x08; // 0000100
 
         public static int GetUtf8Alignment(byte character)
         {
@@ -141,31 +135,37 @@
 
         public static byte[] GetUTF8StringBuffer(string s)
         {
-            return GetUTF8StringBuffer(s, DefaultCStyleString);
-        }
-
-        public static byte[] GetUTF8StringBuffer(string s, bool cStyle)
-        {
             if (s == null)
             {
                 throw new ArgumentNullException("s");
             }
-            byte[] contents = Encoding.UTF8.GetBytes(s);
-            if (!cStyle)
+            byte[] buf = new byte[(s.Length * 3) + 1];
+            fixed (byte* p = buf)
             {
-                return contents;
+                int i = 0;
+                int k = 0;
+                while (i < s.Length)
+                {
+                    char ch = s[i++];
+                    if (ch < 0x80)
+                    {
+                        buf[k++] = (byte)ch;
+                    }
+                    else if (ch < 0x800)
+                    {
+                        buf[k++] = (byte)(((ch >> 6) & 0x1f) | 0xc0);
+                        buf[k++] = (byte)((ch & 0x3f) | 0x80);
+                    }
+                    else if (ch < 0x10000)
+                    {
+                        buf[k++] = (byte)(((ch >> 12) & 0x0f) | 0xe0);
+                        buf[k++] = (byte)(((ch >> 6) & 0x3f) | 0x80);
+                        buf[k++] = (byte)((ch & 0x3f) | 0x80);
+                    }
+                }
+                buf[k] = unchecked((byte)'\x0');
             }
-            int count = contents.Length;
-            if (count > 0 && (contents[count - 1] == '\x0'))
-            {
-                return contents;
-            }
-            using (MemoryStream ms = new MemoryStream())
-            {
-                ms.Write(contents, 0, contents.Length);
-                ms.WriteByte(0); // \x0
-                return ms.GetBuffer();
-            }
+            return buf;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
