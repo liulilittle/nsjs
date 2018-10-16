@@ -106,7 +106,7 @@ DLLEXPORT int DLLEXPORTNSAPI nsjs_localvalue_float32array_get_length(NSJSLocalVa
 DLLEXPORT int DLLEXPORTNSAPI nsjs_localvalue_float64array_get_length(NSJSLocalValue* value);
 
 DLLEXPORT const char* DLLEXPORTNSAPI nsjs_localvalue_json_stringify(v8::Isolate* isolate, NSJSLocalValue* value, int& len);
-DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_json_parse(v8::Isolate* isolate, const char* json);
+DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_json_parse(v8::Isolate* isolate, const char* json, int jsonlen);
 
 DLLEXPORT char* DLLEXPORTNSAPI nsjs_localvalue_typeof(v8::Isolate* isolate, NSJSLocalValue* value);
 DLLEXPORT int DLLEXPORTNSAPI nsjs_stacktrace_getcurrent(v8::Isolate* isolate, NSJSStackTrace* stacktrace);

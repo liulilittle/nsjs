@@ -10,7 +10,7 @@
         private extern static IntPtr nsjs_localvalue_json_stringify(IntPtr isolate, IntPtr value, ref int len);
 
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, CallingConvention = CallingConvention.Cdecl)]
-        private extern static IntPtr nsjs_localvalue_json_parse(IntPtr isolate, byte* json);
+        private extern static IntPtr nsjs_localvalue_json_parse(IntPtr isolate, byte* json, int jsonlen);
 
         private static readonly IntPtr NULL = IntPtr.Zero;
 
@@ -33,11 +33,16 @@
             byte[] cch = NSJSString.GetUTF8StringBuffer(json);
             fixed (byte* p = cch)
             {
-                handle = nsjs_localvalue_json_parse(isolate, p);
+                int count = cch.Length;
+                if (count > 0 && cch[count - 1] == '\x0')
+                {
+                    count--;
+                }
+                handle = nsjs_localvalue_json_parse(isolate, p, count);
             }
             if (handle == NULL)
             {
-                throw new InvalidOperationException("machine");
+                throw new ArgumentOutOfRangeException("json");
             }
             return NSJSValueBuilder.From(handle, machine);
         }

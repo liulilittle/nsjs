@@ -559,22 +559,29 @@ DLLEXPORT const char* DLLEXPORTNSAPI nsjs_localvalue_json_stringify(v8::Isolate*
 		NSJSGetLocalValue(value)).ToLocalChecked()), len);
 }
 
-DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_json_parse(v8::Isolate* isolate, const char* json)
+DLLEXPORT NSJSLocalValue* DLLEXPORTNSAPI nsjs_localvalue_json_parse(v8::Isolate* isolate, const char* json, int jsonlen)
 {
 	if (isolate == NULL)
 	{
 		throw new ArgumentNullException("Parameter isolate cannot be null");
 	}
-	if (json == NULL)
+	if (json == NULL || jsonlen <= 0)
 	{
-		throw new ArgumentNullException("Parameter json cannot be null");
+		return NULL;
 	}
-	v8::Local<v8::String> s = v8::String::NewFromUtf8(isolate, json, v8::NewStringType::kNormal).ToLocalChecked();
-	v8::Local<v8::Value> r = v8::JSON::Parse(isolate, s).ToLocalChecked();
-	NSJSLocalValue* p;
-	NSJSNewLocalValue(p);
-	p->LocalValue = r;
-	return p;
+	v8::Local<v8::String> s = v8::String::NewFromUtf8(isolate, json, v8::NewStringType::kNormal, jsonlen).ToLocalChecked();
+	v8::Local<v8::Value> r;
+	if (!v8::JSON::Parse(isolate, s).ToLocal(&r))
+	{
+		return NULL;
+	}
+	else
+	{
+		NSJSLocalValue* p;
+		NSJSNewLocalValue(p);
+		p->LocalValue = r;
+		return p;
+	}
 }
 
 DLLEXPORT char* DLLEXPORTNSAPI nsjs_localvalue_typeof(v8::Isolate* isolate, NSJSLocalValue* value)
