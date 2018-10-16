@@ -386,7 +386,12 @@
                 }
                 fixed (byte* s = cch)
                 {
-                    return nsjs_localvalue_object_property_set_string(this.Isolate, this.Handle, name, s, cch.Length);
+                    int count = cch.Length;
+                    if (count > 0 && cch[count - 1] == '\x0')
+                    {
+                        count--;
+                    }
+                    return nsjs_localvalue_object_property_set_string(this.Isolate, this.Handle, name, s, count);
                 }
             });
         }

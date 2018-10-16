@@ -139,17 +139,36 @@
             {
                 throw new ArgumentNullException("s");
             }
-            byte[] buf = new byte[(s.Length * 3) + 1];
+            byte[] buf = null;
+            int k = 0;
+            int i = 0;
+            while (i < s.Length)
+            {
+                char ch = s[i++];
+                if (ch < 0x80)
+                {
+                    k++;
+                }
+                else if (ch < 0x800)
+                {
+                    k += 2;
+                }
+                else if (ch < 0x10000)
+                {
+                    k += 3;
+                }
+            }
+            buf = new byte[k + 1];
             fixed (byte* p = buf)
             {
-                int i = 0;
-                int k = 0;
+                i = 0;
+                k = 0;
                 while (i < s.Length)
                 {
                     char ch = s[i++];
                     if (ch < 0x80)
                     {
-                        buf[k++] = (byte)ch;
+                        buf[k++] = (byte)(ch & 0xff);
                     }
                     else if (ch < 0x800)
                     {
@@ -163,7 +182,6 @@
                         buf[k++] = (byte)((ch & 0x3f) | 0x80);
                     }
                 }
-                buf[k] = unchecked((byte)'\x0');
             }
             return buf;
         }
@@ -306,7 +324,12 @@
                 }
                 fixed (byte* p = cch)
                 {
-                    handle = nsjs_localvalue_string_new(isolate, p, cch.Length);
+                    int count = cch.Length;
+                    if (count > 0 && cch[count - 1] == '\x0')
+                    {
+                        count--;
+                    }
+                    handle = nsjs_localvalue_string_new(isolate, p, count);
                 }
             }
             if (handle == NULL)
