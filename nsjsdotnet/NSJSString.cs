@@ -175,18 +175,18 @@
                     char ch = s[i++];
                     if (ch < 0x80)
                     {
-                        buf[k++] = (byte)(ch & 0xff);
+                        p[k++] = (byte)(ch & 0xff);
                     }
                     else if (ch < 0x800)
                     {
-                        buf[k++] = (byte)(((ch >> 6) & 0x1f) | 0xc0);
-                        buf[k++] = (byte)((ch & 0x3f) | 0x80);
+                        p[k++] = (byte)(((ch >> 6) & 0x1f) | 0xc0);
+                        p[k++] = (byte)((ch & 0x3f) | 0x80);
                     }
                     else if (ch < 0x10000)
                     {
-                        buf[k++] = (byte)(((ch >> 12) & 0x0f) | 0xe0);
-                        buf[k++] = (byte)(((ch >> 6) & 0x3f) | 0x80);
-                        buf[k++] = (byte)((ch & 0x3f) | 0x80);
+                        p[k++] = (byte)(((ch >> 12) & 0x0f) | 0xe0);
+                        p[k++] = (byte)(((ch >> 6) & 0x3f) | 0x80);
+                        p[k++] = (byte)((ch & 0x3f) | 0x80);
                     }
                 }
             }
