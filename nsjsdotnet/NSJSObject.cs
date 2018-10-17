@@ -379,18 +379,10 @@
                 {
                     return nsjs_localvalue_object_property_set_string(this.Isolate, this.Handle, name, null, 0);
                 }
-                byte[] cch = NSJSString.GetUTF8StringBuffer(value);
-                if (cch.Length <= 0)
-                {
-                    cch = new byte[] { 0 };
-                }
+                int count;
+                byte[] cch = NSJSString.GetUTF8StringBuffer(value, out count);
                 fixed (byte* s = cch)
                 {
-                    int count = cch.Length;
-                    if (count > 0 && cch[count - 1] == '\x0')
-                    {
-                        count--;
-                    }
                     return nsjs_localvalue_object_property_set_string(this.Isolate, this.Handle, name, s, count);
                 }
             });

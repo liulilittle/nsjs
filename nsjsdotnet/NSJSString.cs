@@ -135,6 +135,13 @@
 
         public static byte[] GetUTF8StringBuffer(string s)
         {
+            int count = 0;
+            return GetUTF8StringBuffer(s, out count); 
+        }
+
+        public static byte[] GetUTF8StringBuffer(string s, out int count)
+        {
+            count = 0;
             if (s == null)
             {
                 throw new ArgumentNullException("s");
@@ -158,7 +165,7 @@
                     k += 3;
                 }
             }
-            buf = new byte[k + 1];
+            buf = new byte[(count = k) + 1];
             fixed (byte* p = buf)
             {
                 i = 0;
@@ -317,18 +324,10 @@
             }
             else
             {
-                byte[] cch = NSJSString.GetUTF8StringBuffer(value);
-                if (cch.Length <= 0)
-                {
-                    cch = new byte[] { 0 };
-                }
+                int count;
+                byte[] cch = NSJSString.GetUTF8StringBuffer(value, out count);
                 fixed (byte* p = cch)
                 {
-                    int count = cch.Length;
-                    if (count > 0 && cch[count - 1] == '\x0')
-                    {
-                        count--;
-                    }
                     handle = nsjs_localvalue_string_new(isolate, p, count);
                 }
             }

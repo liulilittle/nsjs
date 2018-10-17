@@ -30,14 +30,10 @@
                 return NSJSValue.Null(machine);
             }
             IntPtr handle = NULL;
-            byte[] cch = NSJSString.GetUTF8StringBuffer(json);
+            int count;
+            byte[] cch = NSJSString.GetUTF8StringBuffer(json, out count);
             fixed (byte* p = cch)
             {
-                int count = cch.Length;
-                if (count > 0 && cch[count - 1] == '\x0')
-                {
-                    count--;
-                }
                 handle = nsjs_localvalue_json_parse(isolate, p, count);
             }
             if (handle == NULL)
