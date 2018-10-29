@@ -51,6 +51,7 @@
                     if (!DatabaseAccessAuxiliary.TryConnectConnection(connection))
                     {
                         DatabaseAccessAuxiliary.CloseConnection(connection);
+                        connection = null;
                     }
                     else
                     {
