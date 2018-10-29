@@ -66,14 +66,20 @@
             using (DataTable dt = this.Select(cmd))
             {
                 if (dt != null)
+                {
                     return this.ToList<T>(dt);
-                return null;
+                }
+                return default(IList<T>);
             }
         }
 
         public DataTable Select(string sql)
         {
-            if (string.IsNullOrEmpty(sql))
+            if (sql == null)
+            {
+                throw new ArgumentNullException("sql");
+            }
+            if (sql.Length <= 0)
             {
                 throw new ArgumentException("sql");
             }
@@ -85,18 +91,38 @@
 
         public DataTable Select(StringBuilder sql)
         {
-            if (sql == null || sql.Length <= 0)
+            if (sql == null)
             {
-                throw new ArgumentException("sql");
+                throw new ArgumentNullException("sql");
             }
             return this.Select(sql.ToString());
         }
 
         public DataTable GetByKey(string table, string primarykey, string rowkey)
         {
-            if (string.IsNullOrEmpty(table) || string.IsNullOrEmpty(primarykey) || string.IsNullOrEmpty(rowkey))
+            if (rowkey == null)
             {
-                throw new ArgumentException();
+                throw new ArgumentNullException("rowkey");
+            }
+            if (table == null)
+            {
+                throw new ArgumentNullException("table");
+            }
+            if (primarykey == null)
+            {
+                throw new ArgumentNullException("primarykey");
+            }
+            if (rowkey.Length <= 0)
+            {
+                throw new ArgumentException("rowkey");
+            }
+            if (table.Length <= 0)
+            {
+                throw new ArgumentException("table");
+            }
+            if (primarykey.Length <= 0)
+            {
+                throw new ArgumentException("primarykey");
             }
             using (IDbCommand cmd = DatabaseAccessAdapter.CreateCommand())
             {
@@ -122,36 +148,48 @@
             using (DataTable dt = GetByKey(table, primarykey, rowkey))
             {
                 if (dt == null)
+                {
                     return null;
+                }
                 IList<T> rows = ToList<T>(dt);
                 if (rows == null || rows.Count <= 0)
+                {
                     return null;
+                }
                 return rows[0];
             }
         }
 
         public IList<T> FindAll<T>(string table, Expression<Func<T, bool>> expression) where T : class
         {
-            if (string.IsNullOrEmpty(table))
+            if (table == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("table");
+            }
+            if (table.Length <= 0)
+            {
+                throw new ArgumentException("table");
             }
             if (expression == null)
             {
-                return Select<T>(string.Format("SELECT * FROM [{0}]", table));
+                return this.Select<T>(string.Format("SELECT * FROM [{0}]", table));
             }
             else
             {
                 string condition = ExpressionSpecification.SatisfiedBy(expression, table);
-                return Select<T>(string.Format("SELECT * FROM [{0}] WHERE {1}", table, condition));
+                return this.Select<T>(string.Format("SELECT * FROM [{0}] WHERE {1}", table, condition));
             }
         }
 
         public T Find<T>(string table, Expression<Func<T, bool>> expression) where T : class
         {
-            if (string.IsNullOrEmpty(table))
+            if (table == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("table");
+            }
+            if (table.Length <= 0)
+            {
+                throw new ArgumentException("table");
             }
             IList<T> rows = default(IList<T>);
             if (expression == null)
@@ -172,7 +210,11 @@
 
         public IList<T> Select<T>(string sql) where T : class
         {
-            if (string.IsNullOrEmpty(sql))
+            if (sql == null)
+            {
+                throw new ArgumentNullException("sql");
+            }
+            if (sql.Length <= 0)
             {
                 throw new ArgumentException("sql");
             }
@@ -193,7 +235,11 @@
 
         public DataTable Select(string procedure, params IDbDataParameter[] parameters)
         {
-            if (string.IsNullOrEmpty(procedure))
+            if (procedure == null)
+            {
+                throw new ArgumentNullException("procedure");
+            }
+            if (procedure.Length <= 0)
             {
                 throw new ArgumentException("procedure");
             }
@@ -283,26 +329,42 @@
 
         public bool Contains(string table, string primarykey, string rowkey)
         {
-            if (string.IsNullOrEmpty(table))
-            {
-                throw new ArgumentNullException("table");
-            }
-            if (string.IsNullOrEmpty(primarykey))
+            if (primarykey == null)
             {
                 throw new ArgumentNullException("primarykey");
             }
-            if (string.IsNullOrEmpty(rowkey))
+            if (table == null)
+            {
+                throw new ArgumentNullException("table");
+            }
+            if (rowkey == null)
             {
                 throw new ArgumentNullException("rowkey");
             }
-            return InternalGetCount(table, 1, string.Format("{0}={1}", primarykey, rowkey)) > 0;
+            if (table.Length <= 0)
+            {
+                throw new ArgumentException("table");
+            }
+            if (primarykey.Length <= 0)
+            {
+                throw new ArgumentException("primarykey");
+            }
+            if (rowkey.Length <= 0)
+            {
+                throw new ArgumentException("rowkey");
+            }
+            return this.InternalGetCount(table, 1, string.Format("{0}={1}", primarykey, rowkey)) > 0;
         }
 
         public bool Contains<T>(string table, Expression<Func<T, bool>> expression)
         {
-            if (string.IsNullOrEmpty(table))
+            if (table == null)
             {
                 throw new ArgumentNullException("table");
+            }
+            if (table.Length <= 0)
+            {
+                throw new ArgumentException("table");
             }
             if (expression == null)
             {
@@ -311,13 +373,17 @@
             else
             {
                 string condition = ExpressionSpecification.SatisfiedBy(expression, table);
+                if (string.IsNullOrEmpty(condition))
+                {
+                    return false;
+                }
                 return this.InternalGetCount(table, 1, condition) > 0;
             }
         }
 
         public int Count(string table, string condition)
         {
-            return InternalGetCount(table, null, condition);
+            return this.InternalGetCount(table, null, condition);
         }
 
         private int InternalGetCount(string table, int? top, string condition)
@@ -332,14 +398,22 @@
 
         public int Insert(string table, object rowdata)
         {
-            return Insert(table, rowdata, null);
+            return this.Insert(table, rowdata, null);
         }
 
         public int Insert(string table, object rowdata, IDbTransaction transaction)
         {
-            if (rowdata == null || string.IsNullOrEmpty(table))
+            if (rowdata == null)
             {
-                throw new ArgumentException();
+                throw new ArgumentNullException("rowdata");
+            }
+            if (table == null)
+            {
+                throw new ArgumentNullException("table");
+            }
+            if (table.Length <= 0)
+            {
+                throw new ArgumentException("table");
             }
             using (IDbCommand cmd = DatabaseAccessAuxiliary.CreateInsert(rowdata, table, DatabaseAccessAdapter))
             {
@@ -350,14 +424,30 @@
 
         public int Update(string table, string primarykey, string condition, object rowdata)
         {
-            return Update(table, primarykey, condition, rowdata, null);
+            return this.Update(table, primarykey, condition, rowdata, null);
         }
 
         public int Update(string table, string primarykey, string condition, object rowdata, IDbTransaction transaction)
         {
-            if (rowdata == null || string.IsNullOrEmpty(table) || string.IsNullOrEmpty(primarykey))
+            if (primarykey == null)
             {
-                throw new ArgumentException();
+                throw new ArgumentNullException("primarykey");
+            }
+            if (table == null)
+            {
+                throw new ArgumentNullException("table");
+            }
+            if (rowdata == null)
+            {
+                throw new ArgumentNullException("rowdata");
+            }
+            if (table.Length <= 0)
+            {
+                throw new ArgumentException("table");
+            }
+            if (primarykey.Length <= 0)
+            {
+                throw new ArgumentException("primarykey");
             }
             using (IDbCommand cmd = DatabaseAccessAuxiliary.CreateUpdate(rowdata, table, primarykey, condition, DatabaseAccessAdapter))
             {
@@ -368,14 +458,18 @@
 
         public int DeleteAll(string table)
         {
-            return DeleteAll(table, null);
+            return this.DeleteAll(table, null);
         }
 
         public int DeleteAll(string table, IDbTransaction transaction)
         {
-            if (string.IsNullOrEmpty(table))
+            if (table == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("table");
+            }
+            if (table.Length <= 0)
+            {
+                throw new ArgumentException("table");
             }
             using (IDbCommand cmd = DatabaseAccessAdapter.CreateCommand())
             {
@@ -387,7 +481,7 @@
 
         public int DeleteByKey(string table, string primarykey, string rowkey)
         {
-            return DeleteByKey(table, primarykey, rowkey);
+            return this.DeleteByKey(table, primarykey, rowkey);
         }
 
         public int DeleteByKey(string table, string primarykey, string rowkey, IDbTransaction transaction)
@@ -407,21 +501,27 @@
         public int ExecuteNonQuery(IDbCommand cmd)
         {
             if (cmd == null)
-                throw new ArgumentNullException();
+            {
+                throw new ArgumentNullException("cmd");
+            }
             return DatabaseAccessAuxiliary.ExecuteNonQuery(cmd, DatabaseAccessAdapter);
         }
 
         public object ExecuteScalar(IDbCommand cmd)
         {
             if (cmd == null)
-                throw new ArgumentNullException();
+            {
+                throw new ArgumentNullException("cmd");
+            }
             return DatabaseAccessAuxiliary.ExecuteScalar(cmd, DatabaseAccessAdapter);
         }
 
         public IDataReader ExecuteReader(IDbCommand cmd)
         {
             if (cmd == null)
-                throw new ArgumentNullException();
+            {
+                throw new ArgumentNullException("cmd");
+            }
             return DatabaseAccessAuxiliary.ExecuteReader(cmd, DatabaseAccessAdapter);
         }
     }

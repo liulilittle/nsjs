@@ -8,6 +8,42 @@
 
     public static class DatabaseAccessAuxiliary
     {
+        public static bool CloseConnection(IDbConnection connection)
+        {
+            try
+            {
+                if (connection == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    connection.Dispose();
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public static bool TryConnectConnection(IDbConnection connection)
+        {
+            if (connection == null)
+            {
+                return false;
+            }
+            try
+            {
+                return ConnectConnection(connection).State == ConnectionState.Open;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public static IDbConnection ConnectConnection(IDbConnection connection)
         {
             if (connection == null)
@@ -80,7 +116,15 @@
                 {
                     da.SelectCommand = cmd;
                     ds = new DataSet();
-                    da.Fill(ds);
+                    try
+                    {
+                        da.Fill(ds);
+                    }
+                    catch
+                    {
+                        ds.Dispose();
+                        ds = null;
+                    }
                 }
                 IDisposable disposable = da as IDisposable;
                 if (disposable != null)

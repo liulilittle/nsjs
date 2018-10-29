@@ -8,15 +8,15 @@
 
     public class DatabaseConnectionPoll
     {
-        private readonly IDictionary<IRelational, IDbConnection> m_connections = null;
-        private volatile Func<IDbConnection> m_newConnection = null;
-        private readonly EventHandler m_closeRelationalEvt = null;
+        private readonly IDictionary<IRelational, IDbConnection> _connections = null;
+        private volatile Func<IDbConnection> _newConnection = null;
+        private readonly EventHandler _closeRelationalEvt = null;
 
         [SecuritySafeCritical]
         public DatabaseConnectionPoll()
         {
-            m_connections = new ConcurrentDictionary<IRelational, IDbConnection>();
-            m_closeRelationalEvt = this.OnCloseRelational;
+            this._connections = new ConcurrentDictionary<IRelational, IDbConnection>();
+            this._closeRelationalEvt = this.OnCloseRelational;
         }
 
         private void OnCloseRelational(object sender, EventArgs e)
@@ -40,21 +40,25 @@
             }
             else
             {
-                m_newConnection = newConnection;
+                this._newConnection = newConnection;
             }
-            lock (this)
+            lock (this._connections)
             {
                 IDbConnection connection = null;
-                if (!m_connections.TryGetValue(relational, out connection))
+                if (!this._connections.TryGetValue(relational, out connection))
                 {
                     connection = newConnection();
-                    if (connection != null)
+                    if (!DatabaseAccessAuxiliary.TryConnectConnection(connection))
                     {
-                        relational.Disposed += this.m_closeRelationalEvt;
-                        m_connections.Add(relational, connection);
+                        DatabaseAccessAuxiliary.CloseConnection(connection);
+                    }
+                    else
+                    {
+                        relational.Disposed += this._closeRelationalEvt;
+                        this._connections.Add(relational, connection);
                     }
                 }
-                return DatabaseAccessAuxiliary.ConnectConnection(connection);
+                return connection;
             }
         }
 
@@ -62,29 +66,25 @@
         {
             get
             {
-                return m_connections.Count;
+                return this._connections.Count;
             }
         }
 
-        public IDbConnection Remove(IRelational relational)
+        public virtual IDbConnection Remove(IRelational relational)
         {
             if (relational == null)
             {
                 throw new ArgumentNullException("relational");
             }
-            lock (this)
+            lock (this._connections)
             {
                 IDbConnection connection = null;
-                if (m_connections.TryGetValue(relational, out connection))
+                if (this._connections.TryGetValue(relational, out connection))
                 {
-                    relational.Disposed -= this.m_closeRelationalEvt;
-                    m_connections.Remove(relational);
-                    try
-                    {
-                        connection.Close();
-                    }
-                    catch (Exception) { /*-------------------------*/ }
+                    relational.Disposed -= this._closeRelationalEvt;
+                    this._connections.Remove(relational);
                 }
+                DatabaseAccessAuxiliary.CloseConnection(connection);
                 return connection;
             }
         }
