@@ -5,18 +5,36 @@
     using System.Collections.Generic;
     using System.Data;
     using System.Security;
+    using nsjsdotnet.Core.Threading;
 
     public class DatabaseConnectionPoll
     {
         private readonly IDictionary<IRelational, IDbConnection> _connections = null;
         private volatile Func<IDbConnection> _newConnection = null;
         private readonly EventHandler _closeRelationalEvt = null;
+        private readonly Timer _maintenance = null;
 
         [SecuritySafeCritical]
         public DatabaseConnectionPoll()
         {
             this._connections = new ConcurrentDictionary<IRelational, IDbConnection>();
             this._closeRelationalEvt = this.OnCloseRelational;
+            this._maintenance = new Timer(1000);
+            this._maintenance.Tick += this.Maintenance;
+            this._maintenance.Start();
+        }
+
+        private void Maintenance(object sender, EventArgs e)
+        {
+            foreach (KeyValuePair<IRelational, IDbConnection> pair in this._connections)
+            {
+                IDbConnection connection = pair.Value;
+                IRelational relational = pair.Key;
+                if (connection == null || connection.State != ConnectionState.Open)
+                {
+                    this.Remove(relational);
+                }
+            }
         }
 
         private void OnCloseRelational(object sender, EventArgs e)
