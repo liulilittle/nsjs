@@ -10,22 +10,26 @@
     {
         public static bool CloseConnection(IDbConnection connection)
         {
+            if (connection == null)
+            {
+                return false;
+            }
+            bool success = false;
             try
             {
-                if (connection == null)
-                {
-                    return false;
-                }
-                else
-                {
-                    connection.Dispose();
-                }
-                return true;
+                connection.Close();
+                success = true;
             }
             catch (Exception)
             {
                 return false;
             }
+            try
+            {
+                connection.Dispose();
+            }
+            catch (Exception) { /*-----------------------------*/ }
+            return success;
         }
 
         public static bool TryConnectConnection(IDbConnection connection)
