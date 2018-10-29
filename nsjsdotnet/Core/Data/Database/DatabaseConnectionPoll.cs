@@ -42,25 +42,22 @@
             {
                 this._newConnection = newConnection;
             }
-            lock (this._connections)
+            IDbConnection connection = null;
+            if (!this._connections.TryGetValue(relational, out connection))
             {
-                IDbConnection connection = null;
-                if (!this._connections.TryGetValue(relational, out connection))
+                connection = newConnection();
+                if (!DatabaseAccessAuxiliary.TryConnectConnection(connection))
                 {
-                    connection = newConnection();
-                    if (!DatabaseAccessAuxiliary.TryConnectConnection(connection))
-                    {
-                        DatabaseAccessAuxiliary.CloseConnection(connection);
-                        connection = null;
-                    }
-                    else
-                    {
-                        relational.Disposed += this._closeRelationalEvt;
-                        this._connections.Add(relational, connection);
-                    }
+                    DatabaseAccessAuxiliary.CloseConnection(connection);
+                    connection = null;
                 }
-                return connection;
+                else
+                {
+                    relational.Disposed += this._closeRelationalEvt;
+                    this._connections.Add(relational, connection);
+                }
             }
+            return connection;
         }
 
         public int Count
@@ -77,17 +74,14 @@
             {
                 throw new ArgumentNullException("relational");
             }
-            lock (this._connections)
+            IDbConnection connection = null;
+            if (this._connections.TryGetValue(relational, out connection))
             {
-                IDbConnection connection = null;
-                if (this._connections.TryGetValue(relational, out connection))
-                {
-                    relational.Disposed -= this._closeRelationalEvt;
-                    this._connections.Remove(relational);
-                }
-                DatabaseAccessAuxiliary.CloseConnection(connection);
-                return connection;
+                relational.Disposed -= this._closeRelationalEvt;
+                this._connections.Remove(relational);
             }
+            DatabaseAccessAuxiliary.CloseConnection(connection);
+            return connection;
         }
     }
 }
