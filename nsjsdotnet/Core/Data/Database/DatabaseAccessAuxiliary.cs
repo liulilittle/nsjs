@@ -54,7 +54,7 @@
             {
                 throw new ArgumentNullException("connection");
             }
-            if (connection.State == ConnectionState.Closed)
+            if (connection.State != ConnectionState.Open)
             {
                 connection.Open();
             }
