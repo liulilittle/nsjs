@@ -30,7 +30,10 @@
             {
                 IDbConnection connection = pair.Value;
                 IRelational relational = pair.Key;
-                if (connection == null || connection.State != ConnectionState.Open)
+                if (connection == null ||
+                    relational == null ||
+                    relational.IsDisposed ||
+                    connection.State != ConnectionState.Open)
                 {
                     this.Remove(relational);
                 }
