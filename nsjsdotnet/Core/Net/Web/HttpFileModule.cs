@@ -8,6 +8,7 @@
     using System.Net;
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
+    using System.Threading;
 
     sealed class HttpFileModule
     {
@@ -100,51 +101,223 @@
             return true;
         }
 
-        private bool TryGetRange(out int? from, out int? to)
+        private bool TryGetRange(out long? from, out long? to)
         {
+            from = null;
+            to = null;
             try
             {
                 string range = request.Headers["Range"];
-                from = null;
-                to = null;
                 if (!string.IsNullOrEmpty(range))
                 {
                     range = range.ToLower();
-                    Match match = Regex.Match(range, @"bytes=(\d+)-*(\d+)*");
+                    Match match = Regex.Match(range, @"bytes=(\d+)-*(\d+)*", RegexOptions.IgnoreCase | RegexOptions.Multiline);
                     if (match.Success)
                     {
-                        int start;
-                        if (int.TryParse(match.Groups[1].Value, out start))
+                        long start;
+                        if (long.TryParse(match.Groups[1].Value, out start))
                         {
                             from = start;
                         }
-                        int end;
-                        if (int.TryParse(match.Groups[2].Value, out end))
+                        long end;
+                        if (long.TryParse(match.Groups[2].Value, out end))
                         {
                             to = end;
                         }
                     }
                 }
-                return from != null;
+                return from != null || to != null;
             }
             catch (Exception)
             {
-                from = null;
-                to = null;
                 return false;
             }
         }
 
-        private void ProcessRequest(int methodid, string path)
+        private Tuple<long, long, int> CalcAccessFileRange(long totalcount)
+        {
+            long? from;
+            long? to;
+            TryGetRange(out from, out to);
+            return CalcAccessFileRange(from, to, totalcount);
+        }
+
+        private Tuple<long, long, int> CalcAccessFileRange(long? from, long? to, long totalcount)
+        {
+            long beg_pos = 0;
+            long end_pos = 0;
+            int cmp_oxx = 2;
+            if (from.HasValue && to.HasValue) // range
+            {
+                beg_pos = (from.Value < 0) ? 0 : from.Value; // 206
+                end_pos = (to.Value < 0) ? 0 : to.Value;
+                cmp_oxx = 0;
+            }
+            else if (from.HasValue) // 0-
+            {
+                beg_pos = (from.Value < 0) ? 0 : from.Value;
+                end_pos = totalcount;
+                cmp_oxx = 1;
+            }
+            else if (to.HasValue) // -0
+            {
+                end_pos = (to.Value < 0) ? 0 : to.Value;
+                cmp_oxx = -1;
+            }
+            else
+            {
+                end_pos = totalcount;
+            }
+            beg_pos = (beg_pos > totalcount) ? totalcount : beg_pos;
+            end_pos = (end_pos > totalcount) ? totalcount : end_pos;
+            if (beg_pos > end_pos)
+            {
+                end_pos = beg_pos;
+            }
+            return new Tuple<long, long, int>(beg_pos, end_pos, cmp_oxx);
+        }
+
+        private HttpContext GetCurrentContext()
+        {
+            return response.CurrentContext;
+        }
+
+        private unsafe void WriteBufferToClient(byte* buffer, long count, Action<bool, Exception> callback, bool asynchronous)
+        {
+            Exception exception = null;
+            if (buffer == null)
+            {
+                exception = new ArgumentNullException("buffer");
+            }
+            else if (count <= 0)
+            {
+                exception = new ArgumentOutOfRangeException("count");
+            }
+            if (exception != null)
+            {
+                if (callback != null)
+                {
+                    callback(asynchronous, exception);
+                }
+                return;
+            }
+            ThreadStart output_thread_start = () =>
+            {
+                Stream output = response.OutputStream;
+                byte[] chunk = new byte[1400];
+                long offset = 0;
+                lock (output)
+                {
+                    while (offset < count && exception == null)
+                    {
+                        long rdsz = unchecked(count - offset);
+                        if (rdsz > chunk.Length)
+                        {
+                            rdsz = chunk.Length;
+                        }
+                        int len = unchecked((int)rdsz);
+                        BufferExtension.memcpy(&buffer[offset], chunk, 0, len);
+                        try
+                        {
+                            output.Write(chunk, 0, len);
+                        }
+                        catch (Exception ex)
+                        {
+                            exception = ex;
+                        }
+                        offset = unchecked(offset + rdsz);
+                    }
+                }
+                if (callback != null)
+                {
+                    callback(asynchronous, exception);
+                }
+            };
+            if (!asynchronous)
+            {
+                output_thread_start();
+            }
+            else
+            {
+                Thread output_thread_inst = new Thread(output_thread_start);
+                output_thread_inst.IsBackground = true;
+                output_thread_inst.Priority = ThreadPriority.Lowest;
+                output_thread_inst.Start();
+            }
+        }
+
+        private bool IfRangeValueIsEquals(params string[] s)
+        {
+            if (s == null || s.Length<=0)
+            {
+                return false;
+            }
+            string x = request.Headers["If-Range"];
+            if (x == null)
+            {
+                return false;
+            }
+            x = x.Trim();
+            for (int i = 0; i < s.Length; i++)
+            {
+                string y = s[i];
+                if (y == null)
+                {
+                    continue;
+                }
+                y = y.Trim();
+                if (y == x)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private unsafe void ProcessRequest(int methodid, string path)
         {
             try
             {
                 if (methodid == 1)
                 {
-                    int? from;
-                    int? to;
-                    this.TryGetRange(out from, out to);
-                    this.WriteFileToContentStream(path, from, to);
+                    response.AddHeader("Accept-Ranges", "bytes");
+                    response.KeepAlive = true;
+                    response.AddHeader("Connection", "Keep-Alive");
+
+                    this.OpenFileViewAccessor(path, (accessor, total_count, close_mmf) =>
+                    {
+                        byte* stream = (byte*)accessor;
+
+                        response.StatusCode = 200;
+
+                        long write_count = total_count;
+                        Tuple<long, long, int> range = CalcAccessFileRange(total_count);
+                        write_count = (range.Item2 - range.Item1);
+                        if (write_count > 0)
+                        {
+                            stream = &stream[range.Item1];
+                        }
+                        response.ContentLength = write_count;
+                        if (range.Item1 == range.Item2 || 
+                            range.Item3 == 2)
+                        {
+                            response.StatusCode = 200;
+                        }
+                        else
+                        {
+                            response.StatusCode = 206;
+                            response.AddHeader("Content-Range", string.Format("bytes {0}-{1}/{2}",
+                                range.Item1,
+                                (range.Item2 - 1),
+                                total_count)
+                            );
+                        }
+                        WriteBufferToClient(stream, write_count, (asynchronous, e) =>
+                        {
+                            close_mmf();
+                            response.End(asynchronous);
+                        }, false);
+                    });
                 }
                 else if (methodid == 3)
                 {
@@ -172,89 +345,54 @@
             catch (Exception) { /*--A--*/ }
         }
 
-        private unsafe void OpenFileViewAccessor(string path, Action<IntPtr, long> callback)
+        private unsafe void OpenFileViewAccessor(string path, Action<IntPtr, long, Action> callback)
         {
-            if (callback != null)
+            if (callback == null || !File.Exists(path))
             {
-                if (File.Exists(path))
-                {
-                    using (MemoryMappedFile mmf = MemoryMappedFile.CreateFromFile(path))
-                    {
-                        using (MemoryMappedViewAccessor mmva = mmf.CreateViewAccessor())
-                        {
-                            SafeHandle handle = mmva.SafeMemoryMappedViewHandle;
-                            callback(handle.DangerousGetHandle(), FileAuxiliary.GetFileLength(path));
-                        }
-                    }
-                }
+                response.StatusCode = 404;
+                return;
             }
-        }
-
-        private unsafe void WriteFileToContentStream(string path, int? from, int? to)
-        {
+            MemoryMappedFile mmf = null;
+            MemoryMappedViewAccessor mmva = null;
+            Action closeMmf = () =>
+            {
+                if (mmva != null)
+                {
+                    mmva.Dispose();
+                    mmva = null;
+                }
+                if (mmf != null)
+                {
+                    mmf.Dispose();
+                    mmf = null;
+                }
+            };
+            bool immediate_shutdown = false;
             try
             {
-                response.Headers.Add(HttpResponseHeader.AcceptRanges, "bytes");
-                this.OpenFileViewAccessor(path, (accessor, count) =>
+                mmf = MemoryMappedFile.CreateFromFile(path, FileMode.Open);
+                long totalcount = FileAuxiliary.GetFileLength64(path);
+                mmva = mmf.CreateViewAccessor(0, totalcount, MemoryMappedFileAccess.ReadWrite);
+                SafeHandle handle = mmva.SafeMemoryMappedViewHandle;
+                if (handle.IsInvalid)
                 {
-                    try
-                    {
-                        byte* stream = (byte*)accessor;
-                        if (from.HasValue && to.HasValue) // range
-                        {
-                            int ofs = from.Value < 0 ? 0 : from.Value; // 206
-                            count = to.Value < 0 ? 0 : to.Value;
-                            stream = count > ofs ? &stream[ofs] : null;
-                        }
-                        else if (from.HasValue || to.HasValue) // 206
-                        {
-                            int ofs = 0;
-                            if (from.HasValue)
-                            {
-                                ofs = from.Value;
-                            }
-                            else if (to.HasValue)
-                            {
-                                ofs = to.Value;
-                            }
-                            if (ofs < 0)
-                            {
-                                ofs = 0;
-                            }
-                            count = count - ofs;
-                            if (count < 0)
-                            {
-                                count = 0;
-                            }
-                            stream = count > ofs ? &stream[ofs] : null;
-                        }
-                        response.StatusCode = 200;
-                        response.ContentLength = count;
-                        if (count > 0)
-                        {
-                            Stream output = response.OutputStream;
-                            byte[] chunk = new byte[570];
-                            int ofs = 0;
-                            while (ofs < count)
-                            {
-                                int len = unchecked((int)(count - ofs));
-                                if (len > chunk.Length)
-                                {
-                                    len = chunk.Length;
-                                }
-                                BufferExtension.memcpy(&stream[ofs], chunk, 0, len);
-                                output.Write(chunk, 0, len);
-                                ofs += len;
-                            }
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        response.StatusCode = 500;
-                    }
-                });
+                    immediate_shutdown = true;
+                    response.StatusCode = 503;
+                }
+                else
+                {
+                    callback(handle.DangerousGetHandle(), totalcount, closeMmf);
+                }
             }
-            catch (Exception) { /*--A--*/ }
+            catch (Exception)
+            {
+                immediate_shutdown = true;
+                response.StatusCode = 500;
+            }
+            if (immediate_shutdown)
+            {
+                closeMmf();
+            }
         }
     }
 }

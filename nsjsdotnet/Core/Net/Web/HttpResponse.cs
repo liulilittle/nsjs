@@ -5,6 +5,7 @@
     using System.IO;
     using System.Net;
     using System.Text;
+    using System.Threading;
 
     public class HttpResponse
     {
@@ -103,6 +104,10 @@
             set
             {
                 response.StatusCode = value;
+                if (value == 200)
+                {
+                    response.StatusDescription = "OK";
+                }
             }
         }
 
@@ -213,46 +218,86 @@
             }
         }
 
-        public bool End()
+        public void End()
         {
-            try
+            this.End(false);
+        }
+
+        public void End(bool bindthread)
+        {
+            bool doEvtAndClosed = false;
+            lock (this)
             {
-                bool doEvt = false;
-                lock (this)
+                if (!this.closed)
                 {
-                    if (!this.closed)
-                    {
-                        doEvt = true;
-                        this.closed = true;
-                    }
+                    doEvtAndClosed = true;
+                    this.closed = true;
                 }
-                if (doEvt)
-                {
-                    HttpContext context = this.CurrentContext;
-                    if (context == null)
-                    {
-                        throw new InvalidOperationException("context");
-                    }
-                    HttpApplication application = context.Application;
-                    application.OnEndProcessRequest(context);
-                }
-                this.response.Close(); // this.response.Abort();
-                return true;
             }
-            catch
+            if (doEvtAndClosed)
             {
-                return false;
+                HttpContext context = this.CurrentContext;
+                if (context == null)
+                {
+                    throw new InvalidOperationException("context");
+                }
+                HttpApplication application = context.Application;
+                application.OnEndProcessRequest(context);
+            }
+            if (doEvtAndClosed)
+            {
+                ThreadStart close_thread_start = () =>
+                {
+                    Stream output = response.OutputStream;
+                    lock (output)
+                    {
+                        try { output.Flush(); } catch (Exception) { }
+                    }
+                    int retry_count = 0;
+                    while (retry_count < 10)
+                    {
+                        try
+                        {
+                            response.Close();
+                            break;
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            retry_count++;
+                            Thread.Sleep(100);
+                        }
+                    }
+                };
+                if (bindthread)
+                {
+                    close_thread_start();
+                }
+                else
+                {
+                    Thread close_thread_inst = new Thread(close_thread_start);
+                    close_thread_inst.IsBackground = false;
+                    close_thread_inst.Priority = ThreadPriority.Lowest;
+                    close_thread_inst.Start();
+                }
             }
         }
 
-        public bool Close()
+        public void Close()
         {
-            return this.End();
+            this.End();
         }
 
         public bool Abort()
         {
-            return this.End();
+            try
+            {
+                response.Abort();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public bool Redirect(string url)
