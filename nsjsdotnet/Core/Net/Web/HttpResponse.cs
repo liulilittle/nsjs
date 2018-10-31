@@ -220,11 +220,6 @@
 
         public void End()
         {
-            this.End(false);
-        }
-
-        public void End(bool bindthread)
-        {
             bool doEvtAndClosed = false;
             lock (this)
             {
@@ -246,38 +241,24 @@
             }
             if (doEvtAndClosed)
             {
-                ThreadStart close_thread_start = () =>
+                Stream output = response.OutputStream;
+                lock (output)
                 {
-                    Stream output = response.OutputStream;
-                    lock (output)
-                    {
-                        try { output.Flush(); } catch (Exception) { }
-                    }
-                    int retry_count = 0;
-                    while (retry_count < 10)
-                    {
-                        try
-                        {
-                            response.Close();
-                            break;
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            retry_count++;
-                            Thread.Sleep(100);
-                        }
-                    }
-                };
-                if (bindthread)
-                {
-                    close_thread_start();
+                    try { output.Flush(); } catch (Exception) { }
                 }
-                else
+                int retry_count = 0;
+                while (retry_count < 10)
                 {
-                    Thread close_thread_inst = new Thread(close_thread_start);
-                    close_thread_inst.IsBackground = false;
-                    close_thread_inst.Priority = ThreadPriority.Lowest;
-                    close_thread_inst.Start();
+                    try
+                    {
+                        response.Close();
+                        break;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        retry_count++;
+                        Thread.Sleep(100);
+                    }
                 }
             }
         }

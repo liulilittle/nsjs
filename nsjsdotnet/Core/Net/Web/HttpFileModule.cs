@@ -182,7 +182,7 @@
             return response.CurrentContext;
         }
 
-        private unsafe void WriteBufferToClient(byte* buffer, long count, Action<bool, Exception> callback, bool asynchronous)
+        private unsafe void WriteBufferToClient(byte* buffer, long count, Action<Exception> callback)
         {
             Exception exception = null;
             if (buffer == null)
@@ -197,52 +197,38 @@
             {
                 if (callback != null)
                 {
-                    callback(asynchronous, exception);
+                    callback(exception);
                 }
                 return;
             }
-            ThreadStart output_thread_start = () =>
+            Stream output = response.OutputStream;
+            byte[] chunk = new byte[1400];
+            long offset = 0;
+            lock (output)
             {
-                Stream output = response.OutputStream;
-                byte[] chunk = new byte[1400];
-                long offset = 0;
-                lock (output)
+                while (offset < count && exception == null)
                 {
-                    while (offset < count && exception == null)
+                    long rdsz = unchecked(count - offset);
+                    if (rdsz > chunk.Length)
                     {
-                        long rdsz = unchecked(count - offset);
-                        if (rdsz > chunk.Length)
-                        {
-                            rdsz = chunk.Length;
-                        }
-                        int len = unchecked((int)rdsz);
-                        BufferExtension.memcpy(&buffer[offset], chunk, 0, len);
-                        try
-                        {
-                            output.Write(chunk, 0, len);
-                        }
-                        catch (Exception ex)
-                        {
-                            exception = ex;
-                        }
-                        offset = unchecked(offset + rdsz);
+                        rdsz = chunk.Length;
                     }
+                    int len = unchecked((int)rdsz);
+                    BufferExtension.memcpy(&buffer[offset], chunk, 0, len);
+                    try
+                    {
+                        output.Write(chunk, 0, len);
+                    }
+                    catch (Exception ex)
+                    {
+                        exception = ex;
+                    }
+                    offset = unchecked(offset + rdsz);
                 }
-                if (callback != null)
-                {
-                    callback(asynchronous, exception);
-                }
-            };
-            if (!asynchronous)
-            {
-                output_thread_start();
             }
-            else
+            if (callback != null)
             {
-                Thread output_thread_inst = new Thread(output_thread_start);
-                output_thread_inst.IsBackground = true;
-                output_thread_inst.Priority = ThreadPriority.Lowest;
-                output_thread_inst.Start();
+                callback(exception);
             }
         }
 
@@ -312,11 +298,11 @@
                                 total_count)
                             );
                         }
-                        WriteBufferToClient(stream, write_count, (asynchronous, e) =>
+                        WriteBufferToClient(stream, write_count, (e) =>
                         {
                             close_mmf();
-                            response.End(asynchronous);
-                        }, false);
+                            response.End();
+                        });
                     });
                 }
                 else if (methodid == 3)
