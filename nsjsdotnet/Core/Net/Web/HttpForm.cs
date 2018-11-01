@@ -55,105 +55,151 @@
                 }
             }
 
-            private static byte[] ReadLineAsBytes(Stream SourceStream)
+            private static byte[] ReadLineAsBytes(Stream stream)
             {
-                var resultStream = new MemoryStream();
-                while (true)
+                if (stream == null)
                 {
-                    int data = SourceStream.ReadByte();
-                    resultStream.WriteByte((byte)data);
-                    if (data == 10)
-                        break;
+                    return new byte[0];
                 }
-                resultStream.Position = 0;
-                byte[] dataBytes = new byte[resultStream.Length];
-                resultStream.Read(dataBytes, 0, dataBytes.Length);
-                return dataBytes;
+                using (MemoryStream out_stream = new MemoryStream())
+                {
+                    bool findrchar = true;
+                    while (stream.Position < stream.Length)
+                    {
+                        int data = stream.ReadByte();
+                        out_stream.WriteByte((byte)data);
+                        if (data == '\r')
+                        {
+                            findrchar = true;
+                        }
+                        else if (data == '\n' && findrchar)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            findrchar = false;
+                        }
+                    }
+                    out_stream.Position = 0;
+                    return out_stream.ToArray();
+                }
             }
 
             public static IList<HttpPostValue> GetValues(HttpRequest request)
             {
+                IList<HttpPostValue> emtpry_post_values = new List<HttpPostValue>();
+                if (request == null)
+                {
+                    return emtpry_post_values;
+                }
+                Stream upload_in_stream = request.InputStream;
+                if (upload_in_stream == null)
+                {
+                    return emtpry_post_values;
+                }
+                string request_content_type = request.ContentType;
+                if (request_content_type.Length < 20)
+                {
+                    return emtpry_post_values;
+                }
+                if (string.Compare(request_content_type.Substring(0, 20), "multipart/form-data;", true) != 0)
+                {
+                    return emtpry_post_values;
+                }
                 try
                 {
-                    List<HttpPostValue> HttpListenerPostValueList = new List<HttpPostValue>();
-                    if (request.ContentType.Length > 20 && string.Compare(request.ContentType.Substring(0, 20), "multipart/form-data;", true) == 0)
+                    List<HttpPostValue> out_post_values = new List<HttpPostValue>();
+                    string boundary_code = string.Join(";", request.ContentType.Split(';').Skip(1)).Replace("boundary=", "").Trim();
+                    byte[] chunk_boundary = Encoding.UTF8.GetBytes("--" + boundary_code + "\r\n");
+                    byte[] end_boundary = Encoding.UTF8.GetBytes("--" + boundary_code + "--\r\n");
+                    MemoryStream out_file_stream = new MemoryStream();
+                    bool can_move_next = true;
+                    HttpPostValue curr_data_value = null;
+                    string mime_type_name = null;
+                    while (can_move_next)
                     {
-                        string[] HttpListenerPostValue = request.ContentType.Split(';').Skip(1).ToArray();
-                        string boundary = string.Join(";", HttpListenerPostValue).Replace("boundary=", "").Trim();
-                        byte[] ChunkBoundary = Encoding.UTF8.GetBytes("--" + boundary + "\r\n");
-                        byte[] EndBoundary = Encoding.UTF8.GetBytes("--" + boundary + "--\r\n");
-                        Stream SourceStream = request.InputStream;
-                        MemoryStream resultStream = new MemoryStream();
-                        bool CanMoveNext = true;
-                        HttpPostValue data = null;
-                        string ContentType = null;
-                        while (CanMoveNext)
+                        byte[] currentchunkbuf = ReadLineAsBytes(upload_in_stream);
+                        if (currentchunkbuf == null | currentchunkbuf.Length <= 0)
                         {
-                            byte[] currentChunk = ReadLineAsBytes(SourceStream);
-                            if (!Encoding.UTF8.GetString(currentChunk).Equals("\r\n"))
+                            break;
+                        }
+                        if (!(currentchunkbuf.Length == 2 && currentchunkbuf[0] == '\r' && currentchunkbuf[1] == '\n'))
+                        {
+                            out_file_stream.Write(currentchunkbuf, 0, currentchunkbuf.Length);
+                        }
+                        if (CompareBuffer(chunk_boundary, currentchunkbuf))
+                        {
+                            byte[] result = new byte[out_file_stream.Length - chunk_boundary.Length];
+                            using (out_file_stream)
                             {
-                                resultStream.Write(currentChunk, 0, currentChunk.Length);
-                            }
-                            if (CompareBuffer(ChunkBoundary, currentChunk))
-                            {
-                                byte[] result = new byte[resultStream.Length - ChunkBoundary.Length];
-                                resultStream.Position = 0;
-                                resultStream.Read(result, 0, result.Length);
-                                CanMoveNext = true;
+                                out_file_stream.Position = 0;
+                                out_file_stream.Read(result, 0, result.Length);
+                                can_move_next = true;
                                 if (result.Length > 0)
                                 {
-                                    data.Payload = result;
+                                    curr_data_value.Payload = result;
                                 }
-                                data = new HttpPostValue();
-                                HttpListenerPostValueList.Add(data);
-                                resultStream.Dispose();
-                                resultStream = new MemoryStream();
-
+                                curr_data_value = new HttpPostValue();
+                                out_post_values.Add(curr_data_value);
                             }
-                            else if (Encoding.UTF8.GetString(currentChunk).Contains("Content-Disposition"))
+                            out_file_stream = new MemoryStream();
+                        }
+                        else if (Encoding.UTF8.GetString(currentchunkbuf).Contains("Content-Disposition"))
+                        {
+                            byte[] result = new byte[out_file_stream.Length - 2];
+                            using (out_file_stream)
                             {
-                                byte[] result = new byte[resultStream.Length - 2];
-                                resultStream.Position = 0;
-                                resultStream.Read(result, 0, result.Length);
-                                CanMoveNext = true;
+                                out_file_stream.Position = 0;
+                                out_file_stream.Read(result, 0, result.Length);
+                                can_move_next = true;
                                 string[] disposition = Encoding.UTF8.GetString(result).Replace("Content-Disposition: form-data; name=\"", "").
                                     Replace("\"", "").Split(';');
-                                data.Name = disposition[0];
+                                curr_data_value.Name = disposition[0];
                                 if (disposition.Length >= 2)
                                 {
                                     string file = disposition[1];
                                     int index = file.IndexOf('=');
                                     if (index > -1)
+                                    {
                                         file = file.Remove(0, index + 1);
-                                    data.FileName = file;
+                                    }
+                                    curr_data_value.FileName = file;
                                 }
-                                resultStream.Dispose();
-                                resultStream = new MemoryStream();
                             }
-                            else if ((ContentType = Encoding.UTF8.GetString(currentChunk)).Contains("Content-Type"))
+                            out_file_stream = new MemoryStream();
+                        }
+                        else if ((mime_type_name = Encoding.UTF8.GetString(currentchunkbuf)).Contains("Content-Type"))
+                        {
+                            curr_data_value.ContentType = mime_type_name.Split(':')[1].Trim();
+                            can_move_next = true;
+                            using (out_file_stream)
                             {
-                                CanMoveNext = true;
-                                data.ContentType = ContentType.Split(':')[1].Trim();
-                                data.IsFileResource = 1;
-                                resultStream.Dispose();
-                                resultStream = new MemoryStream();
+                                curr_data_value.IsFileResource = 1;
                             }
-                            else if (CompareBuffer(EndBoundary, currentChunk))
+                            out_file_stream = new MemoryStream();
+                        }
+                        else if (CompareBuffer(end_boundary, currentchunkbuf))
+                        {
+                            byte[] result = new byte[out_file_stream.Length - end_boundary.Length - 2];
+                            using (out_file_stream)
                             {
-                                byte[] result = new byte[resultStream.Length - EndBoundary.Length - 2];
-                                resultStream.Position = 0;
-                                resultStream.Read(result, 0, result.Length);
-                                data.Payload = result;
-                                resultStream.Dispose();
-                                CanMoveNext = false;
+                                out_file_stream.Position = 0;
+                                out_file_stream.Read(result, 0, result.Length);
+                                curr_data_value.Payload = result;
                             }
+                            can_move_next = false;
                         }
                     }
-                    return HttpListenerPostValueList;
+                    return out_post_values;
                 }
                 catch (Exception)
                 {
-                    return null;
+                    return emtpry_post_values;
+                }
+                finally
+                {
+                    upload_in_stream.Seek(0, SeekOrigin.Begin);
                 }
             }
         }
