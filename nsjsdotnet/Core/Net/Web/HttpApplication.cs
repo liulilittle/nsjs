@@ -99,13 +99,13 @@
                         }
                         currentHandler.ProcessRequest(context);
                     }
-                    if (context != null && !context.Asynchronous)
-                    {
-                        response.End();
-                    }
                 }
             }
             catch (Exception) { /*------------------------------------------A------------------------------------------*/ }
+            if (context != null && !context.Asynchronous)
+            {
+                response.End();
+            }
         }
 
         public void Start(params string[] prefixes)
