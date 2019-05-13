@@ -383,8 +383,30 @@
             }
         }
 
+        public bool BinaryWrite(byte[] buffer, int index, int count)
+        {
+            try
+            {
+                if (buffer == null)
+                {
+                    return false;
+                }
+                Stream s = response.OutputStream;
+                s.Write(buffer, index, count);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public bool BinaryWrite(byte[] buffer)
         {
+            if (buffer == null)
+            {
+                return false;
+            }
             return this.BinaryWrite(buffer, 0, buffer.Length);
         }
 
