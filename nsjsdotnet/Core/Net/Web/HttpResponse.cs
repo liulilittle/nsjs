@@ -259,6 +259,10 @@
                         retry_count++;
                         Thread.Sleep(100);
                     }
+                    catch (HttpListenerException) // 企图在不存在的网络连接上进行操作。
+                    {
+                        break;
+                    }
                 }
             }
         }
