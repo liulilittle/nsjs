@@ -319,9 +319,14 @@
                 {
                     return false;
                 }
-                StreamWriter sw = new StreamWriter(response.OutputStream, response.ContentEncoding);
-                sw.Write(s);
-                sw.Flush();
+                Stream ns = response.OutputStream;
+                if (ns == null)
+                {
+                    return false;
+                }
+                Encoding eocoding = response.ContentEncoding ?? Encoding.UTF8;
+                byte[] buffer = eocoding.GetBytes(s);
+                ns.Write(buffer, 0, buffer.Length);
                 return true;
             }
             catch (Exception)
@@ -334,9 +339,14 @@
         {
             try
             {
-                StreamWriter sw = new StreamWriter(response.OutputStream, response.ContentEncoding);
-                sw.Write(c);
-                sw.Flush();
+                Stream ns = response.OutputStream;
+                if (ns == null)
+                {
+                    return false;
+                }
+                Encoding eocoding = response.ContentEncoding ?? Encoding.UTF8;
+                byte[] buffer = eocoding.GetBytes(new[] { c });
+                ns.Write(buffer, 0, buffer.Length);
                 return true;
             }
             catch (Exception)
@@ -353,27 +363,14 @@
                 {
                     return false;
                 }
-                StreamWriter sw = new StreamWriter(response.OutputStream, response.ContentEncoding);
-                sw.Write(buffer, index, count);
-                sw.Flush();
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        public bool BinaryWrite(byte[] buffer, int index, int count)
-        {
-            try
-            {
-                if (buffer == null)
+                Stream ns = response.OutputStream;
+                if (ns == null)
                 {
                     return false;
                 }
-                Stream s = response.OutputStream;
-                s.Write(buffer, index, count);
+                Encoding eocoding = response.ContentEncoding ?? Encoding.UTF8;
+                byte[] data = eocoding.GetBytes(buffer, index, count);
+                ns.Write(data, 0, data.Length);
                 return true;
             }
             catch (Exception)
