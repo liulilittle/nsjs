@@ -255,7 +255,12 @@
 
         public virtual void PrintStackTrace()
         {
-            Console.WriteLine(GetDefaultFormatStackTrace(this));
+            Console.WriteLine(this.ToString());
+        }
+
+        public override string ToString()
+        {
+            return GetDefaultFormatStackTrace(this);
         }
     }
 }
