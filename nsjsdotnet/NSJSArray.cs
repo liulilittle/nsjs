@@ -80,7 +80,7 @@
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    value = NSJSValue.Null(this.VirtualMachine);
                 }
                 if (value.Handle == NULL)
                 {
