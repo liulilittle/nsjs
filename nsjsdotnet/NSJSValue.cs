@@ -294,7 +294,19 @@
                 if (!this.disposed)
                 {
                     this.disposed = true; // NSJSKeyValueCollection.Release(this.VirtualMachine, this.hashcodeTokenId.GetValueOrDefault());
-                    if (!nsjs_localvalue_free(this.Handle))
+                    bool unabletofree = false;
+                    try
+                    {
+                        if (!nsjs_localvalue_free(this.Handle))
+                        {
+                            unabletofree = true;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        unabletofree = true;
+                    }
+                    if (unabletofree)
                     {
                         throw new InvalidOperationException("Unable to free value");
                     }
