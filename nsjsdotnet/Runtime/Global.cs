@@ -95,18 +95,32 @@
                     {
                         path = path.Substring(0, index);
                     }
-                    if (!FileAuxiliary.TryReadAllText(path, out source) && !HttpAuxiliary.TryReadAllText(path, out source))
+                    do
                     {
-                        arguments.SetReturnValue(false);
-                    }
-                    else
-                    {
+                        bool success = false;
+                        if (!FileAuxiliary.TryReadAllText(path, out source))
+                        {
+                            if (!FileAuxiliary.TryReadAllText(Application.StartupPath + "/" + path, out source))
+                            {
+                                arguments.SetReturnValue(false);
+                                break;
+                            }
+                            success = true;
+                        }
+                        if (!success)
+                        {
+                            if (!HttpAuxiliary.TryReadAllText(path, out source))
+                            {
+                                arguments.SetReturnValue(false);
+                                break;
+                            }
+                        }
                         if (File.Exists(path))
                         {
                             path = Path.GetFullPath(path);
                         }
                         arguments.SetReturnValue(machine.Run(source, path));
-                    }
+                    } while (false);
                 }
             }
         }
