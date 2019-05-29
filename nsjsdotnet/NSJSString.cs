@@ -165,7 +165,7 @@
                     k += 3;
                 }
             }
-            buf = new byte[(count = k) + 1];
+            buf = new byte[(count = k) + 3];
             fixed (byte* p = buf)
             {
                 i = 0;
