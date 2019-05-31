@@ -1,4 +1,4 @@
-﻿namespace nsjsdotnet
+namespace nsjsdotnet
 {
     using System;
     using System.Diagnostics;
@@ -23,6 +23,9 @@
 
         [DllImport(NSJSStructural.NSJSVMLINKLIBRARY, SetLastError = false, CallingConvention = CallingConvention.Cdecl)]
         private static extern int nsjs_activelocalvalues_getcount();
+
+        [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall)]
+        private extern static bool IsBadReadPtr(void* lp, uint ucb);
 
         public static int IdleValueCapacity
         {
@@ -99,7 +102,7 @@
 
         public static void Free(void* memory)
         {
-            if (memory != null)
+            if (memory != null && !IsBadReadPtr(memory, 1))
             {
                 nsjs_memory_free(memory);
             }
